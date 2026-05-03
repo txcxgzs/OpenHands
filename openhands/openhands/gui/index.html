@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* OpenClaw Dark Theme */
             --bg: #0e1015;
             --bg-accent: #13151b;
             --bg-elevated: #191c24;
@@ -43,11 +42,7 @@
             --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
         }
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: var(--font-body);
@@ -57,15 +52,13 @@
             overflow: hidden;
         }
         
-        /* Layout */
         .app {
             display: flex;
             height: 100vh;
         }
         
-        /* Sidebar */
         .sidebar {
-            width: 240px;
+            width: 260px;
             background: var(--bg-accent);
             border-right: 1px solid var(--border);
             display: flex;
@@ -108,9 +101,7 @@
             padding: 12px 8px;
         }
         
-        .nav-group {
-            margin-bottom: 8px;
-        }
+        .nav-group { margin-bottom: 8px; }
         
         .nav-group-title {
             padding: 8px 12px 4px;
@@ -125,7 +116,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 8px 12px;
+            padding: 10px 12px;
             border-radius: var(--radius-sm);
             cursor: pointer;
             transition: all 0.15s ease;
@@ -135,9 +126,7 @@
             margin: 2px 0;
         }
         
-        .nav-item:hover {
-            background: var(--bg-hover);
-        }
+        .nav-item:hover { background: var(--bg-hover); }
         
         .nav-item.active {
             background: var(--accent-subtle);
@@ -153,15 +142,13 @@
         
         .nav-badge {
             margin-left: auto;
-            background: var(--accent);
-            color: white;
-            font-size: 10px;
-            font-weight: 600;
-            padding: 2px 6px;
+            font-size: 11px;
+            padding: 2px 8px;
+            background: var(--bg-hover);
             border-radius: 999px;
+            color: var(--muted);
         }
         
-        /* Main Content */
         .main {
             flex: 1;
             display: flex;
@@ -170,7 +157,6 @@
             background: var(--bg);
         }
         
-        /* Header */
         .header {
             display: flex;
             align-items: center;
@@ -253,11 +239,8 @@
             color: var(--text);
         }
         
-        .btn-ghost:hover {
-            background: var(--bg-hover);
-        }
+        .btn-ghost:hover { background: var(--bg-hover); }
         
-        /* Chat Area */
         .chat-container {
             flex: 1;
             display: flex;
@@ -272,7 +255,6 @@
             padding: 0 18px;
         }
         
-        /* Welcome Screen */
         .welcome {
             display: flex;
             flex-direction: column;
@@ -285,69 +267,136 @@
         }
         
         .welcome-icon {
-            width: 64px;
-            height: 64px;
+            width: 72px;
+            height: 72px;
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            font-size: 36px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
         
         .welcome h2 {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
             color: var(--text-strong);
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
         
-        .welcome p {
-            font-size: 14px;
+        .welcome-subtitle {
+            font-size: 15px;
             color: var(--muted);
             max-width: 500px;
             line-height: 1.6;
+            margin-bottom: 20px;
         }
         
-        /* Messages */
+        .welcome-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 28px;
+        }
+        
+        .welcome-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 6px 14px;
+        }
+        
+        .welcome-hint {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+        
+        .welcome-hint kbd {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+        }
+        
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            max-width: 650px;
+        }
+        
+        .suggestion-btn {
+            font-size: 13px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .suggestion-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-2px);
+        }
+        
         .message {
             display: flex;
             gap: 12px;
             margin: 20px 0;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .message-avatar {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 18px;
             flex-shrink: 0;
         }
         
-        .message.user .message-avatar {
-            background: var(--accent);
-        }
+        .message.user .message-avatar { background: var(--accent); }
+        .message.assistant .message-avatar { background: linear-gradient(135deg, var(--ok), #16a34a); }
         
-        .message.assistant .message-avatar {
-            background: linear-gradient(135deg, var(--ok), #16a34a);
-        }
-        
-        .message-content {
-            flex: 1;
-            min-width: 0;
-        }
+        .message-content { flex: 1; min-width: 0; }
         
         .message-header {
             display: flex;
             align-items: baseline;
             gap: 10px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
         
         .message-name {
@@ -363,16 +412,16 @@
         
         .message-text {
             font-size: 14px;
-            line-height: 1.6;
+            line-height: 1.7;
             color: var(--chat-text);
         }
         
         .message-text pre {
             background: var(--card);
-            padding: 12px 14px;
+            padding: 14px;
             border-radius: var(--radius-md);
             overflow-x: auto;
-            margin: 10px 0;
+            margin: 12px 0;
             border: 1px solid var(--border);
         }
         
@@ -391,52 +440,190 @@
             padding: 0;
         }
         
-        /* Tool Cards */
+        .message.streaming .message-text {
+            border-right: 2px solid var(--accent);
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            50% { border-color: transparent; }
+        }
+        
+        .thinking-panel {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(59, 130, 246, 0.03));
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: var(--radius-md);
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        
+        .thinking-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+        }
+        
+        .thinking-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--info);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            animation: spin 2s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .thinking-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--info);
+        }
+        
+        .thinking-progress {
+            margin-left: auto;
+            display: flex;
+            gap: 4px;
+        }
+        
+        .thinking-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--info);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        
+        .thinking-dot:nth-child(1) { animation-delay: -0.32s; }
+        .thinking-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        .thinking-body {
+            padding: 16px;
+        }
+        
+        .thinking-step {
+            display: flex;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .thinking-step:last-child { border-bottom: none; }
+        
+        .thinking-step-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--bg-hover);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        
+        .thinking-step-icon.done { background: var(--ok); color: white; }
+        .thinking-step-icon.active { background: var(--info); color: white; animation: pulse 1s infinite; }
+        .thinking-step-icon.pending { background: var(--bg-hover); color: var(--muted); }
+        
+        .thinking-step-content { flex: 1; }
+        
+        .thinking-step-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        
+        .thinking-step-detail {
+            font-size: 12px;
+            color: var(--muted);
+            font-family: var(--font-mono);
+        }
+        
+        .thinking-stream {
+            font-size: 13px;
+            color: var(--muted);
+            font-family: var(--font-mono);
+            padding: 8px 0;
+            min-height: 20px;
+        }
+        
+        .thinking-stream::after {
+            content: '▋';
+            animation: blink 0.8s step-end infinite;
+            color: var(--info);
+        }
+        
         .tool-card {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
-            margin: 12px 0;
+            margin: 16px 0;
             overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        
+        .tool-card:hover {
+            border-color: var(--border-strong);
         }
         
         .tool-header {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
-            background: var(--accent-subtle);
+            gap: 12px;
+            padding: 14px 16px;
             cursor: pointer;
             transition: all 0.15s ease;
         }
         
-        .tool-header:hover {
-            background: rgba(255, 92, 92, 0.15);
-        }
+        .tool-header:hover { background: var(--bg-hover); }
         
         .tool-icon {
-            width: 24px;
-            height: 24px;
-            background: var(--accent);
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), #ff7070);
             border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(255, 92, 92, 0.3);
         }
         
+        .tool-info { flex: 1; }
+        
         .tool-name {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             font-family: var(--font-mono);
             color: var(--text-strong);
-            flex: 1;
+        }
+        
+        .tool-args {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
         }
         
         .tool-status {
             font-size: 11px;
             font-weight: 600;
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 999px;
         }
         
@@ -456,29 +643,27 @@
         }
         
         .tool-body {
-            padding: 12px 14px;
+            padding: 0 16px 16px;
             display: none;
-            font-size: 13px;
-            color: var(--muted);
         }
         
-        .tool-card.expanded .tool-body {
-            display: block;
-        }
+        .tool-card.expanded .tool-body { display: block; }
         
         .tool-result {
-            margin-top: 10px;
-            padding: 10px;
             background: var(--bg);
             border-radius: var(--radius-sm);
+            padding: 12px;
             font-family: var(--font-mono);
             font-size: 12px;
             color: var(--text);
-            max-height: 200px;
+            max-height: 300px;
             overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
         
-        /* Compose Area */
+        .tool-result.error { color: var(--danger); }
+        
         .compose {
             flex-shrink: 0;
             padding: 12px 4px 4px;
@@ -497,47 +682,42 @@
             box-shadow: 0 0 0 3px rgba(255, 92, 92, 0.1);
         }
         
-        .compose-field {
-            display: flex;
-            align-items: stretch;
-        }
+        .compose-field { display: flex; align-items: stretch; }
         
         .compose-input {
             flex: 1;
-            padding: 12px 14px;
+            padding: 14px 16px;
             background: transparent;
             border: none;
             color: var(--text);
             font-size: 14px;
             font-family: var(--font-body);
-            line-height: 1.4;
+            line-height: 1.5;
             resize: none;
             outline: none;
-            min-height: 44px;
+            min-height: 48px;
             max-height: 150px;
         }
         
-        .compose-input::placeholder {
-            color: var(--muted);
-        }
+        .compose-input::placeholder { color: var(--muted); }
         
         .compose-actions {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 10px;
+            padding: 8px 12px;
             border-top: 1px solid var(--border);
         }
         
         .send-btn {
-            padding: 0 16px;
-            height: 32px;
+            padding: 0 20px;
+            height: 36px;
             background: var(--accent);
             color: white;
             border: none;
             border-radius: var(--radius-sm);
             cursor: pointer;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
             transition: all 0.15s ease;
             display: flex;
@@ -555,42 +735,8 @@
             cursor: not-allowed;
         }
         
-        /* Typing Indicator */
-        .typing {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 8px 0;
-        }
-        
-        .typing-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--muted);
-            border-radius: 50%;
-            animation: typing 1.4s infinite;
-        }
-        
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-        
-        @keyframes typing {
-            0%, 60%, 100% {
-                transform: translateY(0);
-            }
-            30% {
-                transform: translateY(-8px);
-            }
-        }
-        
-        /* Right Panel */
         .right-panel {
-            width: 300px;
+            width: 320px;
             background: var(--bg-accent);
             border-left: 1px solid var(--border);
             display: flex;
@@ -605,7 +751,7 @@
         
         .panel-tab {
             flex: 1;
-            padding: 12px;
+            padding: 14px;
             text-align: center;
             font-size: 13px;
             font-weight: 500;
@@ -615,15 +761,8 @@
             transition: all 0.15s ease;
         }
         
-        .panel-tab:hover {
-            color: var(--text);
-            background: var(--bg-hover);
-        }
-        
-        .panel-tab.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
-        }
+        .panel-tab:hover { color: var(--text); background: var(--bg-hover); }
+        .panel-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
         
         .panel-content {
             flex: 1;
@@ -635,8 +774,8 @@
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
-            padding: 14px;
-            margin-bottom: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
         }
         
         .stat-label {
@@ -645,42 +784,69 @@
             color: var(--muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
         
         .stat-value {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
             color: var(--text-strong);
         }
         
+        .stat-value small {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--muted);
+        }
+        
+        .stat-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        .stat-mini {
+            flex: 1;
+            background: var(--bg-hover);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .stat-mini-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-strong);
+        }
+        
+        .stat-mini-label {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        
         .activity-item {
             display: flex;
-            gap: 10px;
-            padding: 10px 0;
+            gap: 12px;
+            padding: 12px 0;
             border-bottom: 1px solid var(--border);
         }
         
-        .activity-item:last-child {
-            border-bottom: none;
-        }
+        .activity-item:last-child { border-bottom: none; }
         
         .activity-icon {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             background: var(--bg-hover);
             border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 14px;
             flex-shrink: 0;
         }
         
-        .activity-content {
-            flex: 1;
-            min-width: 0;
-        }
+        .activity-content { flex: 1; min-width: 0; }
         
         .activity-title {
             font-size: 13px;
@@ -694,69 +860,77 @@
             color: var(--muted);
         }
         
-        /* Settings */
-        .settings-group {
-            margin-bottom: 16px;
+        .stream-char {
+            animation: charIn 0.05s ease forwards;
+            opacity: 0;
         }
         
-        .settings-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--muted);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        @keyframes charIn {
+            to { opacity: 1; }
         }
         
-        .settings-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 10px;
-            background: var(--card);
-            border-radius: var(--radius-sm);
-            margin-bottom: 6px;
-            border: 1px solid var(--border);
-        }
+        .panel-view { display: none; }
+        .panel-view.active { display: block; }
         
-        .settings-label {
-            font-size: 13px;
-            color: var(--text);
-        }
-        
-        .settings-input {
+        .sidebar-panel {
+            position: fixed;
+            top: 0;
+            left: 260px;
+            right: 320px;
+            bottom: 0;
             background: var(--bg);
-            border: 1px solid var(--border);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+        }
+        
+        .sidebar-panel.open { display: flex; }
+        
+        .sidebar-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-accent);
+        }
+        
+        .sidebar-panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-strong);
+        }
+        
+        .sidebar-panel-close {
+            width: 32px;
+            height: 32px;
             border-radius: var(--radius-sm);
-            padding: 5px 8px;
+            border: none;
+            background: var(--bg-hover);
             color: var(--text);
-            font-size: 12px;
-            width: 120px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
         }
         
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        .sidebar-panel-close:hover { background: var(--bg-muted); }
+        
+        .sidebar-panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
         }
         
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--border-strong);
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
@@ -768,7 +942,7 @@
             <nav class="sidebar-nav">
                 <div class="nav-group">
                     <div class="nav-group-title">对话</div>
-                    <div class="nav-item active" data-tab="chat">
+                    <div class="nav-item active" data-panel="chat">
                         <span class="nav-icon">💬</span>
                         <span>聊天</span>
                     </div>
@@ -776,67 +950,53 @@
                 
                 <div class="nav-group">
                     <div class="nav-group-title">控制</div>
-                    <div class="nav-item" data-tab="overview">
+                    <div class="nav-item" data-panel="overview" onclick="openSidebarPanel('overview')">
                         <span class="nav-icon">📊</span>
                         <span>概览</span>
+                        <span class="nav-badge">Live</span>
                     </div>
-                    <div class="nav-item" data-tab="channels">
-                        <span class="nav-icon">🔗</span>
-                        <span>渠道</span>
-                    </div>
-                    <div class="nav-item" data-tab="instances">
-                        <span class="nav-icon">📡</span>
-                        <span>实例</span>
-                    </div>
-                    <div class="nav-item" data-tab="sessions">
+                    <div class="nav-item" data-panel="sessions" onclick="openSidebarPanel('sessions')">
                         <span class="nav-icon">📄</span>
                         <span>会话</span>
+                        <span class="nav-badge">New</span>
                     </div>
-                    <div class="nav-item" data-tab="usage">
+                    <div class="nav-item" data-panel="usage" onclick="openSidebarPanel('usage')">
                         <span class="nav-icon">📈</span>
                         <span>用量</span>
                     </div>
-                    <div class="nav-item" data-tab="cron">
+                    <div class="nav-item" data-panel="automation" onclick="openSidebarPanel('automation')">
                         <span class="nav-icon">⏰</span>
-                        <span>定时任务</span>
+                        <span>自动化</span>
                     </div>
                 </div>
                 
                 <div class="nav-group">
                     <div class="nav-group-title">智能体</div>
-                    <div class="nav-item" data-tab="agents">
+                    <div class="nav-item" data-panel="agents" onclick="openSidebarPanel('agents')">
                         <span class="nav-icon">📁</span>
-                        <span>智能体管理</span>
+                        <span>智能体</span>
                     </div>
-                    <div class="nav-item" data-tab="skills">
+                    <div class="nav-item" data-panel="skills" onclick="openSidebarPanel('skills')">
                         <span class="nav-icon">⚡</span>
-                        <span>技能</span>
+                        <span>技能库</span>
                     </div>
-                    <div class="nav-item" data-tab="nodes">
-                        <span class="nav-icon">🖥️</span>
-                        <span>节点</span>
-                    </div>
-                    <div class="nav-item" data-tab="dreams">
-                        <span class="nav-icon">🌙</span>
-                        <span>学习反思</span>
+                    <div class="nav-item" data-panel="memory" onclick="openSidebarPanel('memory')">
+                        <span class="nav-icon">🧠</span>
+                        <span>记忆</span>
                     </div>
                 </div>
                 
                 <div class="nav-group">
                     <div class="nav-group-title">设置</div>
-                    <div class="nav-item" data-tab="config">
+                    <div class="nav-item" data-panel="config" onclick="openSidebarPanel('config')">
                         <span class="nav-icon">⚙️</span>
                         <span>配置</span>
                     </div>
-                    <div class="nav-item" data-tab="appearance">
-                        <span class="nav-icon">✨</span>
+                    <div class="nav-item" data-panel="appearance" onclick="openSidebarPanel('appearance')">
+                        <span class="nav-icon">🎨</span>
                         <span>外观</span>
                     </div>
-                    <div class="nav-item" data-tab="automation">
-                        <span class="nav-icon">🔧</span>
-                        <span>自动化</span>
-                    </div>
-                    <div class="nav-item" data-tab="logs">
+                    <div class="nav-item" data-panel="logs" onclick="openSidebarPanel('logs')">
                         <span class="nav-icon">📜</span>
                         <span>日志</span>
                     </div>
@@ -844,11 +1004,10 @@
             </nav>
         </div>
         
-        <!-- Main Content -->
         <div class="main">
             <div class="header">
                 <div class="header-left">
-                    <h1 class="page-title">聊天</h1>
+                    <h1 class="page-title" id="pageTitle">聊天</h1>
                     <div class="connection-status connected" id="connectionStatus">
                         <span class="status-dot"></span>
                         <span>已连接</span>
@@ -856,7 +1015,7 @@
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-ghost" onclick="clearChat()">🗑️ 清空</button>
-                    <button class="btn btn-primary" onclick="takeControl()">🎮 接管</button>
+                    <button class="btn btn-primary" onclick="newSession()">✨ 新会话</button>
                 </div>
             </div>
             
@@ -865,7 +1024,19 @@
                     <div class="welcome" id="welcomeScreen">
                         <div class="welcome-icon">🤚</div>
                         <h2>欢迎使用 OpenHands</h2>
-                        <p>我是您的 AI 智能助手，可以帮助您操作电脑、管理文件、执行命令等。请输入您的需求开始对话。</p>
+                        <p class="welcome-subtitle">我是您的 AI 智能助手，可以帮助您操作电脑、管理文件、执行命令、浏览网页等。</p>
+                        <div class="welcome-badges">
+                            <span class="welcome-badge">🤖 LongCat-2.0</span>
+                            <span class="welcome-badge">🔧 工具调用</span>
+                            <span class="welcome-badge">✨ 流式输出</span>
+                        </div>
+                        <p class="welcome-hint">输入消息开始对话 · 按 <kbd>/</kbd> 使用命令</p>
+                        <div class="suggestions" id="suggestions">
+                            <button class="suggestion-btn" onclick="sendSuggestion('你能做什么？')">你能做什么？</button>
+                            <button class="suggestion-btn" onclick="sendSuggestion('帮我查看当前目录文件')">查看目录文件</button>
+                            <button class="suggestion-btn" onclick="sendSuggestion('执行一个简单的计算')">简单计算</button>
+                            <button class="suggestion-btn" onclick="sendSuggestion('帮我写一个Hello World程序')">写代码</button>
+                        </div>
                     </div>
                 </div>
                 
@@ -880,7 +1051,8 @@
                             ></textarea>
                         </div>
                         <div class="compose-actions">
-                            <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+                            <span style="font-size: 12px; color: var(--muted);">LongCat-2.0</span>
+                            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
                                 发送 ➤
                             </button>
                         </div>
@@ -889,67 +1061,88 @@
             </div>
         </div>
         
-        <!-- Right Panel -->
         <div class="right-panel">
             <div class="panel-tabs">
-                <div class="panel-tab active" data-panel="stats">统计</div>
-                <div class="panel-tab" data-panel="activity">活动</div>
-                <div class="panel-tab" data-panel="settings">设置</div>
+                <div class="panel-tab active" data-tab="stats">统计</div>
+                <div class="panel-tab" data-tab="activity">活动</div>
+                <div class="panel-tab" data-tab="info">信息</div>
             </div>
             
-            <div class="panel-content" id="panelContent">
-                <div id="statsPanel">
+            <div class="panel-content">
+                <div class="panel-view active" id="statsPanel">
                     <div class="stat-card">
-                        <div class="stat-label">工具调用次数</div>
-                        <div class="stat-value" id="toolCallCount">0</div>
+                        <div class="stat-label">迭代次数</div>
+                        <div class="stat-value" id="iterationCount">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">消息数量</div>
-                        <div class="stat-value" id="messageCount">0</div>
+                        <div class="stat-label">工具调用</div>
+                        <div class="stat-value" id="toolCallCount">0</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">会话时长</div>
                         <div class="stat-value" id="sessionDuration">00:00</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-label">当前模型</div>
-                        <div class="stat-value" style="font-size: 14px;" id="currentModel">LongCat-2.0</div>
+                    <div class="stat-row">
+                        <div class="stat-mini">
+                            <div class="stat-mini-value" id="messageCount">0</div>
+                            <div class="stat-mini-label">消息数</div>
+                        </div>
+                        <div class="stat-mini">
+                            <div class="stat-mini-value" id="tokenCount">-</div>
+                            <div class="stat-mini-label">Token</div>
+                        </div>
                     </div>
                 </div>
                 
-                <div id="activityPanel" style="display: none;">
+                <div class="panel-view" id="activityPanel">
                     <div id="activityList"></div>
                 </div>
                 
-                <div id="settingsPanel" style="display: none;">
-                    <div class="settings-group">
-                        <div class="settings-title">API 配置</div>
-                        <div class="settings-item">
-                            <span class="settings-label">API 密钥</span>
-                            <input type="password" class="settings-input" placeholder="sk-...">
-                        </div>
-                        <div class="settings-item">
-                            <span class="settings-label">模型</span>
-                            <select class="settings-input">
-                                <option value="LongCat-2.0-Preview">LongCat-2.0</option>
-                                <option value="claude-3-5-sonnet">Claude 3.5</option>
-                                <option value="gpt-4o">GPT-4o</option>
-                            </select>
-                        </div>
+                <div class="panel-view" id="infoPanel">
+                    <div class="stat-card">
+                        <div class="stat-label">当前模型</div>
+                        <div style="font-size: 14px; color: var(--text); margin-top: 4px;">LongCat-2.0-Preview</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">API 状态</div>
+                        <div style="font-size: 14px; color: var(--ok); margin-top: 4px;">✓ 已连接</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">会话ID</div>
+                        <div style="font-size: 11px; color: var(--muted); margin-top: 4px; font-family: var(--font-mono);" id="sessionId">-</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
+    <div class="sidebar-panel" id="sidebarPanel">
+        <div class="sidebar-panel-header">
+            <span class="sidebar-panel-title" id="panelTitle">面板</span>
+            <button class="sidebar-panel-close" onclick="closeSidebarPanel()">✕</button>
+        </div>
+        <div class="sidebar-panel-content" id="panelContent"></div>
+    </div>
+    
     <script>
         let ws = null;
         let messageCount = 0;
         let toolCallCount = 0;
+        let iterationCount = 0;
         let sessionStartTime = Date.now();
         let activities = [];
+        let currentThinkingSteps = [];
+        let isStreaming = false;
+        let currentStreamMessage = null;
         
-        // Initialize WebSocket
+        const thinkingSteps = [
+            { id: 'analyze', icon: '🔍', title: '分析问题', done: false, active: false },
+            { id: 'plan', icon: '📋', title: '制定计划', done: false, active: false },
+            { id: 'execute', icon: '⚡', title: '执行操作', done: false, active: false },
+            { id: 'verify', icon: '✓', title: '验证结果', done: false, active: false },
+            { id: 'respond', icon: '💬', title: '生成回复', done: false, active: false },
+        ];
+        
         function initWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws`;
@@ -963,6 +1156,7 @@
                 updateConnectionStatus('connected');
                 addActivity('系统', '已连接', '✅');
                 document.getElementById('sendBtn').disabled = false;
+                fetchSessionId();
             };
             
             ws.onmessage = (event) => {
@@ -984,7 +1178,14 @@
             };
         }
         
-        // Update connection status
+        async function fetchSessionId() {
+            try {
+                const resp = await fetch('/api/status');
+                const data = await resp.json();
+                document.getElementById('sessionId').textContent = data.session_id ? data.session_id.substring(0, 20) + '...' : '-';
+            } catch (e) {}
+        }
+        
         function updateConnectionStatus(status) {
             const statusEl = document.getElementById('connectionStatus');
             if (status === 'connected') {
@@ -998,11 +1199,16 @@
             }
         }
         
-        // Handle messages
         function handleMessage(data) {
             switch (data.type) {
+                case 'stream':
+                    updateStreamMessage(data.content, data.delta);
+                    break;
+                case 'thinking':
+                    showThinking(data.content, data.iteration);
+                    break;
                 case 'message':
-                    addMessage('assistant', data.content);
+                    finalizeStreamMessage(data.content);
                     break;
                 case 'status':
                     showStatus(data.content);
@@ -1010,25 +1216,120 @@
                 case 'tool_call':
                     showToolCall(data.tool, data.arguments);
                     toolCallCount++;
+                    iterationCount++;
                     updateStats();
                     break;
                 case 'tool_result':
                     showToolResult(data.tool, data.result, data.is_error);
                     break;
                 case 'error':
-                    addMessage('assistant', '❌ ' + data.content, true);
+                    finalizeStreamMessage('❌ ' + data.content, true);
+                    break;
+                case 'pong':
+                    if (data.stats) {
+                        iterationCount = data.stats.iteration || iterationCount;
+                    }
                     break;
             }
         }
         
-        // Add message
+        function showThinking(content, iteration) {
+            const thread = document.getElementById('chatThread');
+            const welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.remove();
+            
+            let thinkingPanel = thread.querySelector('.thinking-panel');
+            
+            if (!thinkingPanel) {
+                thinkingPanel = document.createElement('div');
+                thinkingPanel.className = 'thinking-panel';
+                thinkingPanel.innerHTML = `
+                    <div class="thinking-header">
+                        <div class="thinking-icon">🧠</div>
+                        <span class="thinking-label">AI 思考过程</span>
+                        <div class="thinking-progress">
+                            <div class="thinking-dot"></div>
+                            <div class="thinking-dot"></div>
+                            <div class="thinking-dot"></div>
+                        </div>
+                    </div>
+                    <div class="thinking-body" id="thinkingBody">
+                        <div class="thinking-stream" id="thinkingStream">正在思考...</div>
+                    </div>
+                `;
+                thread.appendChild(thinkingPanel);
+            }
+            
+            const streamEl = document.getElementById('thinkingStream');
+            if (streamEl) {
+                streamEl.textContent = content;
+            }
+            
+            thread.scrollTop = thread.scrollHeight;
+        }
+        
+        function updateStreamMessage(text, delta) {
+            const thread = document.getElementById('chatThread');
+            
+            const thinkingPanel = thread.querySelector('.thinking-panel');
+            if (thinkingPanel) thinkingPanel.remove();
+            
+            let streamMsg = thread.querySelector('.message.streaming');
+            
+            if (!streamMsg) {
+                streamMsg = document.createElement('div');
+                streamMsg.className = 'message assistant streaming';
+                streamMsg.innerHTML = `
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-name">OpenHands</span>
+                            <span class="message-time">${new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <div class="message-text" id="streamText"></div>
+                    </div>
+                `;
+                thread.appendChild(streamMsg);
+                currentStreamMessage = streamMsg;
+            }
+            
+            const textEl = streamMsg.querySelector('.message-text');
+            textEl.innerHTML = formatContent(text);
+            
+            thread.scrollTop = thread.scrollHeight;
+        }
+        
+        function finalizeStreamMessage(text, isError = false) {
+            const thread = document.getElementById('chatThread');
+            const streamMsg = thread.querySelector('.message.streaming');
+            
+            if (streamMsg) {
+                streamMsg.classList.remove('streaming');
+                const textEl = streamMsg.querySelector('.message-text');
+                textEl.innerHTML = formatContent(text);
+                textEl.style.borderRight = 'none';
+            }
+            
+            const thinkingPanel = thread.querySelector('.thinking-panel');
+            if (thinkingPanel) thinkingPanel.remove();
+            
+            messageCount++;
+            updateStats();
+            
+            if (!isError) {
+                addActivity('OpenHands', text.substring(0, 50) + (text.length > 50 ? '...' : ''), '🤖');
+            }
+            
+            isStreaming = false;
+        }
+        
         function addMessage(role, content, isError = false) {
             const thread = document.getElementById('chatThread');
             const welcome = document.getElementById('welcomeScreen');
             if (welcome) welcome.remove();
             
-            const typing = thread.querySelector('.typing');
-            if (typing) typing.remove();
+            const thinkingPanel = thread.querySelector('.thinking-panel');
+            if (thinkingPanel) thinkingPanel.remove();
             
             const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
             const avatar = role === 'user' ? '👤' : '🤖';
@@ -1055,8 +1356,8 @@
             addActivity(name, content.substring(0, 40) + (content.length > 40 ? '...' : ''), avatar);
         }
         
-        // Format content
         function formatContent(content) {
+            if (!content) return '';
             return content
                 .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
                 .replace(/`([^`]+)`/g, '<code>$1</code>')
@@ -1064,7 +1365,6 @@
                 .replace(/\n/g, '<br>');
         }
         
-        // Show status
         function showStatus(status) {
             const thread = document.getElementById('chatThread');
             const oldStatus = thread.querySelector('.status-message');
@@ -1079,20 +1379,25 @@
             thread.scrollTop = thread.scrollHeight;
         }
         
-        // Show tool call
         function showToolCall(tool, args) {
             const thread = document.getElementById('chatThread');
+            
+            const thinkingPanel = thread.querySelector('.thinking-panel');
+            if (thinkingPanel) thinkingPanel.remove();
             
             const toolEl = document.createElement('div');
             toolEl.className = 'tool-card';
             toolEl.innerHTML = `
                 <div class="tool-header" onclick="toggleTool(this)">
                     <div class="tool-icon">🔧</div>
-                    <span class="tool-name">${tool}</span>
+                    <div class="tool-info">
+                        <div class="tool-name">${tool}</div>
+                        <div class="tool-args">${args && Object.keys(args).length > 0 ? JSON.stringify(args).substring(0, 50) : '执行中...'}</div>
+                    </div>
                     <span class="tool-status running">执行中...</span>
                 </div>
                 <div class="tool-body">
-                    <div><strong>参数:</strong> ${JSON.stringify(args)}</div>
+                    <div class="tool-result" id="tool-result-${Date.now()}">等待结果...</div>
                 </div>
             `;
             
@@ -1100,7 +1405,6 @@
             thread.scrollTop = thread.scrollHeight;
         }
         
-        // Show tool result
         function showToolResult(tool, result, isError) {
             const thread = document.getElementById('chatThread');
             const toolCards = thread.querySelectorAll('.tool-card');
@@ -1108,24 +1412,26 @@
             if (toolCards.length > 0) {
                 const lastCard = toolCards[toolCards.length - 1];
                 const statusEl = lastCard.querySelector('.tool-status');
-                const bodyEl = lastCard.querySelector('.tool-body');
+                const resultEl = lastCard.querySelector('.tool-result');
                 
                 statusEl.className = `tool-status ${isError ? 'error' : 'success'}`;
                 statusEl.textContent = isError ? '失败' : '成功';
                 
-                const resultEl = document.createElement('div');
-                resultEl.className = 'tool-result';
-                resultEl.innerHTML = `<strong>结果:</strong><br>${result}`;
-                bodyEl.appendChild(resultEl);
+                if (resultEl) {
+                    resultEl.className = `tool-result ${isError ? 'error' : ''}`;
+                    resultEl.textContent = result || '无输出';
+                }
+                
+                lastCard.classList.add('expanded');
             }
+            
+            addActivity('工具', `${tool} ${isError ? '失败' : '完成'}`, isError ? '❌' : '✅');
         }
         
-        // Toggle tool
         function toggleTool(header) {
             header.parentElement.classList.toggle('expanded');
         }
         
-        // Send message
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const content = input.value.trim();
@@ -1140,41 +1446,38 @@
             input.value = '';
             input.style.height = 'auto';
             
+            isStreaming = true;
+            
             ws.send(JSON.stringify({
                 type: 'message',
                 content: content
             }));
-            
-            showTyping();
         }
         
-        // Show typing indicator
-        function showTyping() {
-            const thread = document.getElementById('chatThread');
-            const typingEl = document.createElement('div');
-            typingEl.className = 'message assistant';
-            typingEl.innerHTML = `
-                <div class="message-avatar">🤖</div>
-                <div class="message-content">
-                    <div class="typing">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    </div>
-                </div>
-            `;
-            thread.appendChild(typingEl);
-            thread.scrollTop = thread.scrollHeight;
+        function sendSuggestion(text) {
+            document.getElementById('messageInput').value = text;
+            sendMessage();
         }
         
-        // Clear chat
         function clearChat() {
             const thread = document.getElementById('chatThread');
             thread.innerHTML = `
-                <div class="welcome">
+                <div class="welcome" id="welcomeScreen">
                     <div class="welcome-icon">🤚</div>
                     <h2>欢迎使用 OpenHands</h2>
-                    <p>我是您的 AI 智能助手，可以帮助您操作电脑、管理文件、执行命令等。请输入您的需求开始对话。</p>
+                    <p class="welcome-subtitle">我是您的 AI 智能助手，可以帮助您操作电脑、管理文件、执行命令、浏览网页等。</p>
+                    <div class="welcome-badges">
+                        <span class="welcome-badge">🤖 LongCat-2.0</span>
+                        <span class="welcome-badge">🔧 工具调用</span>
+                        <span class="welcome-badge">✨ 流式输出</span>
+                    </div>
+                    <p class="welcome-hint">输入消息开始对话 · 按 <kbd>/</kbd> 使用命令</p>
+                    <div class="suggestions">
+                        <button class="suggestion-btn" onclick="sendSuggestion('你能做什么？')">你能做什么？</button>
+                        <button class="suggestion-btn" onclick="sendSuggestion('帮我查看当前目录文件')">查看目录文件</button>
+                        <button class="suggestion-btn" onclick="sendSuggestion('执行一个简单的计算')">简单计算</button>
+                        <button class="suggestion-btn" onclick="sendSuggestion('帮我写一个Hello World程序')">写代码</button>
+                    </div>
                 </div>
             `;
             
@@ -1184,24 +1487,33 @@
             
             messageCount = 0;
             toolCallCount = 0;
+            iterationCount = 0;
             updateStats();
         }
         
-        // Take control
-        function takeControl() {
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: 'take_control' }));
-                addActivity('系统', '已请求接管控制', '🎮');
-            }
+        function newSession() {
+            clearChat();
+            addActivity('系统', '新会话已创建', '✨');
+            fetchSessionId();
         }
         
-        // Update stats
         function updateStats() {
             document.getElementById('toolCallCount').textContent = toolCallCount;
             document.getElementById('messageCount').textContent = messageCount;
+            document.getElementById('iterationCount').textContent = iterationCount;
         }
         
-        // Add activity
+        function updateSessionDuration() {
+            const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('sessionDuration').textContent = `${minutes}:${seconds}`;
+            
+            if (isStreaming && ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'ping' }));
+            }
+        }
+        
         function addActivity(title, desc, icon) {
             const list = document.getElementById('activityList');
             const time = new Date().toLocaleTimeString('zh-CN');
@@ -1225,37 +1537,142 @@
             }
         }
         
-        // Update duration
-        function updateSessionDuration() {
-            const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
-            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-            const seconds = (elapsed % 60).toString().padStart(2, '0');
-            document.getElementById('sessionDuration').textContent = `${minutes}:${seconds}`;
+        function openSidebarPanel(panel) {
+            const titles = {
+                'overview': '系统概览',
+                'sessions': '会话管理',
+                'usage': '用量统计',
+                'automation': '自动化任务',
+                'agents': '智能体管理',
+                'skills': '技能库',
+                'memory': '记忆存储',
+                'config': '系统配置',
+                'appearance': '外观设置',
+                'logs': '运行日志'
+            };
+            
+            const contents = {
+                'overview': `
+                    <div class="stat-card">
+                        <div class="stat-label">系统状态</div>
+                        <div style="font-size: 14px; color: var(--ok);">● 运行中</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">模型</div>
+                        <div style="font-size: 14px;">LongCat-2.0-Preview</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">流式输出</div>
+                        <div style="font-size: 14px; color: var(--ok);">✓ 已启用</div>
+                    </div>
+                `,
+                'sessions': `
+                    <div class="stat-card">
+                        <div class="stat-label">当前会话</div>
+                        <div style="font-size: 12px; font-family: var(--font-mono); color: var(--muted);">
+                            ${document.getElementById('sessionId').textContent}
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="newSession(); closeSidebarPanel();" style="width: 100%;">
+                        创建新会话
+                    </button>
+                `,
+                'usage': `
+                    <div class="stat-card">
+                        <div class="stat-label">本次会话</div>
+                        <div class="stat-value">${messageCount}</div>
+                        <div style="font-size: 12px; color: var(--muted);">消息数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">工具调用</div>
+                        <div class="stat-value">${toolCallCount}</div>
+                    </div>
+                `,
+                'automation': `
+                    <div class="stat-card">
+                        <p style="color: var(--muted); font-size: 13px;">
+                            定时任务功能开发中...
+                        </p>
+                    </div>
+                `,
+                'agents': `
+                    <div class="stat-card">
+                        <div class="stat-label">当前智能体</div>
+                        <div style="font-size: 14px;">OpenHands Agent</div>
+                    </div>
+                `,
+                'skills': `
+                    <div class="stat-card">
+                        <div class="stat-label">可用技能</div>
+                        <div style="font-size: 13px; color: var(--muted); margin-top: 8px;">
+                            • 文件操作<br>
+                            • 命令执行<br>
+                            • 记忆存储
+                        </div>
+                    </div>
+                `,
+                'memory': `
+                    <div class="stat-card">
+                        <p style="color: var(--muted); font-size: 13px;">
+                            记忆系统运行中...
+                        </p>
+                    </div>
+                `,
+                'config': `
+                    <div class="stat-card">
+                        <div class="stat-label">API 配置</div>
+                        <p style="font-size: 12px; color: var(--muted); margin-top: 8px;">
+                            使用环境变量 LONGCAT_API_KEY 配置
+                        </p>
+                    </div>
+                `,
+                'appearance': `
+                    <div class="stat-card">
+                        <div class="stat-label">主题</div>
+                        <div style="display: flex; gap: 8px; margin-top: 8px;">
+                            <button class="btn btn-primary" disabled>深色</button>
+                            <button class="btn btn-ghost">浅色</button>
+                        </div>
+                    </div>
+                `,
+                'logs': `
+                    <div class="stat-card">
+                        <div class="stat-label">最近日志</div>
+                        <div id="logList" style="font-size: 11px; font-family: var(--font-mono); color: var(--muted); max-height: 300px; overflow-y: auto;">
+                            ${activities.slice(0, 10).map(a => `<div style="padding: 4px 0; border-bottom: 1px solid var(--border);">[${a.time}] ${a.title}: ${a.desc}</div>`).join('')}
+                        </div>
+                    </div>
+                `
+            };
+            
+            document.getElementById('panelTitle').textContent = titles[panel] || '面板';
+            document.getElementById('panelContent').innerHTML = contents[panel] || '<p style="color: var(--muted);">功能开发中...</p>';
+            document.getElementById('sidebarPanel').classList.add('open');
         }
         
-        // Panel tabs
+        function closeSidebarPanel() {
+            document.getElementById('sidebarPanel').classList.remove('open');
+        }
+        
         document.querySelectorAll('.panel-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 
-                const panel = tab.dataset.panel;
-                document.getElementById('statsPanel').style.display = panel === 'stats' ? 'block' : 'none';
-                document.getElementById('activityPanel').style.display = panel === 'activity' ? 'block' : 'none';
-                document.getElementById('settingsPanel').style.display = panel === 'settings' ? 'block' : 'none';
+                const panel = tab.dataset.tab;
+                document.querySelectorAll('.panel-view').forEach(v => v.classList.remove('active'));
+                document.getElementById(panel + 'Panel').classList.add('active');
             });
         });
         
-        // Nav items
-        document.querySelectorAll('.nav-item').forEach(item => {
+        document.querySelectorAll('.nav-item[data-panel]').forEach(item => {
             item.addEventListener('click', () => {
-                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-                document.querySelector('.page-title').textContent = item.querySelector('span:last-child').textContent;
+                if (item.dataset.panel === 'chat') {
+                    document.querySelector('.page-title').textContent = '聊天';
+                }
             });
         });
         
-        // Input events
         document.getElementById('messageInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -1268,7 +1685,6 @@
             this.style.height = Math.min(this.scrollHeight, 150) + 'px';
         });
         
-        // Initialize
         initWebSocket();
         setInterval(updateSessionDuration, 1000);
     </script>

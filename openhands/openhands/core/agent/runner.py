@@ -353,6 +353,242 @@ class EmbeddedAgent:
             if run_id in self._active_runs:
                 del self._active_runs[run_id]
 
+    async def run_stream(
+        self,
+        session_id: str,
+        max_iterations: Optional[int] = None,
+        tool_profile: Optional[str] = None,
+        system_prompt_override: Optional[str] = None,
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        """
+        流式Agent运行 - OpenClaw风格
+        实时返回思考过程、工具调用和响应内容
+        """
+        session = self.get_session(session_id)
+        if not session:
+            yield {"type": "error", "content": f"Session not found: {session_id}"}
+            return
+
+        if session.status == SessionStatus.RUNNING:
+            yield {"type": "error", "content": f"Session already running: {session_id}"}
+            return
+
+        run_id = str(uuid.uuid4())
+        run_meta = EmbeddedAgentRunMeta(
+            run_id=run_id,
+            start_time=datetime.now(),
+        )
+        self._active_runs[run_id] = run_meta
+        session.status = SessionStatus.RUNNING
+
+        max_iter = max_iterations or self.config.max_iterations
+        budget = IterationBudget(max_total=max_iter)
+        tool_results: List[ToolResult] = []
+
+        try:
+            async for event in self._agent_loop_stream(
+                session=session,
+                budget=budget,
+                run_meta=run_meta,
+                tool_profile=tool_profile,
+                system_prompt_override=system_prompt_override,
+                tool_results=tool_results,
+            ):
+                yield event
+
+        except Exception as e:
+            logger.exception(f"Agent stream run failed: {run_id}")
+            yield {"type": "error", "content": str(e)}
+        finally:
+            run_meta.end_time = datetime.now()
+            session.status = SessionStatus.COMPLETED
+            session.updated_at = datetime.now()
+            if run_id in self._active_runs:
+                del self._active_runs[run_id]
+
+    async def _agent_loop_stream(
+        self,
+        session: SessionState,
+        budget: IterationBudget,
+        run_meta: EmbeddedAgentRunMeta,
+        tool_profile: Optional[str],
+        system_prompt_override: Optional[str],
+        tool_results: List[ToolResult],
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        """
+        核心Agent循环流式版本
+        """
+        profile = tool_profile or session.current_tool_profile or self.config.tools.default_profile
+        system_prompt = system_prompt_override or self.config.system_prompt or DEFAULT_SYSTEM_PROMPT
+
+        if self._enhanced_memory:
+            memory_block = self._enhanced_memory.get_system_prompt_block()
+            if memory_block:
+                system_prompt = system_prompt + "\n\n" + memory_block
+
+        if self._skill_manager:
+            skill_index = self._skill_manager.get_skill_index()
+            if skill_index:
+                skill_block = "\n\n## Available Skills\n"
+                for category, skills in skill_index.items():
+                    skill_block += f"### {category}\n"
+                    for name, desc in skills.items():
+                        skill_block += f"- {name}: {desc}\n"
+                system_prompt = system_prompt + skill_block
+
+        while budget.remaining > 0:
+            budget.consume()
+            run_meta.iteration_count += 1
+
+            yield {
+                "type": "thinking",
+                "content": f"思考问题 (迭代 {run_meta.iteration_count})..."
+            }
+
+            adapter_messages = self._to_adapter_messages(session.messages)
+            tool_defs = self._get_available_tools(profile)
+
+            if hasattr(self._adapter, 'chat_stream') and callable(self._adapter.chat_stream):
+                response_text = ""
+                async for chunk in self._adapter.chat_stream(
+                    messages=adapter_messages,
+                    tools=tool_defs,
+                    system_prompt=system_prompt,
+                ):
+                    if chunk.content:
+                        response_text += chunk.content
+                        yield {
+                            "type": "delta",
+                            "content": chunk.content
+                        }
+                
+                if response_text:
+                    assistant_msg = Message(
+                        role=MessageRole.ASSISTANT,
+                        content=response_text,
+                    )
+                    session.messages.append(assistant_msg)
+                    
+                    yield {
+                        "type": "thinking",
+                        "content": "检查是否需要调用工具..."
+                    }
+                    
+                    import json
+                    tool_patterns = [
+                        r'<tool_call>\s*{"name":\s*"([^"]+)"',
+                        r'"name":\s*"([^"]+)"\s*,\s*"arguments"',
+                    ]
+                    tool_calls_found = []
+                    for pattern in tool_patterns:
+                        import re
+                        matches = re.findall(pattern, response_text)
+                        tool_calls_found.extend(matches)
+                    
+                    if tool_calls_found:
+                        for tool_name in tool_calls_found:
+                            yield {
+                                "type": "tool_call",
+                                "tool": tool_name,
+                                "arguments": {}
+                            }
+                            
+                            result = await self._execute_single_tool_by_name(tool_name, run_meta)
+                            tool_results.append(result)
+                            
+                            yield {
+                                "type": "tool_result",
+                                "tool": tool_name,
+                                "result": result.content[:500] if len(result.content) > 500 else result.content,
+                                "is_error": result.is_error
+                            }
+                            
+                            msg = Message(
+                                role=MessageRole.TOOL,
+                                content=result.content,
+                                tool_call_id=result.tool_call_id,
+                            )
+                            session.messages.append(msg)
+                    else:
+                        yield {
+                            "type": "final",
+                            "content": response_text
+                        }
+                        return
+            else:
+                response = await self._adapter.chat(
+                    messages=adapter_messages,
+                    tools=tool_defs,
+                    system_prompt=system_prompt,
+                )
+
+                if response.content:
+                    yield {
+                        "type": "delta",
+                        "content": response.content
+                    }
+
+                assistant_msg = self._from_adapter_response(response)
+                session.messages.append(assistant_msg)
+
+                if response.tool_calls:
+                    for tc in response.tool_calls:
+                        yield {
+                            "type": "tool_call",
+                            "tool": tc.name,
+                            "arguments": tc.arguments
+                        }
+
+                        result = await self._execute_single_tool(tc, budget, run_meta, profile)
+                        tool_results.append(result)
+                        
+                        yield {
+                            "type": "tool_result",
+                            "tool": tc.name,
+                            "result": result.content[:500] if len(result.content) > 500 else result.content,
+                            "is_error": result.is_error
+                        }
+
+                        msg = Message(
+                            role=MessageRole.TOOL,
+                            content=result.content,
+                            tool_call_id=tc.id,
+                        )
+                        session.messages.append(msg)
+                else:
+                    yield {
+                        "type": "final",
+                        "content": response.content or "处理完成"
+                    }
+                    return
+
+        yield {
+            "type": "final",
+            "content": "达到最大迭代次数"
+        }
+
+    async def _execute_single_tool_by_name(
+        self,
+        tool_name: str,
+        run_meta: EmbeddedAgentRunMeta,
+    ) -> ToolResult:
+        """根据名称执行工具"""
+        from ..types import ToolCall as TypesToolCall
+        import random
+        tool_call_id = f"tool_{random.randint(10000, 99999)}"
+        
+        tc = TypesToolCall(
+            id=tool_call_id,
+            name=tool_name,
+            arguments={}
+        )
+        
+        logger.info(f"执行工具: {tool_name}")
+        run_meta.tool_call_count += 1
+        
+        result = await self._tool_registry.execute_tool_call(tc)
+        return result
+
     async def _agent_loop(
         self,
         session: SessionState,
