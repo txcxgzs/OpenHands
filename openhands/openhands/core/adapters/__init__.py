@@ -5,6 +5,7 @@ from .base import ModelAdapter
 from .anthropic_adapter import AnthropicAdapter
 from .openai_adapter import OpenAIAdapter
 from .openrouter_adapter import OpenRouterAdapter
+from .longcat_adapter import LongCatAdapter
 from .extra_adapters import (
     OllamaAdapter,
     GroqAdapter,
@@ -26,6 +27,7 @@ ADAPTER_MAP = {
     "together": TogetherAIAdapter,
     "deepseek": DeepSeekAdapter,
     "mistral": MistralAdapter,
+    "longcat": LongCatAdapter,
 }
 
 
@@ -39,6 +41,7 @@ __all__ = [
     "AnthropicAdapter",
     "OpenAIAdapter",
     "OpenRouterAdapter",
+    "LongCatAdapter",
     "OllamaAdapter",
     "GroqAdapter",
     "TogetherAIAdapter",
