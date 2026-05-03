@@ -184,11 +184,18 @@
             border-radius: 50%;
             background: var(--success);
             box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.15);
+            animation: pulse-glow 2s ease-in-out infinite;
         }
 
         .status-dot.disconnected {
             background: var(--error);
             box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.15);
+            animation: none;
+        }
+
+        .status-dot.thinking {
+            background: var(--warning);
+            box-shadow: 0 0 0 4px rgba(243, 156, 18, 0.15);
         }
 
         .header-right {
@@ -231,30 +238,54 @@
         }
 
         .sidebar {
-            width: 280px;
+            width: 300px;
             border-right: 1px solid var(--border-subtle);
             background: var(--bg-1);
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
-        .sidebar-header {
-            padding: 20px;
+        .sidebar-tabs {
+            display: flex;
             border-bottom: 1px solid var(--border-subtle);
         }
 
-        .sidebar-title {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
+        .sidebar-tab {
+            flex: 1;
+            padding: 14px;
+            font-size: 13px;
+            font-weight: 500;
             color: var(--text-muted);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border-bottom: 2px solid transparent;
+        }
+
+        .sidebar-tab:hover {
+            color: var(--text-secondary);
+            background: var(--surface);
+        }
+
+        .sidebar-tab.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--accent);
         }
 
         .sidebar-content {
             flex: 1;
             overflow-y: auto;
             padding: 16px;
+        }
+
+        .sidebar-panel {
+            display: none;
+        }
+
+        .sidebar-panel.active {
+            display: block;
         }
 
         .panel {
@@ -388,6 +419,11 @@
             width: 100%;
         }
 
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
         .chat-container {
             flex: 1;
             display: flex;
@@ -420,6 +456,11 @@
             font-size: 12px;
             color: var(--text-muted);
             font-family: var(--font-mono);
+        }
+
+        .chat-actions {
+            display: flex;
+            gap: 8px;
         }
 
         .chat-messages {
@@ -568,6 +609,40 @@
             font-size: 0.9em;
         }
 
+        .message-body pre {
+            background: var(--bg-0);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        .message-body pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .tool-call {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .tool-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: var(--accent-soft);
+            border: 1px solid rgba(255, 77, 77, 0.2);
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
         .typing-indicator {
             display: inline-flex;
             align-items: center;
@@ -708,7 +783,7 @@
             position: fixed;
             bottom: 90px;
             right: 24px;
-            width: 320px;
+            width: 360px;
             background: var(--bg-2);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-xl);
@@ -796,6 +871,108 @@
         .toast.success { border-color: rgba(46, 204, 113, 0.3); }
         .toast.error { border-color: rgba(231, 76, 60, 0.3); }
 
+        /* Settings Panel */
+        .settings-group {
+            margin-bottom: 20px;
+        }
+
+        .settings-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .settings-select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .settings-select:hover {
+            border-color: var(--border-strong);
+        }
+
+        .settings-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .settings-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: var(--font-mono);
+            transition: all var(--transition-fast);
+        }
+
+        .settings-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        /* Activity Log */
+        .activity-log {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-md);
+            margin-bottom: 8px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .activity-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            background: var(--accent-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .activity-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .activity-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
         @media (max-width: 900px) {
             .sidebar { display: none; }
         }
@@ -819,10 +996,10 @@
                     <div class="logo-mark">OH</div>
                     <span class="logo-text">OpenHands</span>
                 </a>
-            </div>
-            <div class="status">
-                <div class="status-dot" id="status-dot"></div>
-                <span id="status-text">Connecting...</span>
+                <div class="status">
+                    <div class="status-dot" id="status-dot"></div>
+                    <span id="status-text">Connecting...</span>
+                </div>
             </div>
             <div class="header-right">
                 <button class="icon-btn" id="btn-screen-control" title="Screen Control">
@@ -843,38 +1020,136 @@
 
         <main class="main">
             <aside class="sidebar">
-                <div class="sidebar-header">
-                    <div class="sidebar-title">Session Stats</div>
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab active" data-panel="stats">Stats</button>
+                    <button class="sidebar-tab" data-panel="settings">Settings</button>
+                    <button class="sidebar-tab" data-panel="activity">Activity</button>
                 </div>
+
                 <div class="sidebar-content">
-                    <div class="panel">
-                        <div class="panel-header">
-                            <span class="panel-title">Overview</span>
-                        </div>
-                        <div class="stat-grid">
-                            <div class="stat">
-                                <div class="stat-label">Messages</div>
-                                <div class="stat-value" id="stat-messages">0</div>
+                    <!-- Stats Panel -->
+                    <div class="sidebar-panel active" id="panel-stats">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <span class="panel-title">Session Overview</span>
                             </div>
-                            <div class="stat">
-                                <div class="stat-label">Actions</div>
-                                <div class="stat-value" id="stat-actions">0</div>
+                            <div class="stat-grid">
+                                <div class="stat">
+                                    <div class="stat-label">Messages</div>
+                                    <div class="stat-value" id="stat-messages">0</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-label">Actions</div>
+                                    <div class="stat-value" id="stat-actions">0</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-label">Tokens</div>
+                                    <div class="stat-value" id="stat-tokens">0</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-label">Time</div>
+                                    <div class="stat-value" id="stat-time">0:00</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-header">
+                                <span class="panel-title">Screen Control</span>
+                            </div>
+                            <label class="control-toggle" id="control-toggle">
+                                <div class="toggle-switch">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                                <span class="toggle-label">Enable control</span>
+                            </label>
+                            <button class="btn btn-secondary btn-full" id="btn-screenshot">
+                                📸 Capture screenshot
+                            </button>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-header">
+                                <span class="panel-title">Current Task</span>
+                            </div>
+                            <div id="current-task" style="font-size: 13px; color: var(--text-secondary);">
+                                No active task
                             </div>
                         </div>
                     </div>
-                    <div class="panel">
-                        <div class="panel-header">
-                            <span class="panel-title">Screen Control</span>
-                        </div>
-                        <label class="control-toggle" id="control-toggle">
-                            <div class="toggle-switch">
-                                <div class="toggle-knob"></div>
+
+                    <!-- Settings Panel -->
+                    <div class="sidebar-panel" id="panel-settings">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <span class="panel-title">Model Configuration</span>
                             </div>
-                            <span class="toggle-label">Enable screen control</span>
-                        </label>
-                        <button class="btn btn-secondary btn-full" id="btn-screenshot">
-                            📸 Capture screenshot
+                            
+                            <div class="settings-group">
+                                <label class="settings-label">Provider</label>
+                                <select class="settings-select" id="setting-provider">
+                                    <option value="longcat">LongCat</option>
+                                    <option value="anthropic">Anthropic</option>
+                                    <option value="openai">OpenAI</option>
+                                    <option value="openrouter">OpenRouter</option>
+                                </select>
+                            </div>
+
+                            <div class="settings-group">
+                                <label class="settings-label">Model</label>
+                                <select class="settings-select" id="setting-model">
+                                    <option value="LongCat-2.0-Preview">LongCat-2.0-Preview</option>
+                                    <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+                                    <option value="gpt-4o">GPT-4o</option>
+                                </select>
+                            </div>
+
+                            <div class="settings-group">
+                                <label class="settings-label">Temperature</label>
+                                <input type="range" id="setting-temperature" min="0" max="100" value="70" 
+                                    style="width: 100%; accent-color: var(--accent);">
+                                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                                    Value: <span id="temp-value">0.7</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-header">
+                                <span class="panel-title">Agent Settings</span>
+                            </div>
+
+                            <div class="settings-group">
+                                <label class="settings-label">Max Iterations</label>
+                                <input type="number" class="settings-input" id="setting-max-iterations" value="50" min="1" max="200">
+                            </div>
+
+                            <div class="settings-group">
+                                <label class="settings-label">System Prompt</label>
+                                <textarea class="settings-input" id="setting-prompt" rows="4" 
+                                    style="resize: vertical; font-family: var(--font-sans); line-height: 1.5;"
+                                    placeholder="Enter system prompt...">You are OpenHands, a helpful AI assistant.</textarea>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary btn-full" id="btn-apply-settings">
+                            Apply Settings
                         </button>
+                    </div>
+
+                    <!-- Activity Panel -->
+                    <div class="sidebar-panel" id="panel-activity">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <span class="panel-title">Activity Log</span>
+                                <button class="btn btn-sm btn-secondary" id="btn-clear-activity">Clear</button>
+                            </div>
+                            <div class="activity-log" id="activity-log">
+                                <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 13px;">
+                                    No activity yet
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </aside>
@@ -885,17 +1160,22 @@
                         <div class="chat-name">Conversation</div>
                         <div class="chat-model" id="model-info">Model: Loading...</div>
                     </div>
+                    <div class="chat-actions">
+                        <button class="btn btn-sm btn-secondary" id="btn-stop" disabled>
+                            ⏹ Stop
+                        </button>
+                    </div>
                 </div>
 
                 <div class="chat-messages" id="chat-messages">
                     <div class="welcome-screen" id="welcome-screen">
                         <div class="welcome-avatar">🤖</div>
                         <h2 class="welcome-title">Hello, I'm OpenHands</h2>
-                        <p class="welcome-hint">I can help you with coding, analysis, and automation. What would you like to work on?</p>
+                        <p class="welcome-hint">I can help you with coding, automation, and complex tasks. Type a message to get started!</p>
                         <div class="welcome-suggestions">
                             <button class="suggestion-pill" data-text="Help me write a Python script">Write Python script</button>
-                            <button class="suggestion-pill" data-text="Explain machine learning concepts">Explain ML</button>
-                            <button class="suggestion-pill" data-text="Help me debug some code">Debug code</button>
+                            <button class="suggestion-pill" data-text="Show me your capabilities">Show capabilities</button>
+                            <button class="suggestion-pill" data-text="Help me automate a task">Automate task</button>
                         </div>
                     </div>
                 </div>
@@ -921,9 +1201,16 @@
                                         <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
                                     </svg>
                                 </button>
+                                <button class="tool-btn" id="btn-screenshot-inline" title="Take screenshot">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                        <polyline points="21 15 16 10 5 21"></polyline>
+                                    </svg>
+                                </button>
                             </div>
                             <div style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">
-                                Enter to send
+                                ⏎ Enter to send
                             </div>
                         </div>
                     </div>
@@ -944,7 +1231,7 @@
             <div class="screen-control-content">
                 <div class="screen-preview">
                     <img id="screen-preview-img" src="" alt="Preview" style="display: none;">
-                    <div class="placeholder-text" id="screen-placeholder">No screenshot yet</div>
+                    <div class="placeholder-text" id="screen-placeholder">No screenshot</div>
                 </div>
                 <button class="btn btn-primary btn-full" id="btn-refresh-screen">
                     Refresh screenshot
@@ -966,7 +1253,10 @@
                 this.isGenerating = false;
                 this.messageCount = 0;
                 this.actionCount = 0;
+                this.tokenCount = 0;
                 this.isControlMode = false;
+                this.startTime = null;
+                this.activityLog = [];
                 this.init();
             }
 
@@ -974,6 +1264,7 @@
                 this.bindElements();
                 this.bindEvents();
                 this.connect();
+                this.startTimer();
             }
 
             bindElements() {
@@ -986,23 +1277,33 @@
                 this.modelInfo = document.getElementById('model-info');
                 this.statMessages = document.getElementById('stat-messages');
                 this.statActions = document.getElementById('stat-actions');
-                this.btnClear = document.getElementById('btn-clear');
-                this.btnScreenshot = document.getElementById('btn-screenshot');
+                this.statTokens = document.getElementById('stat-tokens');
+                this.statTime = document.getElementById('stat-time');
+                this.currentTask = document.getElementById('current-task');
+                this.activityLogEl = document.getElementById('activity-log');
                 this.controlToggle = document.getElementById('control-toggle');
                 this.toggleSwitch = this.controlToggle.querySelector('.toggle-switch');
                 this.screenControl = document.getElementById('screen-control');
                 this.btnScreenControl = document.getElementById('btn-screen-control');
                 this.btnCloseScreen = document.getElementById('btn-close-screen');
                 this.btnRefreshScreen = document.getElementById('btn-refresh-screen');
+                this.btnScreenshot = document.getElementById('btn-screenshot');
+                this.btnScreenshotInline = document.getElementById('btn-screenshot-inline');
                 this.screenPreviewImg = document.getElementById('screen-preview-img');
                 this.screenPlaceholder = document.getElementById('screen-placeholder');
                 this.toast = document.getElementById('toast');
                 this.toastIcon = document.getElementById('toast-icon');
                 this.toastMessage = document.getElementById('toast-message');
+                this.btnStop = document.getElementById('btn-stop');
+                this.tempSlider = document.getElementById('setting-temperature');
+                this.tempValue = document.getElementById('temp-value');
+                this.sidebarTabs = document.querySelectorAll('.sidebar-tab');
+                this.sidebarPanels = document.querySelectorAll('.sidebar-panel');
             }
 
             bindEvents() {
                 this.sendBtn.addEventListener('click', () => this.sendMessage());
+                this.btnStop.addEventListener('click', () => this.stopGeneration());
                 this.messageInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -1011,8 +1312,9 @@
                 });
                 this.messageInput.addEventListener('input', () => this.autoResize());
 
-                this.btnClear.addEventListener('click', () => this.clearChat());
+                document.getElementById('btn-clear').addEventListener('click', () => this.clearChat());
                 this.btnScreenshot.addEventListener('click', () => this.takeScreenshot());
+                this.btnScreenshotInline.addEventListener('click', () => this.takeScreenshot());
                 
                 this.controlToggle.addEventListener('click', () => {
                     this.toggleControl(!this.isControlMode);
@@ -1035,9 +1337,100 @@
                     });
                 });
 
+                this.tempSlider.addEventListener('input', () => {
+                    this.tempValue.textContent = (this.tempSlider.value / 100).toFixed(2);
+                });
+
+                document.getElementById('btn-apply-settings').addEventListener('click', () => {
+                    this.applySettings();
+                });
+
+                document.getElementById('btn-clear-activity').addEventListener('click', () => {
+                    this.clearActivity();
+                });
+
+                this.sidebarTabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const panel = tab.getAttribute('data-panel');
+                        this.showSidebarPanel(panel);
+                    });
+                });
+
                 setTimeout(() => {
                     this.messageInput.focus();
                 }, 100);
+            }
+
+            showSidebarPanel(name) {
+                this.sidebarTabs.forEach(tab => {
+                    tab.classList.toggle('active', tab.getAttribute('data-panel') === name);
+                });
+                this.sidebarPanels.forEach(panel => {
+                    panel.classList.toggle('active', panel.id === `panel-${name}`);
+                });
+            }
+
+            startTimer() {
+                setInterval(() => {
+                    if (this.startTime && this.isGenerating) {
+                        const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                        const mins = Math.floor(elapsed / 60);
+                        const secs = elapsed % 60;
+                        this.statTime.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+                    }
+                }, 1000);
+            }
+
+            applySettings() {
+                const provider = document.getElementById('setting-provider').value;
+                const model = document.getElementById('setting-model').value;
+                const temp = this.tempSlider.value / 100;
+                const maxIter = document.getElementById('setting-max-iterations').value;
+                const prompt = document.getElementById('setting-prompt').value;
+                
+                this.showToast('success', 'Settings applied!');
+                this.addActivity('⚙️', `Provider: ${provider}`, `Model: ${model}`);
+            }
+
+            addActivity(icon, name, detail = '') {
+                const time = new Date().toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                
+                this.activityLog.unshift({ icon, name, detail, time });
+                if (this.activityLog.length > 50) this.activityLog.pop();
+                
+                this.renderActivity();
+            }
+
+            renderActivity() {
+                if (this.activityLog.length === 0) {
+                    this.activityLogEl.innerHTML = `
+                        <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 13px;">
+                            No activity yet
+                        </div>
+                    `;
+                    return;
+                }
+
+                this.activityLogEl.innerHTML = this.activityLog.map(item => `
+                    <div class="activity-item">
+                        <div class="activity-icon">${item.icon}</div>
+                        <div class="activity-content">
+                            <div class="activity-name">${item.name}</div>
+                            ${item.detail ? `<div style="font-size: 11px; color: var(--text-muted);">${item.detail}</div>` : ''}
+                        </div>
+                        <div class="activity-time">${item.time}</div>
+                    </div>
+                `).join('');
+            }
+
+            clearActivity() {
+                this.activityLog = [];
+                this.renderActivity();
+                this.showToast('info', 'Activity cleared');
             }
 
             autoResize() {
@@ -1054,7 +1447,8 @@
                     this.ws.onopen = () => {
                         this.isConnected = true;
                         this.updateStatus(true);
-                        this.showToast('success', 'Connected');
+                        this.showToast('success', 'Connected to server');
+                        this.addActivity('🔗', 'Connected', 'WebSocket established');
                     };
                     this.ws.onmessage = (event) => {
                         const data = JSON.parse(event.data);
@@ -1063,10 +1457,12 @@
                     this.ws.onclose = () => {
                         this.isConnected = false;
                         this.updateStatus(false);
+                        this.addActivity('⚠️', 'Disconnected', 'Connection lost');
                         setTimeout(() => this.connect(), 3000);
                     };
                     this.ws.onerror = (error) => {
                         console.error('WebSocket error:', error);
+                        this.addActivity('❌', 'Connection error', 'Check console');
                     };
                 } catch (e) {
                     console.error('Failed to connect:', e);
@@ -1103,14 +1499,22 @@
                     case 'error':
                         this.handleError(data.content);
                         break;
+                    case 'tool':
+                        this.handleToolCall(data.name, data.input);
+                        break;
+                    case 'thinking':
+                        this.currentTask.textContent = data.content || 'Thinking...';
+                        break;
                 }
             }
 
             handleStatus(content) {
                 if (content === '正在思考...' || content === 'Thinking...') {
+                    this.startTime = Date.now();
+                    this.statusDot.classList.add('thinking');
                     this.showTypingIndicator();
-                } else if (content.includes('control')) {
-                    this.showToast('info', content);
+                    this.currentTask.textContent = 'Thinking...';
+                    this.addActivity('🤔', 'AI is thinking', content);
                 }
             }
 
@@ -1118,7 +1522,10 @@
                 this.hideTypingIndicator();
                 this.isGenerating = false;
                 this.updateSendButton();
+                this.statusDot.classList.remove('thinking');
+                this.currentTask.textContent = 'Task completed';
                 this.addMessage('assistant', content);
+                this.addActivity('✅', 'Response generated', `${content.length} chars`);
             }
 
             handleScreenshot(imageData) {
@@ -1126,6 +1533,7 @@
                     this.screenPreviewImg.src = `data:image/png;base64,${imageData}`;
                     this.screenPreviewImg.style.display = 'block';
                     this.screenPlaceholder.style.display = 'none';
+                    this.addActivity('📸', 'Screenshot captured', 'Screen updated');
                 }
             }
 
@@ -1133,13 +1541,21 @@
                 this.actionCount++;
                 this.statActions.textContent = this.actionCount;
                 this.showToast('info', content);
+                this.addActivity('🖱️', content, `Action: ${action}`);
+            }
+
+            handleToolCall(name, input) {
+                this.addActivity('🔧', `Tool: ${name}`, JSON.stringify(input).substring(0, 50));
             }
 
             handleError(content) {
                 this.hideTypingIndicator();
                 this.isGenerating = false;
                 this.updateSendButton();
+                this.statusDot.classList.remove('thinking');
+                this.currentTask.textContent = 'Error occurred';
                 this.showToast('error', content);
+                this.addActivity('❌', 'Error', content);
             }
 
             sendMessage() {
@@ -1156,7 +1572,10 @@
                 this.messageInput.value = '';
                 this.autoResize();
                 this.isGenerating = true;
+                this.startTime = Date.now();
+                this.statusDot.classList.add('thinking');
                 this.updateSendButton();
+                this.addActivity('💬', 'Message sent', text.substring(0, 30));
                 this.send({ type: 'message', content: text });
             }
 
@@ -1260,7 +1679,7 @@
                             <rect x="6" y="6" width="12" height="12" rx="2"></rect>
                         </svg>
                     `;
-                    this.sendBtn.onclick = () => this.stopGeneration();
+                    this.btnStop.disabled = false;
                 } else {
                     this.sendBtn.classList.remove('stop');
                     this.sendBtn.innerHTML = `
@@ -1269,7 +1688,7 @@
                             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                         </svg>
                     `;
-                    this.sendBtn.onclick = () => this.sendMessage();
+                    this.btnStop.disabled = true;
                 }
             }
 
@@ -1277,6 +1696,10 @@
                 this.isGenerating = false;
                 this.updateSendButton();
                 this.hideTypingIndicator();
+                this.statusDot.classList.remove('thinking');
+                this.currentTask.textContent = 'Task stopped';
+                this.showToast('info', 'Generation stopped');
+                this.addActivity('⏹', 'Generation stopped', 'User interrupted');
             }
 
             clearChat() {
