@@ -6,7 +6,6 @@ FastAPI + HTML/JS frontend
 
 import asyncio
 import logging
-import base64
 import json
 import os
 from pathlib import Path
@@ -171,8 +170,7 @@ async def websocket_endpoint(websocket: WebSocket):
                             await websocket.send_json({
                                 "type": "tool_call",
                                 "tool": chunk.get("tool"),
-                                "arguments": chunk.get("arguments", {}),
-                                "iteration": stream_state.iteration_count
+                                "arguments": chunk.get("arguments", {})
                             })
                             
                         elif chunk_type == "tool_result":

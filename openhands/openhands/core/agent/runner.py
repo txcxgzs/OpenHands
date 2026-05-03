@@ -416,7 +416,7 @@ class EmbeddedAgent:
         tool_results: List[ToolResult],
     ) -> AsyncGenerator[Dict[str, Any], None]:
         """
-        核心Agent循环流式版本
+        核心Agent循环流式版本 - 正确处理工具调用
         """
         profile = tool_profile or session.current_tool_profile or self.config.tools.default_profile
         system_prompt = system_prompt_override or self.config.system_prompt or DEFAULT_SYSTEM_PROMPT
@@ -442,7 +442,7 @@ class EmbeddedAgent:
 
             yield {
                 "type": "thinking",
-                "content": f"思考问题 (迭代 {run_meta.iteration_count})..."
+                "content": f"🧠 思考中 (迭代 {run_meta.iteration_count})..."
             }
 
             adapter_messages = self._to_adapter_messages(session.messages)
@@ -450,6 +450,8 @@ class EmbeddedAgent:
 
             if hasattr(self._adapter, 'chat_stream') and callable(self._adapter.chat_stream):
                 response_text = ""
+                pending_tool_calls = []
+                
                 async for chunk in self._adapter.chat_stream(
                     messages=adapter_messages,
                     tools=tool_defs,
@@ -461,6 +463,9 @@ class EmbeddedAgent:
                             "type": "delta",
                             "content": chunk.content
                         }
+                    
+                    if chunk.tool_calls and len(chunk.tool_calls) > 0:
+                        pending_tool_calls.extend(chunk.tool_calls)
                 
                 if response_text:
                     assistant_msg = Message(
@@ -468,53 +473,54 @@ class EmbeddedAgent:
                         content=response_text,
                     )
                     session.messages.append(assistant_msg)
-                    
-                    yield {
-                        "type": "thinking",
-                        "content": "检查是否需要调用工具..."
-                    }
-                    
-                    import json
-                    tool_patterns = [
-                        r'<tool_call>\s*{"name":\s*"([^"]+)"',
-                        r'"name":\s*"([^"]+)"\s*,\s*"arguments"',
-                    ]
-                    tool_calls_found = []
-                    for pattern in tool_patterns:
-                        import re
-                        matches = re.findall(pattern, response_text)
-                        tool_calls_found.extend(matches)
-                    
-                    if tool_calls_found:
-                        for tool_name in tool_calls_found:
-                            yield {
-                                "type": "tool_call",
-                                "tool": tool_name,
-                                "arguments": {}
-                            }
-                            
-                            result = await self._execute_single_tool_by_name(tool_name, run_meta)
-                            tool_results.append(result)
-                            
-                            yield {
-                                "type": "tool_result",
-                                "tool": tool_name,
-                                "result": result.content[:500] if len(result.content) > 500 else result.content,
-                                "is_error": result.is_error
-                            }
-                            
-                            msg = Message(
-                                role=MessageRole.TOOL,
-                                content=result.content,
-                                tool_call_id=result.tool_call_id,
-                            )
-                            session.messages.append(msg)
-                    else:
+                
+                if pending_tool_calls:
+                    for tc in pending_tool_calls:
+                        yield {
+                            "type": "tool_call",
+                            "tool": tc.name,
+                            "arguments": tc.arguments
+                        }
+                        
+                        run_meta.tool_call_count += 1
+                        
+                        from ..types import ToolCall as TypesToolCall
+                        actual_tc = TypesToolCall(
+                            id=tc.id,
+                            name=tc.name,
+                            arguments=tc.arguments
+                        )
+                        
+                        logger.info(f"执行工具: {tc.name}")
+                        result = await self._tool_registry.execute_tool_call(actual_tc)
+                        tool_results.append(result)
+                        
+                        yield {
+                            "type": "tool_result",
+                            "tool": tc.name,
+                            "result": result.content[:800] if len(result.content) > 800 else result.content,
+                            "is_error": result.is_error
+                        }
+                        
+                        msg = Message(
+                            role=MessageRole.TOOL,
+                            content=result.content,
+                            tool_call_id=tc.id,
+                        )
+                        session.messages.append(msg)
+                
+                else:
+                    if response_text:
                         yield {
                             "type": "final",
                             "content": response_text
                         }
-                        return
+                    else:
+                        yield {
+                            "type": "final",
+                            "content": "任务已完成"
+                        }
+                    return
             else:
                 response = await self._adapter.chat(
                     messages=adapter_messages,
@@ -545,7 +551,7 @@ class EmbeddedAgent:
                         yield {
                             "type": "tool_result",
                             "tool": tc.name,
-                            "result": result.content[:500] if len(result.content) > 500 else result.content,
+                            "result": result.content[:800] if len(result.content) > 800 else result.content,
                             "is_error": result.is_error
                         }
 

@@ -450,7 +450,7 @@
         }
         
         .thinking-panel {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(59, 130, 246, 0.03));
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
             border: 1px solid rgba(59, 130, 246, 0.2);
             border-radius: var(--radius-md);
             margin: 16px 0;
@@ -515,58 +515,12 @@
             padding: 16px;
         }
         
-        .thinking-step {
-            display: flex;
-            gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .thinking-step:last-child { border-bottom: none; }
-        
-        .thinking-step-icon {
-            width: 24px;
-            height: 24px;
-            background: var(--bg-hover);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            flex-shrink: 0;
-        }
-        
-        .thinking-step-icon.done { background: var(--ok); color: white; }
-        .thinking-step-icon.active { background: var(--info); color: white; animation: pulse 1s infinite; }
-        .thinking-step-icon.pending { background: var(--bg-hover); color: var(--muted); }
-        
-        .thinking-step-content { flex: 1; }
-        
-        .thinking-step-title {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text);
-            margin-bottom: 4px;
-        }
-        
-        .thinking-step-detail {
-            font-size: 12px;
-            color: var(--muted);
-            font-family: var(--font-mono);
-        }
-        
         .thinking-stream {
             font-size: 13px;
             color: var(--muted);
             font-family: var(--font-mono);
             padding: 8px 0;
             min-height: 20px;
-        }
-        
-        .thinking-stream::after {
-            content: '▋';
-            animation: blink 0.8s step-end infinite;
-            color: var(--info);
         }
         
         .tool-card {
@@ -656,7 +610,7 @@
             font-family: var(--font-mono);
             font-size: 12px;
             color: var(--text);
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
             white-space: pre-wrap;
             word-break: break-all;
@@ -780,10 +734,10 @@
         
         .stat-label {
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--muted);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.06em;
             margin-bottom: 8px;
         }
         
@@ -860,68 +814,8 @@
             color: var(--muted);
         }
         
-        .stream-char {
-            animation: charIn 0.05s ease forwards;
-            opacity: 0;
-        }
-        
-        @keyframes charIn {
-            to { opacity: 1; }
-        }
-        
         .panel-view { display: none; }
         .panel-view.active { display: block; }
-        
-        .sidebar-panel {
-            position: fixed;
-            top: 0;
-            left: 260px;
-            right: 320px;
-            bottom: 0;
-            background: var(--bg);
-            z-index: 100;
-            display: none;
-            flex-direction: column;
-        }
-        
-        .sidebar-panel.open { display: flex; }
-        
-        .sidebar-panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border);
-            background: var(--bg-accent);
-        }
-        
-        .sidebar-panel-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-strong);
-        }
-        
-        .sidebar-panel-close {
-            width: 32px;
-            height: 32px;
-            border-radius: var(--radius-sm);
-            border: none;
-            background: var(--bg-hover);
-            color: var(--text);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-        
-        .sidebar-panel-close:hover { background: var(--bg-muted); }
-        
-        .sidebar-panel-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-        }
         
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -950,37 +844,29 @@
                 
                 <div class="nav-group">
                     <div class="nav-group-title">控制</div>
-                    <div class="nav-item" data-panel="overview" onclick="openSidebarPanel('overview')">
+                    <div class="nav-item" onclick="showToast('功能开发中')">
                         <span class="nav-icon">📊</span>
                         <span>概览</span>
                         <span class="nav-badge">Live</span>
                     </div>
-                    <div class="nav-item" data-panel="sessions" onclick="openSidebarPanel('sessions')">
+                    <div class="nav-item" onclick="showToast('功能开发中')">
                         <span class="nav-icon">📄</span>
                         <span>会话</span>
                         <span class="nav-badge">New</span>
                     </div>
-                    <div class="nav-item" data-panel="usage" onclick="openSidebarPanel('usage')">
+                    <div class="nav-item" onclick="showToast('功能开发中')">
                         <span class="nav-icon">📈</span>
                         <span>用量</span>
-                    </div>
-                    <div class="nav-item" data-panel="automation" onclick="openSidebarPanel('automation')">
-                        <span class="nav-icon">⏰</span>
-                        <span>自动化</span>
                     </div>
                 </div>
                 
                 <div class="nav-group">
-                    <div class="nav-group-title">智能体</div>
-                    <div class="nav-item" data-panel="agents" onclick="openSidebarPanel('agents')">
-                        <span class="nav-icon">📁</span>
-                        <span>智能体</span>
-                    </div>
-                    <div class="nav-item" data-panel="skills" onclick="openSidebarPanel('skills')">
-                        <span class="nav-icon">⚡</span>
+                    <div class="nav-group-title">工具</div>
+                    <div class="nav-item" onclick="showToast('功能开发中')">
+                        <span class="nav-icon">🛠️</span>
                         <span>技能库</span>
                     </div>
-                    <div class="nav-item" data-panel="memory" onclick="openSidebarPanel('memory')">
+                    <div class="nav-item" onclick="showToast('功能开发中')">
                         <span class="nav-icon">🧠</span>
                         <span>记忆</span>
                     </div>
@@ -988,15 +874,11 @@
                 
                 <div class="nav-group">
                     <div class="nav-group-title">设置</div>
-                    <div class="nav-item" data-panel="config" onclick="openSidebarPanel('config')">
+                    <div class="nav-item" onclick="showToast('功能开发中')">
                         <span class="nav-icon">⚙️</span>
                         <span>配置</span>
                     </div>
-                    <div class="nav-item" data-panel="appearance" onclick="openSidebarPanel('appearance')">
-                        <span class="nav-icon">🎨</span>
-                        <span>外观</span>
-                    </div>
-                    <div class="nav-item" data-panel="logs" onclick="openSidebarPanel('logs')">
+                    <div class="nav-item" onclick="showToast('功能开发中')">
                         <span class="nav-icon">📜</span>
                         <span>日志</span>
                     </div>
@@ -1010,7 +892,7 @@
                     <h1 class="page-title" id="pageTitle">聊天</h1>
                     <div class="connection-status connected" id="connectionStatus">
                         <span class="status-dot"></span>
-                        <span>已连接</span>
+                        <span>正在连接...</span>
                     </div>
                 </div>
                 <div class="header-actions">
@@ -1030,12 +912,12 @@
                             <span class="welcome-badge">🔧 工具调用</span>
                             <span class="welcome-badge">✨ 流式输出</span>
                         </div>
-                        <p class="welcome-hint">输入消息开始对话 · 按 <kbd>/</kbd> 使用命令</p>
+                        <p class="welcome-hint">输入消息开始对话 · 按 Enter 发送，Shift+Enter 换行</p>
                         <div class="suggestions" id="suggestions">
                             <button class="suggestion-btn" onclick="sendSuggestion('你能做什么？')">你能做什么？</button>
-                            <button class="suggestion-btn" onclick="sendSuggestion('帮我查看当前目录文件')">查看目录文件</button>
-                            <button class="suggestion-btn" onclick="sendSuggestion('执行一个简单的计算')">简单计算</button>
-                            <button class="suggestion-btn" onclick="sendSuggestion('帮我写一个Hello World程序')">写代码</button>
+                            <button class="suggestion-btn" onclick="sendSuggestion('列出当前目录的文件')">列出文件</button>
+                            <button class="suggestion-btn" onclick="sendSuggestion('执行一个简单的Python计算')">Python 计算</button>
+                            <button class="suggestion-btn" onclick="sendSuggestion('创建一个简单的测试脚本')">创建脚本</button>
                         </div>
                     </div>
                 </div>
@@ -1046,7 +928,7 @@
                             <textarea 
                                 class="compose-input" 
                                 id="messageInput" 
-                                placeholder="输入消息... (Enter 发送，Shift+Enter 换行)"
+                                placeholder="输入消息..."
                                 rows="1"
                             ></textarea>
                         </div>
@@ -1063,9 +945,9 @@
         
         <div class="right-panel">
             <div class="panel-tabs">
-                <div class="panel-tab active" data-tab="stats">统计</div>
-                <div class="panel-tab" data-tab="activity">活动</div>
-                <div class="panel-tab" data-tab="info">信息</div>
+                <div class="panel-tab active" data-tab="stats" onclick="switchTab('stats')">统计</div>
+                <div class="panel-tab" data-tab="activity" onclick="switchTab('activity')">活动</div>
+                <div class="panel-tab" data-tab="info" onclick="switchTab('info')">信息</div>
             </div>
             
             <div class="panel-content">
@@ -1095,7 +977,15 @@
                 </div>
                 
                 <div class="panel-view" id="activityPanel">
-                    <div id="activityList"></div>
+                    <div id="activityList">
+                        <div class="activity-item">
+                            <div class="activity-icon">🎉</div>
+                            <div class="activity-content">
+                                <div class="activity-title">会话就绪</div>
+                                <div class="activity-time">现在</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="panel-view" id="infoPanel">
@@ -1105,23 +995,15 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">API 状态</div>
-                        <div style="font-size: 14px; color: var(--ok); margin-top: 4px;">✓ 已连接</div>
+                        <div style="font-size: 14px; color: var(--ok); margin-top: 4px;" id="apiStatus">✓ 检查中...</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">会话ID</div>
+                        <div class="stat-label">会话 ID</div>
                         <div style="font-size: 11px; color: var(--muted); margin-top: 4px; font-family: var(--font-mono);" id="sessionId">-</div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="sidebar-panel" id="sidebarPanel">
-        <div class="sidebar-panel-header">
-            <span class="sidebar-panel-title" id="panelTitle">面板</span>
-            <button class="sidebar-panel-close" onclick="closeSidebarPanel()">✕</button>
-        </div>
-        <div class="sidebar-panel-content" id="panelContent"></div>
     </div>
     
     <script>
@@ -1131,17 +1013,8 @@
         let iterationCount = 0;
         let sessionStartTime = Date.now();
         let activities = [];
-        let currentThinkingSteps = [];
         let isStreaming = false;
         let currentStreamMessage = null;
-        
-        const thinkingSteps = [
-            { id: 'analyze', icon: '🔍', title: '分析问题', done: false, active: false },
-            { id: 'plan', icon: '📋', title: '制定计划', done: false, active: false },
-            { id: 'execute', icon: '⚡', title: '执行操作', done: false, active: false },
-            { id: 'verify', icon: '✓', title: '验证结果', done: false, active: false },
-            { id: 'respond', icon: '💬', title: '生成回复', done: false, active: false },
-        ];
         
         function initWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -1183,7 +1056,10 @@
                 const resp = await fetch('/api/status');
                 const data = await resp.json();
                 document.getElementById('sessionId').textContent = data.session_id ? data.session_id.substring(0, 20) + '...' : '-';
-            } catch (e) {}
+                document.getElementById('apiStatus').textContent = '✓ 已连接';
+            } catch (e) {
+                console.error(e);
+            }
         }
         
         function updateConnectionStatus(status) {
@@ -1202,10 +1078,10 @@
         function handleMessage(data) {
             switch (data.type) {
                 case 'stream':
-                    updateStreamMessage(data.content, data.delta);
+                    updateStreamMessage(data.content);
                     break;
                 case 'thinking':
-                    showThinking(data.content, data.iteration);
+                    showThinking(data.content);
                     break;
                 case 'message':
                     finalizeStreamMessage(data.content);
@@ -1233,7 +1109,7 @@
             }
         }
         
-        function showThinking(content, iteration) {
+        function showThinking(content) {
             const thread = document.getElementById('chatThread');
             const welcome = document.getElementById('welcomeScreen');
             if (welcome) welcome.remove();
@@ -1246,15 +1122,15 @@
                 thinkingPanel.innerHTML = `
                     <div class="thinking-header">
                         <div class="thinking-icon">🧠</div>
-                        <span class="thinking-label">AI 思考过程</span>
+                        <span class="thinking-label">AI 思考中</span>
                         <div class="thinking-progress">
                             <div class="thinking-dot"></div>
                             <div class="thinking-dot"></div>
                             <div class="thinking-dot"></div>
                         </div>
                     </div>
-                    <div class="thinking-body" id="thinkingBody">
-                        <div class="thinking-stream" id="thinkingStream">正在思考...</div>
+                    <div class="thinking-body">
+                        <div class="thinking-stream" id="thinkingStream"></div>
                     </div>
                 `;
                 thread.appendChild(thinkingPanel);
@@ -1268,7 +1144,7 @@
             thread.scrollTop = thread.scrollHeight;
         }
         
-        function updateStreamMessage(text, delta) {
+        function updateStreamMessage(text) {
             const thread = document.getElementById('chatThread');
             
             const thinkingPanel = thread.querySelector('.thinking-panel');
@@ -1359,7 +1235,7 @@
         function formatContent(content) {
             if (!content) return '';
             return content
-                .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+                .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
                 .replace(/`([^`]+)`/g, '<code>$1</code>')
                 .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
                 .replace(/\n/g, '<br>');
@@ -1387,22 +1263,25 @@
             
             const toolEl = document.createElement('div');
             toolEl.className = 'tool-card';
+            toolEl.id = `tool-${Date.now()}`;
             toolEl.innerHTML = `
                 <div class="tool-header" onclick="toggleTool(this)">
                     <div class="tool-icon">🔧</div>
                     <div class="tool-info">
                         <div class="tool-name">${tool}</div>
-                        <div class="tool-args">${args && Object.keys(args).length > 0 ? JSON.stringify(args).substring(0, 50) : '执行中...'}</div>
+                        <div class="tool-args">${args && Object.keys(args).length > 0 ? JSON.stringify(args).substring(0, 80) : '执行中...'}</div>
                     </div>
                     <span class="tool-status running">执行中...</span>
                 </div>
                 <div class="tool-body">
-                    <div class="tool-result" id="tool-result-${Date.now()}">等待结果...</div>
+                    <div class="tool-result">等待结果...</div>
                 </div>
             `;
             
             thread.appendChild(toolEl);
             thread.scrollTop = thread.scrollHeight;
+            
+            addActivity('工具', `调用 ${tool}`, '🔧');
         }
         
         function showToolResult(tool, result, isError) {
@@ -1425,7 +1304,7 @@
                 lastCard.classList.add('expanded');
             }
             
-            addActivity('工具', `${tool} ${isError ? '失败' : '完成'}`, isError ? '❌' : '✅');
+            addActivity('工具', `${tool} ${isError ? '失败' : '成功'}`, isError ? '❌' : '✅');
         }
         
         function toggleTool(header) {
@@ -1438,7 +1317,7 @@
             
             if (!content) return;
             if (!ws || ws.readyState !== WebSocket.OPEN) {
-                alert('未连接到服务器，请稍候...');
+                showToast('未连接到服务器，请稍候...');
                 return;
             }
             
@@ -1471,12 +1350,12 @@
                         <span class="welcome-badge">🔧 工具调用</span>
                         <span class="welcome-badge">✨ 流式输出</span>
                     </div>
-                    <p class="welcome-hint">输入消息开始对话 · 按 <kbd>/</kbd> 使用命令</p>
+                    <p class="welcome-hint">输入消息开始对话 · 按 Enter 发送，Shift+Enter 换行</p>
                     <div class="suggestions">
                         <button class="suggestion-btn" onclick="sendSuggestion('你能做什么？')">你能做什么？</button>
-                        <button class="suggestion-btn" onclick="sendSuggestion('帮我查看当前目录文件')">查看目录文件</button>
-                        <button class="suggestion-btn" onclick="sendSuggestion('执行一个简单的计算')">简单计算</button>
-                        <button class="suggestion-btn" onclick="sendSuggestion('帮我写一个Hello World程序')">写代码</button>
+                        <button class="suggestion-btn" onclick="sendSuggestion('列出当前目录的文件')">列出文件</button>
+                        <button class="suggestion-btn" onclick="sendSuggestion('执行一个简单的Python计算')">Python 计算</button>
+                        <button class="suggestion-btn" onclick="sendSuggestion('创建一个简单的测试脚本')">创建脚本</button>
                     </div>
                 </div>
             `;
@@ -1518,160 +1397,49 @@
             const list = document.getElementById('activityList');
             const time = new Date().toLocaleTimeString('zh-CN');
             
-            activities.unshift({ title, desc, icon, time });
-            if (activities.length > 50) activities.pop();
-            
             const el = document.createElement('div');
             el.className = 'activity-item';
             el.innerHTML = `
                 <div class="activity-icon">${icon}</div>
                 <div class="activity-content">
                     <div class="activity-title">${title}</div>
-                    <div class="activity-time">${time} - ${desc}</div>
+                    <div class="activity-time">${time} · ${desc}</div>
                 </div>
             `;
             
             list.insertBefore(el, list.firstChild);
-            while (list.children.length > 20) {
+            while (list.children.length > 30) {
                 list.removeChild(list.lastChild);
             }
         }
         
-        function openSidebarPanel(panel) {
-            const titles = {
-                'overview': '系统概览',
-                'sessions': '会话管理',
-                'usage': '用量统计',
-                'automation': '自动化任务',
-                'agents': '智能体管理',
-                'skills': '技能库',
-                'memory': '记忆存储',
-                'config': '系统配置',
-                'appearance': '外观设置',
-                'logs': '运行日志'
-            };
+        function switchTab(tab) {
+            document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel-view').forEach(v => v.classList.remove('active'));
             
-            const contents = {
-                'overview': `
-                    <div class="stat-card">
-                        <div class="stat-label">系统状态</div>
-                        <div style="font-size: 14px; color: var(--ok);">● 运行中</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">模型</div>
-                        <div style="font-size: 14px;">LongCat-2.0-Preview</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">流式输出</div>
-                        <div style="font-size: 14px; color: var(--ok);">✓ 已启用</div>
-                    </div>
-                `,
-                'sessions': `
-                    <div class="stat-card">
-                        <div class="stat-label">当前会话</div>
-                        <div style="font-size: 12px; font-family: var(--font-mono); color: var(--muted);">
-                            ${document.getElementById('sessionId').textContent}
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" onclick="newSession(); closeSidebarPanel();" style="width: 100%;">
-                        创建新会话
-                    </button>
-                `,
-                'usage': `
-                    <div class="stat-card">
-                        <div class="stat-label">本次会话</div>
-                        <div class="stat-value">${messageCount}</div>
-                        <div style="font-size: 12px; color: var(--muted);">消息数</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">工具调用</div>
-                        <div class="stat-value">${toolCallCount}</div>
-                    </div>
-                `,
-                'automation': `
-                    <div class="stat-card">
-                        <p style="color: var(--muted); font-size: 13px;">
-                            定时任务功能开发中...
-                        </p>
-                    </div>
-                `,
-                'agents': `
-                    <div class="stat-card">
-                        <div class="stat-label">当前智能体</div>
-                        <div style="font-size: 14px;">OpenHands Agent</div>
-                    </div>
-                `,
-                'skills': `
-                    <div class="stat-card">
-                        <div class="stat-label">可用技能</div>
-                        <div style="font-size: 13px; color: var(--muted); margin-top: 8px;">
-                            • 文件操作<br>
-                            • 命令执行<br>
-                            • 记忆存储
-                        </div>
-                    </div>
-                `,
-                'memory': `
-                    <div class="stat-card">
-                        <p style="color: var(--muted); font-size: 13px;">
-                            记忆系统运行中...
-                        </p>
-                    </div>
-                `,
-                'config': `
-                    <div class="stat-card">
-                        <div class="stat-label">API 配置</div>
-                        <p style="font-size: 12px; color: var(--muted); margin-top: 8px;">
-                            使用环境变量 LONGCAT_API_KEY 配置
-                        </p>
-                    </div>
-                `,
-                'appearance': `
-                    <div class="stat-card">
-                        <div class="stat-label">主题</div>
-                        <div style="display: flex; gap: 8px; margin-top: 8px;">
-                            <button class="btn btn-primary" disabled>深色</button>
-                            <button class="btn btn-ghost">浅色</button>
-                        </div>
-                    </div>
-                `,
-                'logs': `
-                    <div class="stat-card">
-                        <div class="stat-label">最近日志</div>
-                        <div id="logList" style="font-size: 11px; font-family: var(--font-mono); color: var(--muted); max-height: 300px; overflow-y: auto;">
-                            ${activities.slice(0, 10).map(a => `<div style="padding: 4px 0; border-bottom: 1px solid var(--border);">[${a.time}] ${a.title}: ${a.desc}</div>`).join('')}
-                        </div>
-                    </div>
-                `
-            };
-            
-            document.getElementById('panelTitle').textContent = titles[panel] || '面板';
-            document.getElementById('panelContent').innerHTML = contents[panel] || '<p style="color: var(--muted);">功能开发中...</p>';
-            document.getElementById('sidebarPanel').classList.add('open');
+            document.querySelector(`.panel-tab[data-tab="${tab}"]`).classList.add('active');
+            document.getElementById(`${tab}Panel`).classList.add('active');
         }
         
-        function closeSidebarPanel() {
-            document.getElementById('sidebarPanel').classList.remove('open');
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 24px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--card);
+                color: var(--text);
+                padding: 12px 24px;
+                border-radius: var(--radius-md);
+                border: 1px solid var(--border);
+                z-index: 9999;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
         }
-        
-        document.querySelectorAll('.panel-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                
-                const panel = tab.dataset.tab;
-                document.querySelectorAll('.panel-view').forEach(v => v.classList.remove('active'));
-                document.getElementById(panel + 'Panel').classList.add('active');
-            });
-        });
-        
-        document.querySelectorAll('.nav-item[data-panel]').forEach(item => {
-            item.addEventListener('click', () => {
-                if (item.dataset.panel === 'chat') {
-                    document.querySelector('.page-title').textContent = '聊天';
-                }
-            });
-        });
         
         document.getElementById('messageInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {

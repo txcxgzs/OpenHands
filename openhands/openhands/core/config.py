@@ -18,14 +18,14 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ModelConfig:
     """Model provider configuration"""
-    provider: str = "anthropic"
-    model: str = "claude-3-5-sonnet-20241022"
-    api_key: Optional[str] = None
-    base_url: Optional[str] = None
+    provider: str = "longcat"
+    model: str = "LongCat-2.0-Preview"
+    api_key: Optional[str] = "ak_2si0nr6tc4jx6XM4pv36f9i90dd4Z"
+    base_url: Optional[str] = "https://api.longcat.chat/openai/v1"
     temperature: float = 0.7
-    max_tokens: int = 4096
+    max_tokens: int = 8192
     max_retries: int = 3
-    timeout: int = 60
+    timeout: int = 120
     extra: Dict[str, Any] = field(default_factory=dict)
 
 

@@ -5,12 +5,28 @@ API: https://api.longcat.chat/openai/v1
 """
 
 from typing import Dict, List, Optional, Any, AsyncGenerator
+from dataclasses import dataclass
 import json
 import logging
 import asyncio
 import os
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class LongCatToolCall:
+    """Tool call from LongCat"""
+    id: str
+    name: str
+    arguments: Dict[str, Any]
+
+
+@dataclass
+class LongCatResponse:
+    """Response from LongCat"""
+    content: Optional[str] = None
+    tool_calls: Optional[List[LongCatToolCall]] = None
 
 
 class LongCatAdapter:
@@ -36,8 +52,8 @@ class LongCatAdapter:
         self.model = getattr(config, 'model', "LongCat-2.0-Preview")
         self.base_url = getattr(config, 'base_url', self.BASE_URL) or self.BASE_URL
         self.temperature = getattr(config, 'temperature', 0.7)
-        self.max_tokens = getattr(config, 'max_tokens', 4096)
-        self.timeout = getattr(config, 'timeout', 60)
+        self.max_tokens = getattr(config, 'max_tokens', 8192)
+        self.timeout = getattr(config, 'timeout', 120)
         self._client = None
         self._initialized = False
     
@@ -69,6 +85,25 @@ class LongCatAdapter:
         """关闭客户端"""
         if self._client:
             await self._client.aclose()
+    
+    def _extract_msg_role_content(self, msg):
+        """提取消息角色和内容"""
+        if hasattr(msg, 'role') and hasattr(msg, 'content'):
+            return msg.role.value, msg.content
+        elif isinstance(msg, dict):
+            return msg.get('role', 'user'), msg.get('content', '')
+        else:
+            return 'user', str(msg)
+    
+    def _normalize_content(self, content):
+        """规范化内容"""
+        if isinstance(content, list):
+            parts = []
+            for part in content:
+                if isinstance(part, dict) and part.get('type') == 'text':
+                    parts.append(part.get('text', ''))
+            return '\n'.join(parts)
+        return content
     
     async def chat(
         self,
@@ -111,13 +146,14 @@ class LongCatAdapter:
         if tokens:
             request_data["max_tokens"] = tokens
         
-        # 暂时不支持工具调用 - 可能会导致API错误
-        # if tools:
-        #     request_data["tools"] = tools
-        #     if "tool_choice" in kwargs:
-        #         request_data["tool_choice"] = kwargs["tool_choice"]
+        if tools and len(tools) > 0:
+            request_data["tools"] = tools
+            logger.debug(f"发送工具定义给模型: {[t['name'] for t in tools]}")
+            if "tool_choice" in kwargs:
+                request_data["tool_choice"] = kwargs["tool_choice"]
         
         try:
+            logger.debug(f"发送请求到LongCat API")
             response = await self._client.post("/chat/completions", json=request_data)
             response.raise_for_status()
             text = response.text
@@ -164,10 +200,12 @@ class LongCatAdapter:
             "model": self.model,
             "messages": all_messages,
             "stream": True,
+            "stream_options": {"include_usage": True},
         }
         
-        if tools:
+        if tools and len(tools) > 0:
             request_data["tools"] = tools
+            logger.debug(f"流式发送工具定义给模型: {[t['name'] for t in tools]}")
         
         if self.temperature:
             request_data["temperature"] = self.temperature
@@ -184,10 +222,21 @@ class LongCatAdapter:
                             break
                         try:
                             data = json.loads(data_str)
-                            delta = data.get("choices", [{}])[0].get("delta", {})
-                            content = delta.get("content", "")
-                            if content:
-                                yield self._create_simple_response(content)
+                            choices = data.get("choices", [])
+                            if not choices:
+                                continue
+                            
+                            delta = choices[0].get("delta", {})
+                            
+                            # 先看有没有工具调用
+                            tool_calls = delta.get("tool_calls", [])
+                            if tool_calls and len(tool_calls) > 0:
+                                yield self._parse_tool_delta(data)
+                            else:
+                                # 普通文本
+                                content = delta.get("content", "")
+                                if content:
+                                    yield self._create_simple_response(content)
                         except json.JSONDecodeError:
                             continue
         except Exception as e:
@@ -198,82 +247,72 @@ class LongCatAdapter:
         self,
         messages: List[Any],
         tools: Optional[List[Dict]] = None,
-        system_prompt: Optional[str] = None,
         **kwargs,
     ):
         """同步聊天"""
-        return asyncio.get_event_loop().run_until_complete(
-            self.chat(messages, tools, system_prompt, **kwargs)
-        )
-    
-    def _extract_msg_role_content(self, msg):
-        """提取角色和内容"""
-        if hasattr(msg, 'role') and hasattr(msg, 'content'):
-            role = getattr(msg, 'role', 'user')
-            content = getattr(msg, 'content', '')
-            if hasattr(role, 'value'):
-                role = role.value
-            return role, content
-        elif isinstance(msg, dict):
-            return msg.get('role', 'user'), msg.get('content', '')
-        return 'user', str(msg)
-    
-    def _normalize_content(self, content):
-        """规范化内容"""
-        if isinstance(content, list):
-            text_parts = []
-            for block in content:
-                if isinstance(block, dict):
-                    if block.get('type') == 'text':
-                        text_parts.append(block.get('text', ''))
-                elif hasattr(block, 'text'):
-                    text_parts.append(getattr(block, 'text', ''))
-                else:
-                    text_parts.append(str(block))
-            return '\n'.join(text_parts)
-        return str(content) if content is not None else ''
+        return asyncio.run(self.chat(messages, tools, **kwargs))
     
     def _parse_response(self, data):
-        """解析API响应"""
-        choices = data.get("choices", [])
+        """解析LongCat API响应"""
+        try:
+            choice = data.get("choices", [{}])[0]
+            message = choice.get("message", {})
+            
+            content = message.get("content")
+            tool_calls_data = message.get("tool_calls", [])
+            
+            tool_calls = []
+            if tool_calls_data:
+                for tc in tool_calls_data:
+                    tc_id = tc.get("id", "")
+                    tc_func = tc.get("function", {})
+                    tc_name = tc_func.get("name", "")
+                    tc_args = tc_func.get("arguments", "{}")
+                    try:
+                        args = json.loads(tc_args)
+                    except json.JSONDecodeError:
+                        args = {"raw": tc_args}
+                    tool_calls.append(LongCatToolCall(id=tc_id, name=tc_name, arguments=args))
+                    logger.debug(f"解析到工具调用: {tc_name}")
+            
+            result = LongCatResponse(content=content, tool_calls=tool_calls)
+            return result
+        except Exception as e:
+            logger.error(f"解析LongCat响应错误: {e}")
+            return self._create_simple_response("解析响应错误")
+    
+    def _parse_tool_delta(self, data):
+        """解析工具调用delta"""
+        choice = data.get("choices", [{}])[0]
+        delta = choice.get("delta", {})
         
-        if not choices:
-            return self._create_simple_response("未收到模型响应")
+        tool_calls = delta.get("tool_calls", [])
+        if not tool_calls:
+            return self._create_simple_response("")
         
-        choice = choices[0]
-        message = choice.get("message", {})
-        content = message.get("content", "")
-        
-        tool_calls = []
-        raw_tool_calls = message.get("tool_calls", [])
-        for tc in raw_tool_calls:
-            func = tc.get("function", {})
-            args_str = func.get("arguments", "{}")
-            if isinstance(args_str, str):
-                try:
-                    args = json.loads(args_str)
-                except json.JSONDecodeError:
+        result = []
+        for tc in tool_calls:
+            tc_func = tc.get("function", {})
+            tc_name = tc_func.get("name", "")
+            tc_args_str = tc_func.get("arguments", "")
+            
+            try:
+                if tc_args_str:
+                    args = json.loads(tc_args_str)
+                else:
                     args = {}
-            else:
-                args = args_str
-            tool_calls.append({
-                "id": tc.get("id", ""),
-                "name": func.get("name", ""),
-                "arguments": args
-            })
+            except json.JSONDecodeError:
+                args = {"raw": tc_args_str}
+            
+            tc_id = tc.get("id", f"tool-{id(tc)}")
+            result.append(LongCatToolCall(id=tc_id, name=tc_name, arguments=args))
         
-        return self._create_simple_response(content, tool_calls if tool_calls else None, data.get("usage"))
+        return LongCatResponse(content=None, tool_calls=result)
     
-    def _create_simple_response(self, content, tool_calls=None, usage=None):
-        """创建简单响应对象"""
-        class SimpleResponse:
-            def __init__(self, content, tool_calls, usage):
-                self.content = content
-                self.tool_calls = tool_calls
-                self.usage = usage or {}
-        return SimpleResponse(content, tool_calls, usage)
-    
-    @classmethod
-    def from_config(cls, config):
-        """从配置创建适配器"""
-        return cls(config)
+    def _create_simple_response(self, content):
+        """创建简单响应"""
+        return LongCatResponse(content=content, tool_calls=None)
+
+
+# 导出兼容类名
+ModelAdapter = LongCatAdapter
