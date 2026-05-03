@@ -3,7 +3,7 @@ Security Scanner - 安全扫描系统
 参考 Hermes Agent 的 skills_guard.py
 """
 
-from typing import Dict, List, Optional, Tuple, Set
+from typing import Dict, List, Optional, Tuple, Set, Any
 from dataclasses import dataclass, field
 from enum import Enum
 import re

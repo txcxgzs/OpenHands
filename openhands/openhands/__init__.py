@@ -14,11 +14,32 @@ from .core.tools.policy import ToolPolicyManager
 from .core.agent import EmbeddedAgent
 from .core.loadbalancer import LoadBalancer, ModelFailover, ProviderConfig
 
+# Core - Hermes-style innovations
+from .core.budget import IterationBudget, BudgetManager, budget_manager
+from .core.parallel import (
+    ParallelToolExecutor,
+    parallel_executor,
+    ToolCall,
+    NEVER_PARALLEL_TOOLS,
+    PARALLEL_SAFE_TOOLS,
+    PATH_SCOPED_TOOLS,
+)
+from .core.security import (
+    SecurityScanner,
+    security_scanner,
+    ThreatPattern,
+    ScanResult,
+    Severity,
+    TrustLevel,
+)
+from .core.fuzzy_match import FuzzyMatcher, fuzzy_matcher, fuzzy_find_and_replace
+
 # Adapters
 from .core.adapters import (
     AnthropicAdapter,
     OpenAIAdapter,
     OpenRouterAdapter,
+    LongCatAdapter,
     get_adapter,
     list_providers,
 )
@@ -75,10 +96,30 @@ __all__ = [
     "LoadBalancer",
     "ModelFailover",
     "ProviderConfig",
+    # Core - Hermes-style innovations
+    "IterationBudget",
+    "BudgetManager",
+    "budget_manager",
+    "ParallelToolExecutor",
+    "parallel_executor",
+    "ToolCall",
+    "NEVER_PARALLEL_TOOLS",
+    "PARALLEL_SAFE_TOOLS",
+    "PATH_SCOPED_TOOLS",
+    "SecurityScanner",
+    "security_scanner",
+    "ThreatPattern",
+    "ScanResult",
+    "Severity",
+    "TrustLevel",
+    "FuzzyMatcher",
+    "fuzzy_matcher",
+    "fuzzy_find_and_replace",
     # Adapters
     "AnthropicAdapter",
     "OpenAIAdapter",
     "OpenRouterAdapter",
+    "LongCatAdapter",
     "get_adapter",
     "list_providers",
     # Channels

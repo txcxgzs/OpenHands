@@ -14,7 +14,14 @@ from .enhanced_memory import (
     MEMORY_GUIDANCE,
 )
 from .curator import Curator, CuratorConfig, CuratorState, SkillState, curator
-from .hindsight import HindsightReplay, Trajectory, AntiPattern, FailureType, hindsight_replay
+from .hindsight import (
+    HindsightReplay,
+    Trajectory,
+    TrajectoryStep,
+    AntiPattern,
+    FailureType,
+    hindsight_replay,
+)
 from .compression import (
     ExperienceCompressor,
     RawTrajectory,
