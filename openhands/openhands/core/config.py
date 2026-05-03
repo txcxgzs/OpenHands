@@ -1,4 +1,5 @@
 
+
 """
 Agent Configuration System
 References OpenClaw's model and tool configuration
@@ -72,7 +73,7 @@ class AgentConfig:
     system_prompt: Optional[str] = None
 
     @classmethod
-    def load(cls, config_path: Optional[str] = None) -> "AgentConfig":
+    def load(cls, config_path: Optional[str] = None):
         """Load config from file or environment"""
         config = cls()
 
@@ -87,7 +88,7 @@ class AgentConfig:
         config._apply_env_vars()
         return config
 
-    def _apply_dict(self, data: Dict[str, Any]) -> None:
+    def _apply_dict(self, data):
         """Apply config from dictionary"""
         if "model" in data:
             self._update_dataclass(self.model, data["model"])
@@ -104,8 +105,18 @@ class AgentConfig:
         if "system_prompt" in data:
             self.system_prompt = data["system_prompt"]
 
-    def _apply_env_vars(self) -> None:
+    def _apply_env_vars(self):
         """Apply config from environment variables"""
+        # Load provider and model from environment
+        env_provider = os.getenv("DEFAULT_PROVIDER")
+        if env_provider:
+            self.model.provider = env_provider
+            
+        env_model = os.getenv("DEFAULT_MODEL")
+        if env_model:
+            self.model.model = env_model
+            
+        # Load API Key
         if not self.model.api_key:
             if self.model.provider == "anthropic":
                 self.model.api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -127,13 +138,13 @@ class AgentConfig:
                 self.model.base_url = os.getenv("DEEPSEEK_BASE_URL")
 
     @staticmethod
-    def _update_dataclass(obj: Any, data: Dict[str, Any]) -> None:
+    def _update_dataclass(obj, data):
         """Update dataclass fields from dict"""
         for key, value in data.items():
             if hasattr(obj, key):
                 setattr(obj, key, value)
 
-    def save(self, config_path: str) -> None:
+    def save(self, config_path):
         """Save config to file"""
         data = {
             "model": {

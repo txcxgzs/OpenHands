@@ -1,3 +1,4 @@
+
 """
 Web GUI for OpenHands
 FastAPI + HTML/JS frontend
@@ -8,9 +9,18 @@ import asyncio
 import logging
 import base64
 import json
+import os
 from pathlib import Path
-from typing import Optional
 from datetime import datetime
+
+# 显式加载.env文件
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent.parent.parent / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+except ImportError:
+    pass
 
 try:
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -34,7 +44,7 @@ else:
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: list = []
+        self.active_connections = []
 
     async def connect(self, websocket):
         await websocket.accept()
@@ -44,20 +54,26 @@ class ConnectionManager:
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
 
-    async def send_message(self, message: dict, websocket):
-        await websocket.send_json(message)
+    async def send_message(self, message, websocket):
+        try:
+            await websocket.send_json(message)
+        except Exception as e:
+            logger.error(f"发送消息失败: {e}")
 
-    async def broadcast(self, message: dict):
+    async def broadcast(self, message):
         for connection in self.active_connections:
-            await connection.send_json(message)
+            try:
+                await connection.send_json(message)
+            except Exception as e:
+                logger.error(f"广播失败: {e}")
 
 
 manager = ConnectionManager()
 
-agent: Optional[EmbeddedAgent] = None
-current_session: Optional[str] = None
-is_controlling: bool = False
-action_count: int = 0
+agent = None
+current_session = None
+is_controlling = False
+action_count = 0
 
 
 def get_app():
@@ -68,7 +84,7 @@ def get_app():
     return app
 
 
-async def capture_screenshot() -> Optional[str]:
+async def capture_screenshot():
     """捕获屏幕截图并返回 base64"""
     try:
         import pyautogui
@@ -83,7 +99,7 @@ async def capture_screenshot() -> Optional[str]:
         return None
 
 
-async def execute_windows_action(action: str, params: dict) -> dict:
+async def execute_windows_action(action, params):
     """执行 Windows 控制操作"""
     global action_count
     
@@ -134,7 +150,7 @@ async def execute_windows_action(action: str, params: dict) -> dict:
             keys = params.get("keys", "")
             key_list = keys.split("+")
             pyautogui.hotkey(*key_list)
-            result["content"] = f"快捷键: {keys}"
+            result["content"] = f"快捷键: {keys})"
             result["keys"] = keys
             
         elif action == "press":
@@ -164,7 +180,51 @@ async def execute_windows_action(action: str, params: dict) -> dict:
         return result
         
     except Exception as e:
+        logger.error(f"执行操作失败: {action}", exc_info=True)
         return {"success": False, "action": action, "error": str(e)}
+
+
+class AgentProgressCallback:
+    """Agent运行时的进度回调"""
+    def __init__(self, websocket, manager):
+        self.websocket = websocket
+        self.manager = manager
+        
+    async def on_status(self, status):
+        """状态更新"""
+        logger.info(f"Agent状态: {status}")
+        await self.manager.send_message({
+            "type": "status",
+            "content": status
+        }, self.websocket)
+        
+    async def on_tool_call(self, tool_name, arguments):
+        """工具调用开始"""
+        logger.info(f"工具调用: {tool_name}")
+        await self.manager.send_message({
+            "type": "tool_call",
+            "tool": tool_name,
+            "arguments": arguments,
+            "status": "calling"
+        }, self.websocket)
+        
+    async def on_tool_result(self, tool_name, result, is_error=False):
+        """工具调用完成"""
+        logger.info(f"工具结果: {tool_name}")
+        await self.manager.send_message({
+            "type": "tool_result",
+            "tool": tool_name,
+            "result": str(result) if not isinstance(result, str) else result,
+            "is_error": is_error
+        }, self.websocket)
+        
+    async def on_message(self, content, role="assistant"):
+        """消息更新"""
+        await self.manager.send_message({
+            "type": "message",
+            "content": content,
+            "role": role
+        }, self.websocket)
 
 
 if FASTAPI_AVAILABLE:
@@ -172,20 +232,27 @@ if FASTAPI_AVAILABLE:
     async def startup():
         global agent, current_session
         try:
+            logger.info("正在初始化OpenHands Agent...")
             config = AgentConfig.load()
+            logger.info(f"配置加载成功: model={config.model.provider}")
+            
             agent = EmbeddedAgent(config)
             await agent.initialize()
+            logger.info("Agent初始化成功")
+            
             current_session = await agent.create_session()
+            logger.info(f"会话创建成功: {current_session}")
+            
             logger.info("OpenHands GUI started")
         except Exception as e:
-            logger.error(f"Startup failed: {e}")
+            logger.error(f"Startup failed: {e}", exc_info=True)
 
     @app.get("/")
     async def get_index():
         html_path = Path(__file__).parent / "index.html"
         if html_path.exists():
             return HTMLResponse(html_path.read_text(encoding="utf-8"))
-        return HTMLResponse("<h1>OpenHands GUI</h1><p>index.html not found</p>")
+        return HTMLResponse("&lt;h1&gt;OpenHands GUI&lt;/h1&gt;&lt;p&gt;index.html not found&lt;/p&gt;")
 
     @app.get("/api/status")
     async def get_status():
@@ -197,31 +264,59 @@ if FASTAPI_AVAILABLE:
         }
 
     @app.websocket("/ws")
-    async def websocket_endpoint(websocket: WebSocket):
+    async def websocket_endpoint(websocket):
         global is_controlling, action_count
         
         await manager.connect(websocket)
+        logger.info("WebSocket连接已建立")
         
         try:
             while True:
                 data = await websocket.receive_json()
                 msg_type = data.get("type")
+                logger.info(f"收到消息: {msg_type}")
                 
                 if msg_type == "message":
                     user_message = data.get("content", "")
-                    await manager.send_message({
-                        "type": "status",
-                        "content": "正在思考..."
-                    }, websocket)
+                    logger.info(f"用户消息: {user_message}")
                     
-                    if agent and current_session:
+                    callback = AgentProgressCallback(websocket, manager)
+                    await callback.on_status("正在思考...")
+                    
+                    if not agent:
+                        await callback.on_status("Agent未初始化")
+                        await callback.on_message("Agent未初始化，请检查配置", "error")
+                        continue
+                        
+                    if not current_session:
+                        await callback.on_status("会话未创建")
+                        current_session = await agent.create_session()
+                    
+                    try:
+                        await callback.on_status("正在处理消息...")
                         await agent.queue_message(current_session, user_message)
+                        
+                        await callback.on_status("正在运行Agent...")
+                        
+                        # 运行Agent
                         result = await agent.run(current_session)
                         
-                        await manager.send_message({
-                            "type": "message",
-                            "content": result.final_answer or "无响应"
-                        }, websocket)
+                        logger.info(f"Agent运行完成: success={result.success}, final_answer={result.final_answer}")
+                        
+                        if result.error:
+                            await callback.on_status(f"错误: {result.error}")
+                            await callback.on_message(f"发生错误: {result.error}", "error")
+                        else:
+                            await callback.on_status("完成")
+                            if result.final_answer:
+                                await callback.on_message(result.final_answer)
+                            else:
+                                await callback.on_message("Agent已处理您的请求")
+                                
+                    except Exception as e:
+                        logger.error(f"Agent运行错误: {e}", exc_info=True)
+                        await callback.on_status(f"错误: {str(e)}")
+                        await callback.on_message(f"抱歉，发生了错误: {str(e)}", "error")
                 
                 elif msg_type == "take_control":
                     is_controlling = True
@@ -305,13 +400,14 @@ if FASTAPI_AVAILABLE:
                     }, websocket)
                     
         except WebSocketDisconnect:
+            logger.info("WebSocket连接断开")
             manager.disconnect(websocket)
         except Exception as e:
-            logger.error(f"WebSocket error: {e}")
+            logger.error(f"WebSocket error: {e}", exc_info=True)
             manager.disconnect(websocket)
 
 
-def run_gui(host: str = "0.0.0.0", port: int = 8000):
+def run_gui(host="0.0.0.0", port=8000):
     """Run the GUI server"""
     if not FASTAPI_AVAILABLE:
         raise ImportError("FastAPI not installed. Install with: pip install fastapi uvicorn")
@@ -323,7 +419,7 @@ def run_gui(host: str = "0.0.0.0", port: int = 8000):
     print("按 Ctrl+C 停止")
     print(f"{'='*60}\n")
     
-    uvicorn.run(app, host=host, port=port)
+    uvicorn.run(app, host=host, port=port, log_level="info")
 
 
 if __name__ == "__main__":
