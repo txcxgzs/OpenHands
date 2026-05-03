@@ -174,7 +174,7 @@ class ToolPolicyPipeline:
     def __init__(self):
         self._layers: List[Callable[[str], Optional[bool]]] = []
 
-    def add_layer(self, layer: Callable[[str], Optional[bool]):
+    def add_layer(self, layer: Callable[[str], Optional[bool]]):
         self._layers.append(layer)
 
     def evaluate(self, tool_name: str) -> bool:

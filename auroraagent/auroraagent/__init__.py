@@ -1,12 +1,21 @@
+
 """
-AuroraAgent - Windows 原生 AI Agent
-深度参考 OpenClaw 和 Hermes Agent 的架构设计
+AuroraAgent Main Package
 """
+
+from .core import AuroraAgent, AgentConfig
+from .core.agent.runner import EmbeddedAgent
+from .core.tools.registry import tool_registry
+from .core.tools.policy import ToolPolicyManager
+from .core.memory.store import MemoryStore
 
 __version__ = "0.1.0"
-__author__ = "Aurora Team"
 
-from .core.agent import AuroraAgent
-from .core.config import AgentConfig
-
-__all__ = ["AuroraAgent", "AgentConfig"]
+__all__ = [
+    "AuroraAgent",
+    "AgentConfig",
+    "EmbeddedAgent",
+    "tool_registry",
+    "ToolPolicyManager",
+    "MemoryStore",
+]
