@@ -75,6 +75,44 @@ from .skills import (
     ReviewAgent,
     EnhancedMemoryStore,
     MEMORY_GUIDANCE,
+    # Experience Replay
+    HindsightReplay,
+    Trajectory,
+    TrajectoryStep,
+    AntiPattern,
+    FailureType,
+    hindsight_replay,
+    # Curator
+    Curator,
+    CuratorConfig,
+    SkillState,
+    curator,
+    # Experience Compression
+    ExperienceCompressor,
+    RawTrajectory,
+    EpisodicMemory,
+    ProceduralSkill,
+    DeclarativeRule,
+    experience_compressor,
+    # Utility Refiner
+    MemoryRefiner,
+    UtilityScorer,
+    memory_refiner,
+    # Context Retriever
+    ContextAwareRetriever,
+    TaskContext,
+    RetrievalResult,
+    context_aware_retriever,
+    # Knowledge Internalization
+    KnowledgeInternalizer,
+    knowledge_internalizer,
+    # Multi-faceted Distillation
+    MultiFacetedDistiller,
+    SuccessPattern,
+    multi_faceted_distiller,
+    # Meta Evolution
+    MetaEvolutionLayer,
+    meta_evolution,
 )
 
 __all__ = [
@@ -150,6 +188,44 @@ __all__ = [
     "ReviewAgent",
     "EnhancedMemoryStore",
     "MEMORY_GUIDANCE",
+    # Experience Replay
+    "HindsightReplay",
+    "Trajectory",
+    "TrajectoryStep",
+    "AntiPattern",
+    "FailureType",
+    "hindsight_replay",
+    # Curator
+    "Curator",
+    "CuratorConfig",
+    "SkillState",
+    "curator",
+    # Experience Compression
+    "ExperienceCompressor",
+    "RawTrajectory",
+    "EpisodicMemory",
+    "ProceduralSkill",
+    "DeclarativeRule",
+    "experience_compressor",
+    # Utility Refiner
+    "MemoryRefiner",
+    "UtilityScorer",
+    "memory_refiner",
+    # Context Retriever
+    "ContextAwareRetriever",
+    "TaskContext",
+    "RetrievalResult",
+    "context_aware_retriever",
+    # Knowledge Internalization
+    "KnowledgeInternalizer",
+    "knowledge_internalizer",
+    # Multi-faceted Distillation
+    "MultiFacetedDistiller",
+    "SuccessPattern",
+    "multi_faceted_distiller",
+    # Meta Evolution
+    "MetaEvolutionLayer",
+    "meta_evolution",
 ]
 
 # Alias for backwards compatibility
