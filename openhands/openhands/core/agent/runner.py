@@ -1,10 +1,12 @@
 """
 OpenHands - AI Agent Runner
+OpenClaw风格的身份验证和工作区引导
 """
 
 import asyncio
 import logging
 import uuid
+import os
 from typing import Dict, List, Optional, Any, AsyncGenerator
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -54,34 +56,64 @@ class EmbeddedAgentRunResult:
     tool_results: List[Any] = field(default_factory=list)
 
 
-DEFAULT_SYSTEM_PROMPT = """You are OpenHands, a personal assistant running inside an AI agent framework.
+# 工作区文件路径
+WORKSPACE_DIR = "/workspace/openhands-workspace"
+BOOTSTRAP_FILE = os.path.join(WORKSPACE_DIR, "BOOTSTRAP.md")
+USER_FILE = os.path.join(WORKSPACE_DIR, "user.md")
+IDENTITY_FILE = os.path.join(WORKSPACE_DIR, "identity.md")
 
-## Identity & First Interaction
-- This is your first conversation with this user. Start by introducing yourself briefly and ask for their name or how you should address them.
-- Be friendly and helpful. Your goal is to assist the user with their tasks.
-- After the user introduces themselves, remember their name and use it in future interactions.
 
-## Your Capabilities
-You have access to tools that let you:
-- Execute terminal commands (terminal_run)
-- Read and write files (read_file, write_file, list_dir)
-- Store and search memories (memory_add, memory_search, memory_list)
+def ensure_workspace():
+    """确保工作区存在"""
+    os.makedirs(WORKSPACE_DIR, exist_ok=True)
 
-## Tool Usage Guidelines
-- **When the user asks you to run a command, execute it using terminal_run**
-- **When the user asks to read a file or see directory contents, use the appropriate file tool**
-- **Use tools proactively to help the user efficiently**
+
+def check_bootstrap_status() -> bool:
+    """检查是否需要引导（user.md不存在则需要引导）"""
+    return not os.path.exists(USER_FILE)
+
+
+def get_bootstrap_prompt() -> str:
+    """获取引导提示词"""
+    return """请先用 read_file 工具读取 BOOTSTRAP.md，然后按照其指示完成设置。
+首次回复要简洁（2-3句话），询问用户名字，然后使用 write_file 将名字写入 user.md。
+完成设置后删除 BOOTSTRAP.md。"""
+
+
+def get_normal_first_greeting() -> str:
+    """正常首次问候（2-3句话）"""
+    user_name = "friend"
+    if os.path.exists(USER_FILE):
+        try:
+            with open(USER_FILE, 'r') as f:
+                content = f.read()
+                for line in content.split('\n'):
+                    if 'name' in line.lower() or '名字' in line:
+                        parts = line.split(':')
+                        if len(parts) > 1:
+                            user_name = parts[1].strip().strip('*').strip()
+                            break
+        except:
+            pass
+    
+    return f"你好 {user_name}！我是 OpenHands。有什么我可以帮你的吗？"
+
+
+DEFAULT_SYSTEM_PROMPT = """You are OpenHands, a personal AI assistant.
+
+## Workspace Context
+Working directory: /workspace
+
+## Your Tools
+- terminal_run: Execute commands
+- read_file, write_file, list_dir: File operations
+- memory_add, memory_search, memory_list: Memory system
 
 ## Execution Style
 - Actionable request: act in this turn.
 - Continue until done or genuinely blocked.
-- Final answer needs evidence: test/build output, file contents, or tool output.
-- Keep responses concise and helpful.
-
-## Workspace
-Your working directory is the current project folder.
-
-Start by greeting the user and asking their name or what they would like to do today."""
+- Keep responses concise (2-3 sentences max for greetings).
+- Final answer needs evidence: tool output, file contents, or command result."""
 
 
 class EmbeddedAgent:
@@ -101,6 +133,7 @@ class EmbeddedAgent:
             return
 
         logger.info("Initializing OpenHands Agent...")
+        ensure_workspace()
 
         adapter_class = get_adapter_class(self.config.model.provider)
         if not adapter_class:
@@ -158,34 +191,6 @@ class EmbeddedAgent:
             return Message(role=MessageRole.ASSISTANT, content=response.content or "")
         return Message(role=MessageRole.ASSISTANT, content=str(response))
 
-    async def run(self, session_id: str, max_iterations: Optional[int] = None, tool_profile: Optional[str] = None, system_prompt_override: Optional[str] = None) -> EmbeddedAgentRunResult:
-        session = self.get_session(session_id)
-        if not session:
-            raise ValueError(f"Session not found: {session_id}")
-
-        run_id = str(uuid.uuid4())
-        run_meta = EmbeddedAgentRunMeta(run_id=run_id, start_time=datetime.now())
-        self._active_runs[run_id] = run_meta
-        session.status = SessionStatus.RUNNING
-
-        max_iter = max_iterations or self.config.max_iterations or 30
-        budget = IterationBudget(max_total=max_iter)
-        tool_results: List[Any] = []
-
-        try:
-            result = await self._agent_loop(session, budget, run_meta, tool_profile, system_prompt_override, tool_results)
-            result.meta = run_meta
-            return result
-        except Exception as e:
-            logger.exception(f"Agent run failed: {run_id}")
-            run_meta.success = False
-            return EmbeddedAgentRunResult(meta=run_meta, success=False, error=str(e), messages=session.messages)
-        finally:
-            session.status = SessionStatus.COMPLETED
-            session.updated_at = datetime.now()
-            if run_id in self._active_runs:
-                del self._active_runs[run_id]
-
     async def run_stream(self, session_id: str, max_iterations: Optional[int] = None, tool_profile: Optional[str] = None, system_prompt_override: Optional[str] = None) -> AsyncGenerator[Dict[str, Any], None]:
         session = self.get_session(session_id)
         if not session:
@@ -213,9 +218,20 @@ class EmbeddedAgent:
             if run_id in self._active_runs:
                 del self._active_runs[run_id]
 
+    def _get_system_prompt(self, is_first_message: bool) -> str:
+        """根据是否是首次消息返回不同提示词"""
+        if is_first_message:
+            if check_bootstrap_status():
+                return DEFAULT_SYSTEM_PROMPT + "\n\n" + get_bootstrap_prompt()
+            else:
+                return DEFAULT_SYSTEM_PROMPT + "\n\n" + get_normal_first_greeting()
+        return DEFAULT_SYSTEM_PROMPT
+
     async def _agent_loop_stream(self, session: SessionState, budget: IterationBudget, run_meta: EmbeddedAgentRunMeta, tool_profile: Optional[str], system_prompt_override: Optional[str], tool_results: List[Any]) -> AsyncGenerator[Dict[str, Any], None]:
         profile = tool_profile or session.current_tool_profile or "full"
-        system_prompt = system_prompt_override or self.config.system_prompt or DEFAULT_SYSTEM_PROMPT
+        
+        is_first = len(session.messages) <= 2
+        system_prompt = system_prompt_override or self._get_system_prompt(is_first)
 
         while budget.remaining > 0:
             budget.consume()
@@ -279,33 +295,6 @@ class EmbeddedAgent:
 
         yield {"type": "final", "content": "达到最大迭代次数"}
 
-    async def _agent_loop(self, session: SessionState, budget: IterationBudget, run_meta: EmbeddedAgentRunMeta, tool_profile: Optional[str], system_prompt_override: Optional[str], tool_results: List[Any]):
-        profile = tool_profile or session.current_tool_profile or "full"
-        system_prompt = system_prompt_override or self.config.system_prompt or DEFAULT_SYSTEM_PROMPT
-
-        while budget.remaining > 0:
-            budget.consume()
-            run_meta.iteration_count += 1
-
-            adapter_messages = self._to_adapter_messages(session.messages)
-            tool_defs = self._get_available_tools(profile)
-
-            response = await self._adapter.chat(messages=adapter_messages, tools=tool_defs, system_prompt=system_prompt)
-            assistant_msg = self._from_adapter_response(response)
-            session.messages.append(assistant_msg)
-
-            if response.tool_calls:
-                for tc in response.tool_calls:
-                    run_meta.tool_call_count += 1
-                    result = await self._execute_single_tool(tc, budget, run_meta, profile)
-                    tool_results.append(result)
-                    msg = Message(role=MessageRole.TOOL, content=result.content, tool_call_id=tc.id)
-                    session.messages.append(msg)
-            else:
-                return EmbeddedAgentRunResult(meta=run_meta, success=True, messages=session.messages, tool_results=tool_results)
-
-        return EmbeddedAgentRunResult(meta=run_meta, success=False, error="Max iterations", messages=session.messages, tool_results=tool_results)
-
     async def _execute_single_tool(self, tool_call: Any, budget: IterationBudget, run_meta: EmbeddedAgentRunMeta, profile: str) -> Any:
         logger.info(f"Executing tool: {tool_call.name}")
         run_meta.tool_call_count += 1
@@ -323,4 +312,4 @@ class EmbeddedAgent:
         all_defs = self._tool_registry.get_definitions()
         all_names = [d["name"] for d in all_defs]
         allowed_names = self._policy_manager.filter_tools(all_names, profile)
-        return [d for d in all_defs if d["name"] in allowed_names]
+        return [d for d in all_defs if d["name"] in allowed_names}
