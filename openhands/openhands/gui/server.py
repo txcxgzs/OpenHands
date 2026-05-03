@@ -44,6 +44,8 @@ app.add_middleware(
 
 agent = None
 current_session = None
+is_controlling = False
+action_count = 0
 
 
 @app.on_event("startup")
@@ -100,6 +102,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     "content": "正在思考..."
                 })
                 
+                global current_session
+                
                 if not agent:
                     await websocket.send_json({
                         "type": "error",
@@ -109,12 +113,13 @@ async def websocket_endpoint(websocket: WebSocket):
                 
                 if not current_session:
                     current_session = await agent.create_session()
+                    logger.info(f"创建新会话: {current_session}")
                 
                 try:
                     await agent.queue_message(current_session, user_message)
                     result = await agent.run(current_session)
                     
-                    logger.info(f"Agent运行完成: success={result.success}")
+                    logger.info(f"Agent运行完成: success={result.success}, error={result.error}")
                     
                     if result.error:
                         await websocket.send_json({
@@ -122,9 +127,10 @@ async def websocket_endpoint(websocket: WebSocket):
                             "content": f"错误: {result.error}"
                         })
                     else:
+                        answer = result.final_answer or "已完成处理"
                         await websocket.send_json({
                             "type": "message",
-                            "content": result.final_answer or "已完成"
+                            "content": answer
                         })
                 except Exception as e:
                     logger.error(f"Agent运行错误: {e}", exc_info=True)
