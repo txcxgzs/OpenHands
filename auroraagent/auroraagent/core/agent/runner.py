@@ -19,6 +19,7 @@ from ..types import (
 )
 from ..config import AgentConfig
 from ..adapters import ModelAdapter, get_adapter_class
+from ...tools import file_tools, terminal_tools, memory_tools
 from ..tools.registry import ToolRegistry, tool_registry
 from ..tools.policy import ToolPolicyManager
 from ..memory.store import MemoryStore

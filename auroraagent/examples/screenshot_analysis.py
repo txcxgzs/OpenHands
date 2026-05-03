@@ -1,23 +1,35 @@
 """
-截图分析示例
+Example: Screenshot Analysis
 """
+
 import asyncio
-from auroraagent import AuroraAgent, AgentConfig
+from pathlib import Path
+from auroraagent import EmbeddedAgent, AgentConfig
 
 
 async def main():
     config = AgentConfig.load()
-    
-    agent = AuroraAgent(config)
+    agent = EmbeddedAgent(config)
     await agent.initialize()
-    
-    print("=== 截图分析示例 ===\n")
-    
-    result = await agent.chat(
-        "请先截图当前屏幕，然后告诉我你看到了什么"
-    )
-    
-    print(f"分析结果:\n{result.final_answer}")
+
+    session_id = await agent.create_session()
+
+    screenshot_path = Path("./data/screenshots/screenshot.png")
+    if screenshot_path.exists():
+        print("Analyzing screenshot...")
+        await agent.queue_message(
+            session_id,
+            "Analyze this screenshot and describe what you see.",
+            images=[str(screenshot_path)],
+        )
+    else:
+        await agent.queue_message(
+            session_id,
+            "Take a screenshot and analyze the screen.",
+        )
+
+    result = await agent.run(session_id)
+    print(f"\nAnalysis:\n{result.final_answer}")
 
 
 if __name__ == "__main__":

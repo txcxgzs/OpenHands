@@ -1,21 +1,54 @@
-
 """
-AuroraAgent Main Package
-"""
+AuroraAgent Package - AI Assistant with Windows Control
+Deep reference from OpenClaw and Hermes Agent
 
-from .core import AuroraAgent, AgentConfig
-from .core.agent.runner import EmbeddedAgent
-from .core.tools.registry import tool_registry
-from .core.tools.policy import ToolPolicyManager
-from .core.memory.store import MemoryStore
+Architecture:
+- EmbeddedAgent: Core runtime (OpenClaw style)
+- ToolRegistry: Tool management
+- ToolPolicyManager: Permission and policy
+- MemoryStore: Vector memory search
+- Model Adapters: Multi-provider support
+- SubAgentManager: Task delegation
+- MCPClient: Protocol support
+- ChannelManager: Channel integrations
+- PluginManager: Extensibility
+"""
 
 __version__ = "0.1.0"
 
+from .core import (
+    AgentConfig,
+    EmbeddedAgent,
+    tool_registry,
+    ToolPolicyManager,
+    MemoryStore,
+)
+from .core.subagents import SubAgentManager, SubAgentConfig
+from .core.mcp import MCPClient, MCPServer, MCPTool
+from .channels import Channel, ChannelManager, ChannelMessage, ChannelConfig
+from .plugins import Plugin, PluginManager, PluginMetadata
+
 __all__ = [
-    "AuroraAgent",
+    # Core
     "AgentConfig",
     "EmbeddedAgent",
     "tool_registry",
     "ToolPolicyManager",
     "MemoryStore",
+    # Subagents
+    "SubAgentManager",
+    "SubAgentConfig",
+    # MCP
+    "MCPClient",
+    "MCPServer",
+    "MCPTool",
+    # Channels
+    "Channel",
+    "ChannelManager",
+    "ChannelMessage",
+    "ChannelConfig",
+    # Plugins
+    "Plugin",
+    "PluginManager",
+    "PluginMetadata",
 ]
