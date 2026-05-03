@@ -120,5 +120,20 @@ def ask(prompt: str, config: Optional[str]):
     asyncio.run(run())
 
 
+@main.command()
+@click.option("--host", "-h", default="0.0.0.0", help="Host to listen on")
+@click.option("--port", "-p", default=8000, type=int, help="Port to listen on")
+def gui(host: str, port: int):
+    """Start web GUI server"""
+    console.print(Panel.fit(
+        "[bold green]AuroraAgent GUI[/bold green]\n"
+        f"Starting server at http://{host}:{port}",
+        title="GUI",
+    ))
+    import uvicorn
+    from auroraagent.gui.server import app
+    uvicorn.run(app, host=host, port=port)
+
+
 if __name__ == "__main__":
     main()

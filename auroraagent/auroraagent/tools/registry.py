@@ -22,6 +22,23 @@ class ToolEntry:
     enabled: bool = True
 
 
+@dataclass
+class ToolResult:
+    """Result from executing a tool"""
+    tool_call_id: str = ""
+    content: str = ""
+    is_error: bool = False
+    success: bool = field(init=False)
+    output: str = field(init=False)
+    error: str = field(init=False)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self):
+        self.success = not self.is_error
+        self.output = self.content
+        self.error = self.content if self.is_error else ""
+
+
 class ToolRegistry:
     """
     Central tool registry - References OpenClaw's tool catalog
@@ -36,14 +53,34 @@ class ToolRegistry:
         self,
         name: str,
         description: str,
-        handler: Callable,
+        handler: Optional[Callable] = None,
         toolset: str = "default",
         parameters: Optional[Dict[str, Any]] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Callable:
         """
-        Decorator to register a tool
+        Decorator to register a tool - can be called as decorator or directly
         """
+        if handler is not None:
+            # Direct call
+            entry = ToolEntry(
+                name=name,
+                description=description,
+                handler=handler,
+                toolset=toolset,
+                parameters=parameters or {},
+                metadata=metadata or {},
+            )
+            self._tools[name] = entry
+
+            if toolset not in self._toolsets:
+                self._toolsets[toolset] = []
+            self._toolsets[toolset].append(name)
+
+            logger.debug(f"Registered tool: {name} ({toolset})")
+            return handler
+
+        # Decorator mode
         def decorator(func: Callable) -> Callable:
             entry = ToolEntry(
                 name=name,
@@ -121,30 +158,18 @@ class ToolRegistry:
         self,
         tool_name: str,
         arguments: Dict[str, Any],
-    ) -> "ToolResult":
+    ) -> ToolResult:
         """Execute a tool"""
-        from dataclasses import dataclass as dc
-
-        @dc
-        class ToolResult:
-            tool_call_id: str = ""
-            content: str = ""
-            is_error: bool = False
-            metadata: Dict[str, Any] = field(default_factory=dict)
-
         entry = self.get_tool(tool_name)
         if not entry:
             return ToolResult(content=f"Unknown tool: {tool_name}", is_error=True)
 
         try:
-            if hasattr(entry.handler, '__wrapped__') or hasattr(entry.handler, '__call__'):
-                import asyncio
-                if asyncio.iscoroutinefunction(entry.handler):
-                    result = await entry.handler(**arguments)
-                else:
-                    result = await asyncio.to_thread(entry.handler, **arguments)
-            else:
+            import asyncio
+            if asyncio.iscoroutinefunction(entry.handler):
                 result = await entry.handler(**arguments)
+            else:
+                result = await asyncio.to_thread(entry.handler, **arguments)
 
             if isinstance(result, str):
                 content = result
@@ -157,17 +182,8 @@ class ToolRegistry:
             logger.exception(f"Tool execution failed: {tool_name}")
             return ToolResult(content=f"Error executing {tool_name}: {str(e)}", is_error=True)
 
-    async def execute_tool_call(self, tool_call) -> "ToolResult":
+    async def execute_tool_call(self, tool_call) -> ToolResult:
         """Execute a tool call from model"""
-        from dataclasses import dataclass as dc
-
-        @dc
-        class ToolResult:
-            tool_call_id: str = ""
-            content: str = ""
-            is_error: bool = False
-            metadata: Dict[str, Any] = field(default_factory=dict)
-
         result = await self.execute_tool(tool_call.name, tool_call.arguments)
         result.tool_call_id = tool_call.id
         return result
