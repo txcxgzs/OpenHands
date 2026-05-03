@@ -3,146 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenHands - AI Assistant</title>
+    <title>OpenHands — AI Assistant</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
     <style>
-        /* ============================================
-           OPENHANDS DESIGN SYSTEM - Inspired by OpenClaw
-           ============================================ */
-        
         :root {
-            /* Background - Deep, rich dark with layered depth */
-            --bg: #0e1015;
-            --bg-accent: #13151b;
-            --bg-elevated: #191c24;
-            --bg-hover: #1f2330;
-            --bg-muted: #1f2330;
-
-            /* Card / Surface - Clear hierarchy between levels */
-            --card: #161920;
-            --card-foreground: #f0f0f2;
-            --card-highlight: rgba(255, 255, 255, 0.04);
-            --popover: #191c24;
-            --popover-foreground: #f0f0f2;
-
-            /* Panel */
-            --panel: #0e1015;
-            --panel-strong: #191c24;
-            --panel-hover: #1f2330;
-            --chrome: rgba(14, 16, 21, 0.96);
-            --chrome-strong: rgba(14, 16, 21, 0.98);
-
-            /* Text - Clean contrast */
-            --text: #d4d4d8;
-            --text-strong: #f4f4f5;
-            --chat-text: #d4d4d8;
-            --muted: #838387;
-            --muted-strong: #75757d;
-            --muted-foreground: #838387;
-
-            /* Border - Whisper-thin, barely there */
-            --border: #1e2028;
-            --border-strong: #2e3040;
-            --border-hover: #3e4050;
-            --input: #1e2028;
-            --ring: #ff5c5c;
-
-            /* Accent - Punchy signature red */
-            --accent: #ff5c5c;
-            --accent-hover: #ff7070;
-            --accent-muted: #ff5c5c;
-            --accent-subtle: rgba(255, 92, 92, 0.1);
-            --accent-foreground: #fafafa;
-            --accent-glow: rgba(255, 92, 92, 0.2);
-            --selection-bg: #005fcc;
-            --selection-fg: #ffffff;
-            --primary: #ff5c5c;
-            --primary-foreground: #ffffff;
-
-            /* Secondary */
-            --secondary: #161920;
-            --secondary-foreground: #f0f0f2;
-            --accent-2: #14b8a6;
-            --accent-2-muted: rgba(20, 184, 166, 0.7);
-            --accent-2-subtle: rgba(20, 184, 166, 0.1);
-
-            /* Semantic */
-            --ok: #22c55e;
-            --ok-muted: rgba(34, 197, 94, 0.75);
-            --ok-subtle: rgba(34, 197, 94, 0.08);
-            --destructive: #ef4444;
-            --destructive-foreground: #fafafa;
-            --warn: #f59e0b;
-            --warn-muted: rgba(245, 158, 11, 0.75);
-            --warn-subtle: rgba(245, 158, 11, 0.08);
-            --danger: #ef4444;
-            --danger-muted: rgba(239, 68, 68, 0.75);
-            --danger-subtle: rgba(239, 68, 68, 0.08);
-            --info: #3b82f6;
-
-            /* Focus */
-            --focus: rgba(255, 92, 92, 0.2);
-            --focus-ring: 0 0 0 2px var(--bg), 0 0 0 3px color-mix(in srgb, var(--ring) 80%, transparent);
-            --focus-glow: 0 0 0 2px var(--bg), 0 0 0 3px var(--ring), 0 0 16px var(--accent-glow);
-
-            /* Typography */
-            --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
-
-            /* Shadows - Subtle, layered depth */
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
-            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
-            --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.5);
-            --shadow-glow: 0 0 24px var(--accent-glow);
-
-            /* Radii - Slightly larger for modern feel */
+            --bg-0: #090b10;
+            --bg-1: #0d1117;
+            --bg-2: #161b22;
+            --bg-3: #1f2428;
+            --surface: rgba(255, 255, 255, 0.03);
+            --surface-hover: rgba(255, 255, 255, 0.06);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.14);
+            
+            --text-primary: #f0f4f8;
+            --text-secondary: #8b95a5;
+            --text-muted: #656d78;
+            
+            --accent: #ff4d4d;
+            --accent-hover: #ff6b6b;
+            --accent-glow: rgba(255, 77, 77, 0.25);
+            --accent-soft: rgba(255, 77, 77, 0.08);
+            --accent-alt: #21c3a1;
+            
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --error: #e74c3c;
+            --info: #3498db;
+            
             --radius-sm: 6px;
             --radius-md: 10px;
-            --radius-lg: 14px;
-            --radius-xl: 20px;
-            --radius-full: 9999px;
-            --radius: 10px;
-
-            /* Transitions - Crisp and responsive */
-            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-            --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-            --duration-fast: 100ms;
-            --duration-normal: 180ms;
-            --duration-slow: 300ms;
-
-            color-scheme: dark;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            
+            --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.4);
+            --shadow-strong: 0 8px 48px rgba(0, 0, 0, 0.6);
+            
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+            
+            --transition-fast: 150ms cubic-bezier(0.2, 0.8, 0.3, 1);
+            --transition-normal: 250ms cubic-bezier(0.2, 0.8, 0.3, 1);
+            --transition-slow: 400ms cubic-bezier(0.2, 0.8, 0.3, 1);
         }
 
         * {
             box-sizing: border-box;
         }
 
-        html,
-        body {
+        html, body {
             height: 100%;
             margin: 0;
             padding: 0;
         }
 
         body {
-            font: 400 14px/1.55 var(--font-body);
-            letter-spacing: -0.01em;
-            background: var(--bg);
-            color: var(--text);
+            font-family: var(--font-sans);
+            background: var(--bg-0);
+            color: var(--text-primary);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             overflow: hidden;
         }
 
         ::selection {
-            background: var(--selection-bg);
-            color: var(--selection-fg);
+            background: var(--accent-soft);
+            color: var(--text-primary);
         }
 
-        /* Scrollbar styling - Minimal, barely visible */
         ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
         }
 
         ::-webkit-scrollbar-track {
@@ -151,43 +86,32 @@
 
         ::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.08);
-            border-radius: var(--radius-full);
+            border-radius: 999px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.14);
         }
 
-        /* Animations */
         @keyframes fade-in {
             from { opacity: 0; }
             to { opacity: 1; }
         }
 
         @keyframes slide-up {
-            from {
-                opacity: 0;
-                transform: translateY(8px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes pulse-subtle {
+        @keyframes pulse-glow {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+            50% { opacity: 0.5; }
         }
 
         @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-4px); }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
         }
-
-        /* ============================================
-           LAYOUT
-           ============================================ */
 
         .app {
             display: flex;
@@ -197,222 +121,161 @@
             position: relative;
         }
 
-        /* Header */
-        .app-header {
+        .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 20px;
-            background: var(--bg);
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
-            z-index: 10;
+            padding: 16px 24px;
+            background: linear-gradient(180deg, rgba(13, 17, 23, 0.95) 0%, rgba(13, 17, 23, 0.8) 100%);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+            z-index: 50;
         }
 
-        .app-header-left {
+        .header-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
         }
 
-        .app-logo {
+        .logo {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            font-size: 16px;
-            color: var(--text-strong);
+            gap: 10px;
+            text-decoration: none;
+            color: inherit;
         }
 
-        .app-logo-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: var(--radius-md);
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+        .logo-mark {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent) 0%, #ff8a5b 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
-            color: white;
             font-weight: 700;
+            font-size: 16px;
+            letter-spacing: -0.02em;
+            box-shadow: 0 0 32px var(--accent-glow);
         }
 
-        .app-status {
+        .logo-text {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .status {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: var(--muted);
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--surface);
+            border-radius: 999px;
+            border: 1px solid var(--border-subtle);
+            font-size: 13px;
+            color: var(--text-secondary);
         }
 
-        .app-status-dot {
+        .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--ok);
-            box-shadow: 0 0 0 4px var(--ok-subtle);
+            background: var(--success);
+            box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.15);
         }
 
-        .app-status-dot.disconnected {
-            background: var(--danger);
-            box-shadow: 0 0 0 4px var(--danger-subtle);
+        .status-dot.disconnected {
+            background: var(--error);
+            box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.15);
         }
 
-        .app-header-right {
+        .header-right {
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        /* Buttons */
-        .btn {
-            display: inline-flex;
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            background: var(--surface);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            padding: 8px 14px;
-            font-size: 13px;
-            font-weight: 500;
-            line-height: 1;
-            border: 1px solid transparent;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition:
-                background var(--duration-fast) var(--ease-out),
-                color var(--duration-fast) var(--ease-out),
-                border-color var(--duration-fast) var(--ease-out),
-                box-shadow var(--duration-fast) var(--ease-out);
-            user-select: none;
-            white-space: nowrap;
+            transition: all var(--transition-fast);
         }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .icon-btn:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-strong);
+            color: var(--text-primary);
         }
 
-        .btn-primary {
-            background: var(--primary);
-            color: var(--primary-foreground);
-            border-color: var(--primary);
+        .icon-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 1.8;
         }
 
-        .btn-primary:hover:not(:disabled) {
-            background: var(--accent-hover);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .btn-ghost {
-            background: transparent;
-            color: var(--text);
-            border-color: var(--border);
-        }
-
-        .btn-ghost:hover:not(:disabled) {
-            background: var(--bg-hover);
-            border-color: var(--border-hover);
-        }
-
-        .btn-icon {
-            width: 36px;
-            height: 36px;
-            padding: 0;
-            background: transparent;
-            color: var(--muted);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-        }
-
-        .btn-icon:hover:not(:disabled) {
-            background: var(--bg-hover);
-            color: var(--text);
-            border-color: var(--border-hover);
-        }
-
-        .btn-icon svg {
-            width: 18px;
-            height: 18px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 1.5;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        /* Main content */
-        .app-main {
+        .main {
             display: flex;
             flex: 1;
             min-height: 0;
             overflow: hidden;
         }
 
-        /* Sidebar */
         .sidebar {
-            width: 320px;
-            border-right: 1px solid var(--border);
+            width: 280px;
+            border-right: 1px solid var(--border-subtle);
+            background: var(--bg-1);
             display: flex;
             flex-direction: column;
-            background: var(--bg);
-            flex-shrink: 0;
         }
 
         .sidebar-header {
-            padding: 16px;
-            border-bottom: 1px solid var(--border);
+            padding: 20px;
+            border-bottom: 1px solid var(--border-subtle);
         }
 
         .sidebar-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            color: var(--muted-strong);
             text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-bottom: 12px;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
         }
 
         .sidebar-content {
             flex: 1;
             overflow-y: auto;
-            padding: 12px;
+            padding: 16px;
         }
 
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
             padding: 16px;
             margin-bottom: 12px;
         }
 
-        .card-header {
+        .panel-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
 
-        .card-title {
+        .panel-title {
             font-size: 14px;
             font-weight: 600;
-            color: var(--text-strong);
-        }
-
-        .stat {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: var(--muted);
-        }
-
-        .stat-value {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-strong);
+            color: var(--text-primary);
         }
 
         .stat-grid {
@@ -421,167 +284,253 @@
             gap: 12px;
         }
 
-        /* Chat area */
+        .stat {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .control-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            cursor: pointer;
+        }
+
+        .toggle-switch {
+            width: 48px;
+            height: 28px;
+            background: var(--surface-hover);
+            border-radius: 999px;
+            position: relative;
+            transition: all var(--transition-fast);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .toggle-switch.active {
+            background: var(--accent-soft);
+            border-color: var(--accent);
+        }
+
+        .toggle-knob {
+            width: 22px;
+            height: 22px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 3px;
+            transform: translateY(-50%);
+            transition: all var(--transition-fast);
+        }
+
+        .toggle-switch.active .toggle-knob {
+            left: 23px;
+            background: var(--accent);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .toggle-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 0 24px var(--accent-glow);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border-color: var(--border-subtle);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-strong);
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
         .chat-container {
             flex: 1;
             display: flex;
             flex-direction: column;
             min-width: 0;
-            background: var(--bg);
+            background: var(--bg-1);
         }
 
         .chat-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 20px;
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-subtle);
         }
 
-        .chat-header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .chat-session-info {
+        .chat-info {
             display: flex;
             flex-direction: column;
             gap: 2px;
         }
 
-        .chat-session-name {
-            font-size: 14px;
+        .chat-name {
+            font-size: 15px;
             font-weight: 600;
-            color: var(--text-strong);
+            color: var(--text-primary);
         }
 
-        .chat-model-info {
+        .chat-model {
             font-size: 12px;
-            color: var(--muted);
-        }
-
-        .chat-header-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
         }
 
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 20px;
         }
 
-        /* Welcome screen */
         .welcome-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            gap: 16px;
-            padding: 48px 24px;
+            gap: 18px;
+            padding: 60px 24px;
             flex: 1;
-            animation: fade-in var(--duration-slow) var(--ease-out);
+            animation: fade-in var(--transition-slow);
         }
 
         .welcome-avatar {
-            width: 64px;
-            height: 64px;
-            border-radius: var(--radius-lg);
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+            width: 72px;
+            height: 72px;
+            border-radius: var(--radius-xl);
+            background: linear-gradient(135deg, var(--accent) 0%, #ff8a5b 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            color: white;
-            font-weight: 700;
-            box-shadow: var(--shadow-lg);
+            font-size: 32px;
+            box-shadow: 0 0 64px var(--accent-glow);
+            animation: pulse-glow 3s ease-in-out infinite;
         }
 
         .welcome-title {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 600;
-            color: var(--text-strong);
+            letter-spacing: -0.02em;
             margin: 0;
         }
 
         .welcome-hint {
-            font-size: 14px;
-            color: var(--muted);
+            font-size: 15px;
+            color: var(--text-secondary);
+            max-width: 420px;
+            line-height: 1.6;
             margin: 0;
-            max-width: 400px;
         }
 
         .welcome-suggestions {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 10px;
             justify-content: center;
-            max-width: 500px;
-            margin-top: 8px;
+            margin-top: 12px;
         }
 
-        .welcome-suggestion {
-            font-size: 13px;
+        .suggestion-pill {
             padding: 10px 18px;
-            border-radius: var(--radius-full);
-            border: 1px solid var(--border);
-            background: var(--panel);
-            color: var(--text);
+            border-radius: 999px;
+            border: 1px solid var(--border-subtle);
+            background: var(--surface);
+            color: var(--text-secondary);
+            font-size: 14px;
             cursor: pointer;
-            transition:
-                background var(--duration-fast) var(--ease-out),
-                border-color var(--duration-fast) var(--ease-out);
+            transition: all var(--transition-fast);
         }
 
-        .welcome-suggestion:hover {
-            background: var(--panel-strong);
-            border-color: var(--accent);
+        .suggestion-pill:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-strong);
+            color: var(--text-primary);
+            transform: translateY(-2px);
         }
 
-        /* Messages */
         .message {
             display: flex;
-            gap: 12px;
-            animation: slide-up var(--duration-normal) var(--ease-out);
+            gap: 14px;
+            animation: slide-up var(--transition-normal);
         }
 
         .message-avatar {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: var(--radius-md);
-            background: var(--card);
-            border: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 18px;
             flex-shrink: 0;
-            font-size: 16px;
         }
 
         .message-avatar.user {
-            background: var(--secondary);
+            background: linear-gradient(135deg, var(--accent-alt) 0%, #25d3b9 100%);
         }
 
         .message-avatar.assistant {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
-            border: none;
+            background: linear-gradient(135deg, var(--accent) 0%, #ff8a5b 100%);
+            box-shadow: 0 0 24px var(--accent-glow);
         }
 
-        .message-content {
+        .message-wrapper {
             flex: 1;
             min-width: 0;
         }
 
         .message-header {
             display: flex;
-            align-items: center;
+            align-items: baseline;
             gap: 8px;
             margin-bottom: 6px;
         }
@@ -589,62 +538,40 @@
         .message-role {
             font-size: 13px;
             font-weight: 600;
-            color: var(--text-strong);
+            color: var(--text-primary);
         }
 
         .message-time {
-            font-size: 11px;
-            color: var(--muted);
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
         }
 
         .message-body {
-            background: var(--card);
-            border: 1px solid var(--border);
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
-            padding: 14px 16px;
-            line-height: 1.6;
+            padding: 16px 18px;
+            line-height: 1.65;
         }
 
         .message.user .message-body {
-            background: var(--secondary);
-            border-color: var(--border);
-        }
-
-        .message-body p {
-            margin: 0 0 8px 0;
-        }
-
-        .message-body p:last-child {
-            margin-bottom: 0;
+            background: rgba(33, 195, 161, 0.06);
+            border-color: rgba(33, 195, 161, 0.2);
         }
 
         .message-body code {
             font-family: var(--font-mono);
-            background: var(--bg-muted);
+            background: rgba(255, 255, 255, 0.06);
             padding: 2px 6px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
+            border-radius: 4px;
+            font-size: 0.9em;
         }
 
-        .message-body pre {
-            background: var(--bg-accent);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 12px;
-            overflow-x: auto;
-            margin: 8px 0;
-        }
-
-        .message-body pre code {
-            background: none;
-            padding: 0;
-        }
-
-        /* Typing indicator */
         .typing-indicator {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
             padding: 4px 8px;
         }
 
@@ -652,188 +579,143 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--muted);
-            animation: typing 1.4s var(--ease-in-out) infinite;
+            background: var(--text-muted);
+            animation: typing 1.4s ease-in-out infinite;
         }
 
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        /* Input area */
-        .chat-input-container {
-            padding: 16px 20px 20px;
+        .chat-input-area {
+            padding: 16px 24px 24px;
             flex-shrink: 0;
-            background: linear-gradient(to bottom, transparent, var(--bg) 30%);
+            background: linear-gradient(180deg, transparent 0%, var(--bg-1) 40%);
         }
 
         .chat-input-wrapper {
             position: relative;
             display: flex;
             flex-direction: column;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            transition:
-                border-color var(--duration-fast) var(--ease-out),
-                box-shadow var(--duration-fast) var(--ease-out);
-        }
-
-        @supports (backdrop-filter: blur(1px)) {
-            .chat-input-wrapper {
-                backdrop-filter: blur(12px) saturate(1.6);
-                -webkit-backdrop-filter: blur(12px) saturate(1.6);
-            }
+            background: var(--surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            transition: all var(--transition-fast);
         }
 
         .chat-input-wrapper:focus-within {
-            border-color: var(--border-strong);
-            box-shadow: 0 0 0 2px color-mix(in srgb, var(--border-strong) 24%, transparent);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-soft);
         }
 
         .chat-input {
             width: 100%;
-            min-height: 48px;
-            max-height: 160px;
+            min-height: 52px;
+            max-height: 180px;
             resize: none;
-            padding: 14px 16px 10px;
+            padding: 16px 18px;
+            padding-right: 64px;
             border: none;
             background: transparent;
-            color: var(--text);
-            font-size: 14px;
-            font-family: var(--font-body);
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: var(--font-sans);
             line-height: 1.5;
             outline: none;
         }
 
         .chat-input::placeholder {
-            color: var(--muted);
+            color: var(--text-muted);
         }
 
-        .chat-input-toolbar {
+        .chat-input-footer {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 6px 10px;
-            border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+            padding: 8px 14px 12px;
+            border-top: 1px solid var(--border-subtle);
         }
 
         .chat-input-tools {
             display: flex;
-            align-items: center;
             gap: 4px;
         }
 
-        .chat-input-tool {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .tool-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-sm);
             border: none;
             background: transparent;
-            color: var(--muted);
+            color: var(--text-muted);
             cursor: pointer;
-            border-radius: var(--radius-sm);
-            transition:
-                background var(--duration-fast) var(--ease-out),
-                color var(--duration-fast) var(--ease-out);
-        }
-
-        .chat-input-tool:hover {
-            background: var(--bg-hover);
-            color: var(--text);
-        }
-
-        .chat-input-tool.active {
-            color: var(--accent);
-            background: var(--accent-subtle);
-        }
-
-        .chat-input-tool svg {
-            width: 18px;
-            height: 18px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 1.5;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .chat-input-actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            transition: all var(--transition-fast);
         }
 
-        .chat-send-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
+        .tool-btn:hover {
+            background: var(--surface-hover);
+            color: var(--text-primary);
+        }
+
+        .tool-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 1.8;
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 12px;
+            bottom: 50px;
+            width: 40px;
+            height: 40px;
             border-radius: var(--radius-md);
             border: none;
             background: var(--accent);
             color: white;
             cursor: pointer;
-            transition:
-                background var(--duration-fast) var(--ease-out),
-                box-shadow var(--duration-fast) var(--ease-out),
-                transform var(--duration-fast) var(--ease-out);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
         }
 
-        .chat-send-btn:hover:not(:disabled) {
+        .send-btn:hover:not(:disabled) {
             background: var(--accent-hover);
-            box-shadow: var(--shadow-glow);
+            box-shadow: 0 0 24px var(--accent-glow);
+            transform: scale(1.04);
         }
 
-        .chat-send-btn:active:not(:disabled) {
-            transform: scale(0.96);
-        }
-
-        .chat-send-btn:disabled {
+        .send-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        .chat-send-btn svg {
-            width: 18px;
-            height: 18px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
+        .send-btn.stop {
+            background: var(--error);
         }
 
-        .chat-send-btn.stop {
-            background: var(--danger);
+        .send-btn svg {
+            width: 20px;
+            height: 20px;
         }
 
-        .chat-send-btn.stop:hover:not(:disabled) {
-            background: var(--danger);
-            box-shadow: 0 0 0 4px var(--danger-subtle);
-        }
-
-        /* Screen control panel */
         .screen-control {
             display: none;
             position: fixed;
-            bottom: 100px;
-            right: 20px;
-            width: 300px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
+            bottom: 90px;
+            right: 24px;
+            width: 320px;
+            background: var(--bg-2);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-strong);
             z-index: 100;
             overflow: hidden;
-            animation: slide-up var(--duration-normal) var(--ease-out);
+            animation: slide-up var(--transition-normal);
         }
 
         .screen-control.active {
@@ -844,14 +726,14 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border);
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-subtle);
         }
 
         .screen-control-title {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
-            color: var(--text-strong);
+            color: var(--text-primary);
         }
 
         .screen-control-content {
@@ -861,10 +743,11 @@
         .screen-preview {
             width: 100%;
             aspect-ratio: 16/10;
-            background: var(--bg-accent);
+            background: var(--bg-0);
             border-radius: var(--radius-md);
             overflow: hidden;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
+            border: 1px solid var(--border-subtle);
         }
 
         .screen-preview img {
@@ -873,249 +756,174 @@
             object-fit: contain;
         }
 
-        .screen-control-actions {
+        .placeholder-text {
             display: flex;
-            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            font-size: 13px;
         }
 
-        /* Status indicator */
-        .status-toast {
+        .toast {
             position: fixed;
             bottom: 100px;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--card);
-            border: 1px solid var(--border);
-            padding: 10px 16px;
-            border-radius: var(--radius-full);
-            font-size: 13px;
-            color: var(--text);
-            box-shadow: var(--shadow-lg);
+            background: var(--bg-2);
+            border: 1px solid var(--border-subtle);
+            padding: 12px 18px;
+            border-radius: var(--radius-xl);
+            font-size: 14px;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-soft);
             z-index: 200;
-            animation: slide-up var(--duration-normal) var(--ease-out);
             display: none;
-        }
-
-        .status-toast.show {
-            display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .status-toast.info {
-            border-color: color-mix(in srgb, var(--info) 40%, var(--border));
+        .toast.show {
+            display: flex;
+            animation: slide-up var(--transition-normal);
         }
 
-        .status-toast.success {
-            border-color: color-mix(in srgb, var(--ok) 40%, var(--border));
-        }
-
-        .status-toast.error {
-            border-color: color-mix(in srgb, var(--danger) 40%, var(--border));
-        }
-
-        /* Markdown */
-        .markdown {
-            line-height: 1.6;
-        }
-
-        .markdown h1, .markdown h2, .markdown h3, .markdown h4 {
-            margin: 16px 0 8px 0;
-            color: var(--text-strong);
-        }
-
-        .markdown h1 {
-            font-size: 20px;
-        }
-
-        .markdown h2 {
-            font-size: 18px;
-        }
-
-        .markdown h3 {
+        .toast-icon {
             font-size: 16px;
         }
 
-        .markdown ul, .markdown ol {
-            margin: 8px 0;
-            padding-left: 24px;
-        }
+        .toast.info { border-color: rgba(52, 152, 219, 0.3); }
+        .toast.success { border-color: rgba(46, 204, 113, 0.3); }
+        .toast.error { border-color: rgba(231, 76, 60, 0.3); }
 
-        .markdown li {
-            margin: 4px 0;
-        }
-
-        .markdown blockquote {
-            border-left: 3px solid var(--accent-subtle);
-            padding-left: 12px;
-            margin: 8px 0;
-            color: var(--muted);
-        }
-
-        /* Responsive */
         @media (max-width: 900px) {
-            .sidebar {
-                display: none;
-            }
+            .sidebar { display: none; }
         }
 
         @media (max-width: 640px) {
-            .app-header {
-                padding: 10px 16px;
-            }
-
-            .chat-messages {
-                padding: 16px;
-            }
-
-            .chat-input-container {
-                padding: 12px 16px 16px;
-            }
-
-            .message-avatar {
-                width: 32px;
-                height: 32px;
-            }
-
-            .welcome-avatar {
-                width: 56px;
-                height: 56px;
-                font-size: 24px;
-            }
-
-            .welcome-title {
-                font-size: 18px;
-            }
+            .header { padding: 12px 16px; }
+            .chat-messages { padding: 16px; }
+            .chat-input-area { padding: 12px 16px 16px; }
+            .logo-mark { width: 32px; height: 32px; font-size: 14px; }
+            .logo-text { font-size: 16px; }
+            .welcome-avatar { width: 60px; height: 60px; font-size: 26px; }
+            .welcome-title { font-size: 20px; }
         }
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="app-header-left">
-                <div class="app-logo">
-                    <div class="app-logo-icon">OH</div>
-                    <span>OpenHands</span>
-                </div>
+        <header class="header">
+            <div class="header-left">
+                <a class="logo" href="#">
+                    <div class="logo-mark">OH</div>
+                    <span class="logo-text">OpenHands</span>
+                </a>
             </div>
-            <div class="app-status">
-                <div class="app-status-dot" id="status-dot"></div>
-                <span id="status-text">连接中...</span>
+            <div class="status">
+                <div class="status-dot" id="status-dot"></div>
+                <span id="status-text">Connecting...</span>
             </div>
-            <div class="app-header-right">
-                <button class="btn-icon" id="btn-screen-control" title="屏幕控制">
-                    <svg viewBox="0 0 24 24">
-                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                        <line x1="8" y1="21" x2="16" y2="21"/>
-                        <line x1="12" y1="17" x2="12" y2="21"/>
+            <div class="header-right">
+                <button class="icon-btn" id="btn-screen-control" title="Screen Control">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
                     </svg>
                 </button>
-                <button class="btn-icon" id="btn-clear" title="清除对话">
-                    <svg viewBox="0 0 24 24">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                <button class="icon-btn" id="btn-clear" title="Clear Chat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                     </svg>
                 </button>
             </div>
         </header>
 
-        <!-- Main content -->
-        <main class="app-main">
-            <!-- Sidebar -->
+        <main class="main">
             <aside class="sidebar">
                 <div class="sidebar-header">
-                    <div class="sidebar-title">会话状态</div>
+                    <div class="sidebar-title">Session Stats</div>
                 </div>
                 <div class="sidebar-content">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">运行统计</span>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">Overview</span>
                         </div>
                         <div class="stat-grid">
                             <div class="stat">
-                                <span class="stat-label">消息数</span>
-                                <span class="stat-value" id="stat-messages">0</span>
+                                <div class="stat-label">Messages</div>
+                                <div class="stat-value" id="stat-messages">0</div>
                             </div>
                             <div class="stat">
-                                <span class="stat-label">操作数</span>
-                                <span class="stat-value" id="stat-actions">0</span>
+                                <div class="stat-label">Actions</div>
+                                <div class="stat-value" id="stat-actions">0</div>
                             </div>
                         </div>
                     </div>
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">控制模式</span>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">Screen Control</span>
                         </div>
-                        <div style="margin-bottom: 12px;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="checkbox" id="control-toggle" style="width: 18px; height: 18px;">
-                                <span>启用屏幕控制</span>
-                            </label>
-                        </div>
-                        <button class="btn btn-ghost" style="width: 100%;" id="btn-screenshot">
-                            📸 获取截图
+                        <label class="control-toggle" id="control-toggle">
+                            <div class="toggle-switch">
+                                <div class="toggle-knob"></div>
+                            </div>
+                            <span class="toggle-label">Enable screen control</span>
+                        </label>
+                        <button class="btn btn-secondary btn-full" id="btn-screenshot">
+                            📸 Capture screenshot
                         </button>
                     </div>
                 </div>
             </aside>
 
-            <!-- Chat area -->
             <section class="chat-container">
                 <div class="chat-header">
-                    <div class="chat-header-left">
-                        <div class="chat-session-info">
-                            <div class="chat-session-name">会话</div>
-                            <div class="chat-model-info" id="model-info">模型: 加载中...</div>
-                        </div>
-                    </div>
-                    <div class="chat-header-right">
-                        <button class="btn-icon" id="btn-settings" title="设置">
-                            <svg viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="3"/>
-                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                            </svg>
-                        </button>
+                    <div class="chat-info">
+                        <div class="chat-name">Conversation</div>
+                        <div class="chat-model" id="model-info">Model: Loading...</div>
                     </div>
                 </div>
 
                 <div class="chat-messages" id="chat-messages">
-                    <!-- Welcome screen -->
                     <div class="welcome-screen" id="welcome-screen">
                         <div class="welcome-avatar">🤖</div>
-                        <h2 class="welcome-title">你好，我是OpenHands</h2>
-                        <p class="welcome-hint">我可以帮你处理各种任务，从编程到日常事务。有什么需要我协助的吗？</p>
+                        <h2 class="welcome-title">Hello, I'm OpenHands</h2>
+                        <p class="welcome-hint">I can help you with coding, analysis, and automation. What would you like to work on?</p>
                         <div class="welcome-suggestions">
-                            <button class="welcome-suggestion" data-text="帮我写一个Python脚本">写个Python脚本</button>
-                            <button class="welcome-suggestion" data-text="解释一下什么是机器学习">解释概念</button>
-                            <button class="welcome-suggestion" data-text="帮我调试一段代码">调试代码</button>
+                            <button class="suggestion-pill" data-text="Help me write a Python script">Write Python script</button>
+                            <button class="suggestion-pill" data-text="Explain machine learning concepts">Explain ML</button>
+                            <button class="suggestion-pill" data-text="Help me debug some code">Debug code</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="chat-input-container">
+                <div class="chat-input-area">
                     <div class="chat-input-wrapper">
                         <textarea 
                             id="message-input" 
                             class="chat-input" 
-                            placeholder="输入消息... (Shift+Enter 换行，Enter 发送)"
+                            placeholder="Type a message... (Shift+Enter for new line)"
                             rows="1"
                         ></textarea>
-                        <div class="chat-input-toolbar">
+                        <button class="send-btn" id="send-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                        <div class="chat-input-footer">
                             <div class="chat-input-tools">
-                                <button class="chat-input-tool" id="btn-attach" title="附件">
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                                <button class="tool-btn" id="btn-attach" title="Attach file">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
                                     </svg>
                                 </button>
                             </div>
-                            <div class="chat-input-actions">
-                                <button class="chat-send-btn" id="send-btn">
-                                    <svg viewBox="0 0 24 24">
-                                        <line x1="22" y1="2" x2="11" y2="13"/>
-                                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                                    </svg>
-                                </button>
+                            <div style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">
+                                Enter to send
                             </div>
                         </div>
                     </div>
@@ -1123,39 +931,34 @@
             </section>
         </main>
 
-        <!-- Screen control panel -->
         <div class="screen-control" id="screen-control">
             <div class="screen-control-header">
-                <span class="screen-control-title">屏幕预览</span>
-                <button class="btn-icon" style="width: 28px; height: 28px;" id="btn-close-screen">
-                    <svg viewBox="0 0 24 24">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
+                <span class="screen-control-title">Screen Preview</span>
+                <button class="icon-btn" id="btn-close-screen" style="width: 32px; height: 32px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
                 </button>
             </div>
             <div class="screen-control-content">
                 <div class="screen-preview">
-                    <img id="screen-preview-img" src="" alt="屏幕预览" style="display: none;">
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-size: 13px;">
-                        暂无截图
-                    </div>
+                    <img id="screen-preview-img" src="" alt="Preview" style="display: none;">
+                    <div class="placeholder-text" id="screen-placeholder">No screenshot yet</div>
                 </div>
-                <div class="screen-control-actions">
-                    <button class="btn btn-primary" id="btn-refresh-screen" style="flex: 1;">刷新</button>
-                </div>
+                <button class="btn btn-primary btn-full" id="btn-refresh-screen">
+                    Refresh screenshot
+                </button>
             </div>
         </div>
 
-        <!-- Status toast -->
-        <div class="status-toast" id="status-toast">
-            <span id="toast-icon"></span>
+        <div class="toast" id="toast">
+            <span class="toast-icon" id="toast-icon"></span>
             <span id="toast-message"></span>
         </div>
     </div>
 
     <script>
-        // OpenHands Web Client
         class OpenHandsClient {
             constructor() {
                 this.ws = null;
@@ -1164,7 +967,6 @@
                 this.messageCount = 0;
                 this.actionCount = 0;
                 this.isControlMode = false;
-                
                 this.init();
             }
 
@@ -1187,55 +989,52 @@
                 this.btnClear = document.getElementById('btn-clear');
                 this.btnScreenshot = document.getElementById('btn-screenshot');
                 this.controlToggle = document.getElementById('control-toggle');
+                this.toggleSwitch = this.controlToggle.querySelector('.toggle-switch');
                 this.screenControl = document.getElementById('screen-control');
                 this.btnScreenControl = document.getElementById('btn-screen-control');
                 this.btnCloseScreen = document.getElementById('btn-close-screen');
                 this.btnRefreshScreen = document.getElementById('btn-refresh-screen');
                 this.screenPreviewImg = document.getElementById('screen-preview-img');
-                this.statusToast = document.getElementById('status-toast');
+                this.screenPlaceholder = document.getElementById('screen-placeholder');
+                this.toast = document.getElementById('toast');
                 this.toastIcon = document.getElementById('toast-icon');
                 this.toastMessage = document.getElementById('toast-message');
             }
 
             bindEvents() {
                 this.sendBtn.addEventListener('click', () => this.sendMessage());
-                
                 this.messageInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
                         this.sendMessage();
                     }
                 });
-
-                this.messageInput.addEventListener('input', () => {
-                    this.autoResize();
-                });
+                this.messageInput.addEventListener('input', () => this.autoResize());
 
                 this.btnClear.addEventListener('click', () => this.clearChat());
                 this.btnScreenshot.addEventListener('click', () => this.takeScreenshot());
-                this.controlToggle.addEventListener('change', (e) => this.toggleControl(e.target.checked));
                 
+                this.controlToggle.addEventListener('click', () => {
+                    this.toggleControl(!this.isControlMode);
+                });
+
                 this.btnScreenControl.addEventListener('click', () => {
                     this.screenControl.classList.toggle('active');
                 });
-                
                 this.btnCloseScreen.addEventListener('click', () => {
                     this.screenControl.classList.remove('active');
                 });
-                
                 this.btnRefreshScreen.addEventListener('click', () => this.takeScreenshot());
 
-                document.querySelectorAll('.welcome-suggestion').forEach(btn => {
- btn.addEventListener('click', () => {
-                    const text = btn.getAttribute('data-text');
-                    this.messageInput.value = text;
-                    this.autoResize();
-                    this.messageInput.focus();
+                document.querySelectorAll('.suggestion-pill').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const text = btn.getAttribute('data-text');
+                        this.messageInput.value = text;
+                        this.autoResize();
+                        this.messageInput.focus();
+                    });
                 });
-            });
-        });
 
-                // Auto focus
                 setTimeout(() => {
                     this.messageInput.focus();
                 }, 100);
@@ -1243,7 +1042,7 @@
 
             autoResize() {
                 this.messageInput.style.height = 'auto';
-                this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 160) + 'px';
+                this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 180) + 'px';
             }
 
             connect() {
@@ -1251,26 +1050,21 @@
                     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                     const host = window.location.host;
                     const wsUrl = `${protocol}//${host}/ws`;
-                    
                     this.ws = new WebSocket(wsUrl);
-                    
                     this.ws.onopen = () => {
                         this.isConnected = true;
                         this.updateStatus(true);
-                        this.showToast('success', '已连接');
+                        this.showToast('success', 'Connected');
                     };
-                    
                     this.ws.onmessage = (event) => {
                         const data = JSON.parse(event.data);
                         this.handleMessage(data);
                     };
-                    
                     this.ws.onclose = () => {
                         this.isConnected = false;
                         this.updateStatus(false);
                         setTimeout(() => this.connect(), 3000);
                     };
-                    
                     this.ws.onerror = (error) => {
                         console.error('WebSocket error:', error);
                     };
@@ -1283,12 +1077,12 @@
             updateStatus(connected) {
                 if (connected) {
                     this.statusDot.classList.remove('disconnected');
-                    this.statusText.textContent = '已连接';
-                    this.modelInfo.textContent = '模型: LongCat-2.0-Preview';
+                    this.statusText.textContent = 'Connected';
+                    this.modelInfo.textContent = 'Model: LongCat-2.0-Preview';
                 } else {
                     this.statusDot.classList.add('disconnected');
-                    this.statusText.textContent = '连接断开';
-                    this.modelInfo.textContent = '模型: 离线';
+                    this.statusText.textContent = 'Disconnected';
+                    this.modelInfo.textContent = 'Model: Offline';
                 }
             }
 
@@ -1313,16 +1107,10 @@
             }
 
             handleStatus(content) {
-                if (content === '正在思考...') {
+                if (content === '正在思考...' || content === 'Thinking...') {
                     this.showTypingIndicator();
-                } else if (content === '控制权已接管') {
-                    this.isControlMode = true;
-                    this.controlToggle.checked = true;
-                    this.showToast('info', '屏幕控制已启用');
-                } else if (content === '控制权已释放') {
-                    this.isControlMode = false;
-                    this.controlToggle.checked = false;
-                    this.showToast('info', '屏幕控制已禁用');
+                } else if (content.includes('control')) {
+                    this.showToast('info', content);
                 }
             }
 
@@ -1337,8 +1125,7 @@
                 if (imageData) {
                     this.screenPreviewImg.src = `data:image/png;base64,${imageData}`;
                     this.screenPreviewImg.style.display = 'block';
-                    const placeholder = this.screenPreviewImg.parentElement.querySelector('div:last-child');
-                    if (placeholder) placeholder.style.display = 'none';
+                    this.screenPlaceholder.style.display = 'none';
                 }
             }
 
@@ -1358,28 +1145,19 @@
             sendMessage() {
                 const text = this.messageInput.value.trim();
                 if (!text || this.isGenerating) return;
-
                 if (!this.isConnected) {
-                    this.showToast('error', '未连接到服务器');
+                    this.showToast('error', 'Not connected to server');
                     return;
                 }
-
-                // Hide welcome screen if first message
                 if (this.welcomeScreen) {
                     this.welcomeScreen.style.display = 'none';
                 }
-
                 this.addMessage('user', text);
                 this.messageInput.value = '';
                 this.autoResize();
-                
                 this.isGenerating = true;
                 this.updateSendButton();
-
-                this.send({
-                    type: 'message',
-                    content: text
-                });
+                this.send({ type: 'message', content: text });
             }
 
             takeScreenshot() {
@@ -1388,10 +1166,14 @@
             }
 
             toggleControl(enabled) {
+                this.isControlMode = enabled;
+                if (enabled) {
+                    this.toggleSwitch.classList.add('active');
+                } else {
+                    this.toggleSwitch.classList.remove('active');
+                }
                 if (!this.isConnected) return;
-                this.send({ 
-                    type: enabled ? 'take_control' : 'release_control' 
-                });
+                this.send({ type: enabled ? 'take_control' : 'release_control' });
             }
 
             send(data) {
@@ -1408,7 +1190,6 @@
                 messageEl.className = `message ${role}`;
                 
                 const avatar = role === 'user' ? '👤' : '🤖';
-                
                 const time = new Date().toLocaleTimeString('zh-CN', {
                     hour: '2-digit',
                     minute: '2-digit'
@@ -1416,17 +1197,16 @@
 
                 messageEl.innerHTML = `
                     <div class="message-avatar ${role}">${avatar}</div>
-                    <div class="message-content">
+                    <div class="message-wrapper">
                         <div class="message-header">
-                            <span class="message-role">${role === 'user' ? '你' : 'OpenHands'}</span>
+                            <span class="message-role">${role === 'user' ? 'You' : 'OpenHands'}</span>
                             <span class="message-time">${time}</span>
                         </div>
                         <div class="message-body">
-                            <div class="markdown">${this.formatMessage(content)}</div>
+                            ${this.formatMessage(content)}
                         </div>
                     </div>
                 `;
-
                 this.chatMessages.appendChild(messageEl);
                 this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
             }
@@ -1436,22 +1216,11 @@
                     .replace(/&/g, '&amp;')
                     .replace(/</g, '&lt;')
                     .replace(/>/g, '&gt;');
-                
-                // Bold
                 formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                
-                // Italic
                 formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
-                
-                // Code blocks
                 formatted = formatted.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-                
-                // Inline code
                 formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
-                
-                // Newlines
                 formatted = formatted.replace(/\n/g, '<br>');
-                
                 return formatted;
             }
 
@@ -1461,7 +1230,7 @@
                 indicator.id = 'typing-indicator';
                 indicator.innerHTML = `
                     <div class="message-avatar assistant">🤖</div>
-                    <div class="message-content">
+                    <div class="message-wrapper">
                         <div class="message-header">
                             <span class="message-role">OpenHands</span>
                         </div>
@@ -1480,29 +1249,24 @@
 
             hideTypingIndicator() {
                 const indicator = document.getElementById('typing-indicator');
-                if (indicator) {
-                    indicator.remove();
-                }
+                if (indicator) indicator.remove();
             }
 
             updateSendButton() {
                 if (this.isGenerating) {
                     this.sendBtn.classList.add('stop');
-                    this.sendBtn.title = '停止生成';
                     this.sendBtn.innerHTML = `
-                        <svg viewBox="0 0 24 24">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <rect x="6" y="6" width="12" height="12" rx="2"></rect>
                         </svg>
                     `;
-                    // Add stop handler
                     this.sendBtn.onclick = () => this.stopGeneration();
                 } else {
                     this.sendBtn.classList.remove('stop');
-                    this.sendBtn.title = '发送';
                     this.sendBtn.innerHTML = `
-                        <svg viewBox="0 0 24 24">
-                            <line x1="22" y1="2" x2="11" y2="13"/>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                         </svg>
                     `;
                     this.sendBtn.onclick = () => this.sendMessage();
@@ -1510,47 +1274,35 @@
             }
 
             stopGeneration() {
-                // TODO: Implement stop
                 this.isGenerating = false;
                 this.updateSendButton();
                 this.hideTypingIndicator();
             }
 
             clearChat() {
-                if (confirm('确定要清除所有对话吗？')) {
-                    // Keep welcome screen but clear messages
+                if (confirm('Clear all messages?')) {
                     const messages = this.chatMessages.querySelectorAll('.message');
                     messages.forEach(m => m.remove());
-                    if (this.welcomeScreen) {
-                        this.welcomeScreen.style.display = 'flex';
-                    }
+                    if (this.welcomeScreen) this.welcomeScreen.style.display = 'flex';
                     this.messageCount = 0;
                     this.statMessages.textContent = '0';
                     this.send({ type: 'clear' });
-                    this.showToast('info', '对话已清除');
+                    this.showToast('info', 'Chat cleared');
                 }
             }
 
             showToast(type, message) {
-                this.statusToast.className = 'status-toast show ' + type;
-                
-                const icons = {
-                    success: '✓',
-                    error: '✕',
-                    info: 'ℹ'
-                };
-                
+                this.toast.className = 'toast show ' + type;
+                const icons = { success: '✓', error: '✗', info: 'ℹ' };
                 this.toastIcon.textContent = icons[type] || 'ℹ';
                 this.toastMessage.textContent = message;
-                
                 clearTimeout(this.toastTimeout);
                 this.toastTimeout = setTimeout(() => {
-                    this.statusToast.classList.remove('show');
+                    this.toast.classList.remove('show');
                 }, 3000);
             }
         }
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             window.ohClient = new OpenHandsClient();
         });
