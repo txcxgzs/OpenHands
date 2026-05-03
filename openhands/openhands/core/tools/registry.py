@@ -39,7 +39,7 @@ class ToolRegistry:
         self,
         name: str,
         description: str,
-        handler: Callable,
+        handler: Optional[Callable] = None,
         toolset: str = "default",
         parameters: Optional[Dict[str, Any]] = None,
         metadata: Optional[Dict[str, Any]] = None,
@@ -80,7 +80,8 @@ class ToolRegistry:
                 self._toolsets[toolset] = []
             self._toolsets[toolset].append(name)
             logger.debug(f"Registered tool: {name} ({toolset})")
-
+            return handler
+            
         return decorator
 
     def get_tool(self, name: str) -> Optional[ToolEntry]:

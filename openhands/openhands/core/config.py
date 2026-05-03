@@ -111,12 +111,20 @@ class AgentConfig:
                 self.model.api_key = os.getenv("ANTHROPIC_API_KEY")
             elif self.model.provider == "openai":
                 self.model.api_key = os.getenv("OPENAI_API_KEY")
+            elif self.model.provider == "longcat":
+                self.model.api_key = os.getenv("LONGCAT_API_KEY")
+            elif self.model.provider == "deepseek":
+                self.model.api_key = os.getenv("DEEPSEEK_API_KEY")
 
         if not self.model.base_url:
             if self.model.provider == "anthropic":
                 self.model.base_url = os.getenv("ANTHROPIC_BASE_URL")
             elif self.model.provider == "openai":
                 self.model.base_url = os.getenv("OPENAI_BASE_URL")
+            elif self.model.provider == "longcat":
+                self.model.base_url = os.getenv("LONGCAT_BASE_URL")
+            elif self.model.provider == "deepseek":
+                self.model.base_url = os.getenv("DEEPSEEK_BASE_URL")
 
     @staticmethod
     def _update_dataclass(obj: Any, data: Dict[str, Any]) -> None:

@@ -7,7 +7,7 @@ from openhands import EmbeddedAgent, AgentConfig
 
 
 async def main():
-    config = AgentConfig.load()
+    config = AgentConfig.load("config.yaml")
     agent = EmbeddedAgent(config)
     await agent.initialize()
 

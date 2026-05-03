@@ -447,12 +447,24 @@ class EmbeddedAgent:
         """Convert to adapter message format"""
         return messages
 
-    def _from_adapter_response(self, response: NormalizedResponse) -> Message:
+    def _from_adapter_response(self, response) -> Message:
         """Convert adapter response to message"""
+        tool_calls = None
+        if hasattr(response, 'tool_calls') and response.tool_calls:
+            tool_calls = []
+            for tc in response.tool_calls:
+                if isinstance(tc, dict):
+                    tool_calls.append(ToolCall(
+                        id=tc.get("id", ""),
+                        name=tc.get("name", ""),
+                        arguments=tc.get("arguments", {})
+                    ))
+                else:
+                    tool_calls.append(tc)
         return Message(
             role=MessageRole.ASSISTANT,
-            content=response.content or "",
-            tool_calls=response.tool_calls,
+            content=getattr(response, 'content', "") or "",
+            tool_calls=tool_calls,
         )
 
     def _get_available_tools(self, profile: str) -> List[Dict[str, Any]]:
