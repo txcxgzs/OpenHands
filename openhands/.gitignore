@@ -3,11 +3,20 @@
 .env.*
 *.key
 *.pem
+config.yaml
+config.*.yaml
+!config.example.yaml
 
 # 测试文件中的密钥
 test_simple.py
 test_agent.py
 test_api.py
+verify.py
+
+# OpenClaw和Hermes目录 - 不应推送到GitHub
+openclaw/
+hermes/
+hermes-agent/
 
 # Python
 __pycache__/
