@@ -3,6 +3,7 @@ Channels Package - References OpenClaw's channel integrations
 """
 from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass, field
+from abc import ABC, abstractmethod
 import asyncio
 import logging
 import uuid
@@ -47,6 +48,9 @@ class Channel(ABC):
     @abstractmethod
     async def send(self, user_id: str, content: str):
         pass
+
+
+BaseChannel = Channel
 
 
 class ChannelManager:
