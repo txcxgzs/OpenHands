@@ -993,6 +993,109 @@
         .toast.show { opacity: 1; }
         .toast.success { border-color: var(--ok); }
         .toast.error { border-color: var(--danger); }
+        
+        /* Chat Queue */
+        .chat-queue {
+            margin: 8px 16px;
+            padding: 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .chat-queue__title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+        
+        .chat-queue__list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .chat-queue__item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+        }
+        
+        .chat-queue__item--steered {
+            border-color: var(--accent);
+            background: var(--accent-subtle);
+        }
+        
+        .chat-queue__main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .chat-queue__badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            background: var(--accent);
+            color: white;
+            border-radius: var(--radius-full);
+        }
+        
+        .chat-queue__text {
+            font-size: 13px;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .chat-queue__actions {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .chat-queue__steer,
+        .chat-queue__remove {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .chat-queue__steer {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .chat-queue__steer:hover {
+            background: var(--accent-hover);
+        }
+        
+        .chat-queue__remove {
+            background: var(--bg-hover);
+            color: var(--muted);
+        }
+        
+        .chat-queue__remove:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
     </style>
 </head>
 <body>
@@ -1146,6 +1249,9 @@
                     </div>
                 </div>
                 
+                <!-- Chat Queue -->
+                <div id="chatQueueContainer"></div>
+                
                 <div class="compose">
                     <div class="compose-wrapper">
                         <div class="slash-menu" id="slashMenu">
@@ -1202,6 +1308,10 @@
         let currentPath = '/workspace/openhands-workspace';
         let terminalHistory = [];
         let slashMenuIndex = 0;
+        
+        // Message Queue
+        let messageQueue = [];
+        let queueIdCounter = 0;
         
         // Slash commands
         const SLASH_COMMANDS = [
@@ -1306,6 +1416,101 @@
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
+        }
+        
+        // Queue Functions
+        function addToQueue(text) {
+            const id = `queue-${++queueIdCounter}`;
+            messageQueue.push({
+                id,
+                text,
+                createdAt: Date.now(),
+                kind: 'queued'
+            });
+            renderQueue();
+            showToast('消息已添加到队列', 'success');
+        }
+        
+        function removeFromQueue(id) {
+            const index = messageQueue.findIndex(q => q.id === id);
+            if (index !== -1) {
+                messageQueue.splice(index, 1);
+                renderQueue();
+                showToast('已从队列移除');
+            }
+        }
+        
+        function steerQueueItem(id) {
+            const index = messageQueue.findIndex(q => q.id === id);
+            if (index !== -1) {
+                const item = messageQueue.splice(index, 1)[0];
+                renderQueue();
+                // Send this item;
+                sendMessageInternal(item.text);
+            }
+        }
+        
+        function renderQueue() {
+            const container = document.getElementById('chatQueueContainer');
+            
+            if (messageQueue.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            let html = `
+                <div class="chat-queue">
+                    <div class="chat-queue__title">队列 (${messageQueue.length})</div>
+                    <div class="chat-queue__list">
+            `;
+            
+            for (const item of messageQueue) {
+                const isSteered = item.kind === 'steered';
+                html += `
+                    <div class="chat-queue__item ${isSteered ? 'chat-queue__item--steered' : ''}">
+                        <div class="chat-queue__main">
+                            ${isSteered ? '<span class="chat-queue__badge">Steered</span>' : ''}
+                            <div class="chat-queue__text">${item.text}</div>
+                        </div>
+                        <div class="chat-queue__actions">
+                            ${!isSteered ? `
+                                <button class="chat-queue__steer" onclick="steerQueueItem('${item.id}')">
+                                    ⏩
+                                    <span>立即发送</span>
+                                </button>
+                            ` : ''}
+                            <button class="chat-queue__remove" onclick="removeFromQueue('${item.id}')">✕</button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function processNextInQueue() {
+            if (messageQueue.length > 0 && !isStreaming) {
+                const item = messageQueue.shift();
+                renderQueue();
+                sendMessageInternal(item.text);
+            }
+        }
+        
+        function sendMessageInternal(text) {
+            const welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.remove();
+            
+            addMessage('user', text);
+            
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                isStreaming = true;
+                ws.send(JSON.stringify({type: 'message', content: text}));
+            }
         }
         
         function initWebSocket() {
@@ -1525,6 +1730,9 @@
             messageCount++;
             updateStats();
             isStreaming = false;
+            
+            // Process next in queue
+            processNextInQueue();
         }
         
         function addMessage(role, content) {
@@ -1615,12 +1823,15 @@
             if (!content) return;
             if (!ws || ws.readyState !== WebSocket.OPEN) return;
             
-            addMessage('user', content);
             input.value = '';
             input.style.height = 'auto';
             
-            isStreaming = true;
-            ws.send(JSON.stringify({type: 'message', content}));
+            // Check if AI is already working
+            if (isStreaming) {
+                addToQueue(content);
+            } else {
+                sendMessageInternal(content);
+            }
         }
         
         function sendSuggestion(text) {
@@ -1629,10 +1840,14 @@
         }
         
         function clearChat() {
+            messageQueue = [];
+            renderQueue();
             location.reload();
         }
         
         function newSession() {
+            messageQueue = [];
+            renderQueue();
             location.reload();
         }
         
