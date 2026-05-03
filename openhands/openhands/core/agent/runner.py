@@ -73,16 +73,40 @@ def check_bootstrap_status() -> bool:
     return not os.path.exists(USER_FILE)
 
 
+def get_bootstrap_context() -> str:
+    """获取BOOTSTRAP.md内容作为上下文"""
+    if os.path.exists(BOOTSTRAP_FILE):
+        try:
+            with open(BOOTSTRAP_FILE, 'r', encoding='utf-8') as f:
+                return f.read()
+        except:
+            pass
+    return ""
+
+
 def get_bootstrap_prompt() -> str:
-    """获取引导提示词"""
-    return """请先用 read_file 工具读取 BOOTSTRAP.md，然后按照其指示完成设置。
-首次回复要简洁（2-3句话），询问用户名字，然后使用 write_file 将名字写入 user.md。
-完成设置后删除 BOOTSTRAP.md。"""
+    """获取引导提示词 - 直接内嵌BOOTSTRAP.md内容"""
+    bootstrap_content = get_bootstrap_context()
+    if bootstrap_content:
+        return f"""## 首次设置任务
+必须按顺序完成以下步骤：
+
+{bootstrap_content}
+
+## 强制规则
+- 回复必须控制在2-3句话以内
+- 先调用工具再回复，不要只输出文字指令
+- 绝对不要说超过3句话"""
+    return """## 首次设置任务
+1. 询问用户名字（2-3句话）
+2. 用户回复后用 write_file 保存到 user.md
+3. 用 terminal_run 删除 BOOTSTRAP.md
+- 回复必须控制在2-3句话以内"""
 
 
 def get_normal_first_greeting() -> str:
     """正常首次问候（2-3句话）"""
-    user_name = "friend"
+    user_name = "朋友"
     if os.path.exists(USER_FILE):
         try:
             with open(USER_FILE, 'r') as f:
@@ -99,21 +123,26 @@ def get_normal_first_greeting() -> str:
     return f"你好 {user_name}！我是 OpenHands。有什么我可以帮你的吗？"
 
 
-DEFAULT_SYSTEM_PROMPT = """You are OpenHands, a personal AI assistant.
+DEFAULT_SYSTEM_PROMPT = """你是 OpenHands，一个智能助手。
 
-## Workspace Context
-Working directory: /workspace
+## 工作区
+工作目录: /workspace
 
-## Your Tools
-- terminal_run: Execute commands
-- read_file, write_file, list_dir: File operations
-- memory_add, memory_search, memory_list: Memory system
+## 你的工具
+- terminal_run: 执行命令
+- read_file, write_file, list_dir: 文件操作
+- memory_add, memory_search, memory_list: 记忆系统
 
-## Execution Style
-- Actionable request: act in this turn.
-- Continue until done or genuinely blocked.
-- Keep responses concise (2-3 sentences max for greetings).
-- Final answer needs evidence: tool output, file contents, or command result."""
+## 执行规则
+- 可执行的请求：立即执行
+- 持续直到完成或真正被阻塞
+- 回复简洁：问候语不超过2-3句话
+- 回答需要证据：工具输出、文件内容或命令结果
+
+## 重要：回复长度限制
+- 问候语必须控制在2-3句话以内
+- 禁止长篇大论
+- 简洁是美德"""
 
 
 class EmbeddedAgent:
@@ -312,4 +341,8 @@ class EmbeddedAgent:
         all_defs = self._tool_registry.get_definitions()
         all_names = [d["name"] for d in all_defs]
         allowed_names = self._policy_manager.filter_tools(all_names, profile)
-        return [d for d in all_defs if d["name"] in allowed_names}
+        result = []
+        for d in all_defs:
+            if d["name"] in allowed_names:
+                result.append(d)
+        return result

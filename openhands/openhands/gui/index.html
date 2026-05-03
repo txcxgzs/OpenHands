@@ -28,6 +28,7 @@
             --radius-sm: 6px;
             --radius-md: 10px;
             --radius-lg: 14px;
+            --radius-full: 999px;
             --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
             --font-mono: "JetBrains Mono", ui-monospace, monospace;
         }
@@ -47,12 +48,14 @@
             height: 100vh;
         }
         
+        /* Sidebar */
         .sidebar {
             width: 260px;
             background: var(--bg-accent);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
         }
         
         .sidebar-header {
@@ -125,23 +128,26 @@
         
         .nav-icon { width: 20px; text-align: center; }
         
+        /* Main */
         .main {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            min-width: 0;
         }
         
         .header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             padding: 12px 24px;
             background: var(--bg-accent);
             border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
         }
         
-        .header-left { display: flex; align-items: center; gap: 16px; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
         
         .page-title {
             font-size: 18px;
@@ -154,7 +160,7 @@
             align-items: center;
             gap: 6px;
             padding: 4px 10px;
-            border-radius: 999px;
+            border-radius: var(--radius-full);
             font-size: 12px;
             font-weight: 500;
         }
@@ -201,20 +207,23 @@
         
         .btn-ghost:hover { background: var(--bg-hover); }
         
-        .chat-container {
+        /* Chat */
+        .chat {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            background: transparent;
         }
         
         .chat-thread {
             flex: 1;
             overflow-y: auto;
-            padding: 0 18px;
+            padding: 0 6px 6px;
+            min-height: 0;
         }
         
-        /* OpenClaw风格欢迎页面 */
+        /* Welcome - OpenClaw Style */
         .agent-chat__welcome {
             display: flex;
             flex-direction: column;
@@ -278,13 +287,8 @@
             color: var(--muted);
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 999px;
+            border-radius: var(--radius-full);
             padding: 6px 14px;
-        }
-        
-        .agent-chat__badge img {
-            width: 14px;
-            height: 14px;
         }
         
         .agent-chat__hint {
@@ -318,7 +322,7 @@
         .agent-chat__suggestion {
             font-size: 13px;
             padding: 10px 18px;
-            border-radius: 999px;
+            border-radius: var(--radius-full);
             border: 1px solid var(--border);
             background: var(--card);
             color: var(--text);
@@ -333,11 +337,11 @@
             transform: translateY(-2px);
         }
         
-        /* 消息样式 */
+        /* Messages */
         .message {
             display: flex;
             gap: 12px;
-            margin: 20px 0;
+            margin: 16px 0;
             animation: fadeIn 0.3s ease;
         }
         
@@ -366,7 +370,7 @@
             display: flex;
             align-items: baseline;
             gap: 10px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         
         .message-name {
@@ -380,35 +384,38 @@
             color: var(--muted);
         }
         
-        .message-text {
+        /* Chat text - OpenClaw style */
+        .chat-text {
             font-size: 14px;
-            line-height: 1.7;
-            color: var(--text);
+            line-height: 1.5;
+            word-wrap: break-word;
         }
         
-        .message-text pre {
-            background: var(--card);
-            padding: 14px;
-            border-radius: var(--radius-md);
-            overflow-x: auto;
-            margin: 12px 0;
-            border: 1px solid var(--border);
-        }
+        .chat-text p { margin: 0 0 0.5em; }
+        .chat-text p:last-child { margin-bottom: 0; }
         
-        .message-text code {
-            background: var(--card);
-            padding: 2px 6px;
-            border-radius: 4px;
+        .chat-text code {
             font-family: var(--font-mono);
-            font-size: 13px;
+            font-size: 0.9em;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 0.15em 0.4em;
+            border-radius: var(--radius-sm);
         }
         
-        .message-text pre code {
+        .chat-text pre {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            overflow-x: auto;
+            margin: 0.75em 0;
+        }
+        
+        .chat-text pre code {
             background: transparent;
             padding: 0;
         }
         
-        .message.streaming .message-text {
+        .message.streaming .chat-text {
             border-right: 2px solid var(--accent);
             animation: blink 1s step-end infinite;
         }
@@ -417,57 +424,20 @@
             50% { border-color: transparent; }
         }
         
-        /* 思考面板 */
-        .thinking-panel {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
-            border: 1px solid rgba(59, 130, 246, 0.2);
+        /* Thinking - OpenClaw style */
+        .chat-thinking {
+            margin-bottom: 10px;
+            padding: 10px 12px;
             border-radius: var(--radius-md);
-            margin: 16px 0;
-            overflow: hidden;
-        }
-        
-        .thinking-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            background: rgba(59, 130, 246, 0.1);
-        }
-        
-        .thinking-icon {
-            width: 28px;
-            height: 28px;
-            background: var(--info);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            animation: spin 2s linear infinite;
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .thinking-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--info);
-        }
-        
-        .thinking-body {
-            padding: 16px;
-        }
-        
-        .thinking-stream {
-            font-size: 13px;
+            border: 1px dashed rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.04);
             color: var(--muted);
+            font-size: 12px;
+            line-height: 1.4;
             font-family: var(--font-mono);
         }
         
-        /* 工具卡片 */
+        /* Tool cards - OpenClaw style */
         .tool-card {
             background: var(--card);
             border: 1px solid var(--border);
@@ -515,7 +485,7 @@
             font-size: 11px;
             font-weight: 600;
             padding: 4px 10px;
-            border-radius: 999px;
+            border-radius: var(--radius-full);
         }
         
         .tool-status.running { background: rgba(59, 130, 246, 0.2); color: var(--info); }
@@ -530,7 +500,7 @@
         .tool-card.expanded .tool-body { display: block; }
         
         .tool-result {
-            background: var(--bg);
+            background: rgba(0, 0, 0, 0.15);
             border-radius: var(--radius-sm);
             padding: 12px;
             font-family: var(--font-mono);
@@ -541,7 +511,7 @@
             white-space: pre-wrap;
         }
         
-        /* 输入框 */
+        /* Compose */
         .compose {
             flex-shrink: 0;
             padding: 12px;
@@ -606,13 +576,14 @@
             cursor: not-allowed;
         }
         
-        /* 右侧面板 */
+        /* Right panel */
         .right-panel {
-            width: 300px;
+            width: 280px;
             background: var(--bg-accent);
             border-left: 1px solid var(--border);
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
         }
         
         .panel-tabs {
@@ -665,9 +636,11 @@
             color: var(--text-strong);
         }
         
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
     </style>
 </head>
 <body>
@@ -689,25 +662,13 @@
                 </div>
                 <div class="nav-group">
                     <div class="nav-group-title">工具</div>
-                    <div class="nav-item">
-                        <span class="nav-icon">🔧</span>
-                        <span>终端</span>
-                    </div>
-                    <div class="nav-item">
-                        <span class="nav-icon">📁</span>
-                        <span>文件</span>
-                    </div>
-                    <div class="nav-item">
-                        <span class="nav-icon">🧠</span>
-                        <span>记忆</span>
-                    </div>
+                    <div class="nav-item"><span class="nav-icon">🖥️</span><span>终端</span></div>
+                    <div class="nav-item"><span class="nav-icon">📁</span><span>文件</span></div>
+                    <div class="nav-item"><span class="nav-icon">🧠</span><span>记忆</span></div>
                 </div>
                 <div class="nav-group">
                     <div class="nav-group-title">设置</div>
-                    <div class="nav-item">
-                        <span class="nav-icon">⚙️</span>
-                        <span>配置</span>
-                    </div>
+                    <div class="nav-item"><span class="nav-icon">⚙️</span><span>配置</span></div>
                 </div>
             </nav>
         </div>
@@ -727,7 +688,7 @@
                 </div>
             </div>
             
-            <div class="chat-container">
+            <div class="chat">
                 <div class="chat-thread" id="chatThread">
                     <div class="agent-chat__welcome" id="welcomeScreen">
                         <div class="agent-chat__welcome-glow"></div>
@@ -735,14 +696,13 @@
                         <h2>OpenHands</h2>
                         <div class="agent-chat__badges">
                             <span class="agent-chat__badge">🟢 Ready to chat</span>
-                            <span class="agent-chat__badge">🤖 LongCat-2.0</span>
                         </div>
                         <p class="agent-chat__hint">输入消息开始对话 · 按 <kbd>/</kbd> 使用命令</p>
                         <div class="agent-chat__suggestions">
+                            <button class="agent-chat__suggestion" onclick="sendSuggestion('你好')">你好</button>
+                            <button class="agent-chat__suggestion" onclick="sendSuggestion('执行 pwd')">执行 pwd</button>
+                            <button class="agent-chat__suggestion" onclick="sendSuggestion('列出当前目录')">列出目录</button>
                             <button class="agent-chat__suggestion" onclick="sendSuggestion('你能做什么？')">你能做什么？</button>
-                            <button class="agent-chat__suggestion" onclick="sendSuggestion('列出当前目录文件')">列出当前目录文件</button>
-                            <button class="agent-chat__suggestion" onclick="sendSuggestion('执行 pwd 命令')">执行 pwd 命令</button>
-                            <button class="agent-chat__suggestion" onclick="sendSuggestion('帮我写一个Python脚本')">帮我写一个Python脚本</button>
                         </div>
                     </div>
                 </div>
@@ -751,7 +711,7 @@
                     <div class="compose-box">
                         <textarea class="compose-input" id="messageInput" placeholder="输入消息..." rows="1"></textarea>
                         <div class="compose-actions">
-                            <span style="font-size: 12px; color: var(--muted);">LongCat-2.0 · 支持工具调用</span>
+                            <span style="font-size: 12px; color: var(--muted);">LongCat-2.0</span>
                             <button class="send-btn" id="sendBtn" onclick="sendMessage()">发送 ➤</button>
                         </div>
                     </div>
@@ -762,14 +722,10 @@
         <div class="right-panel">
             <div class="panel-tabs">
                 <div class="panel-tab active" onclick="switchTab('stats')">统计</div>
-                <div class="panel-tab" onclick="switchTab('activity')">活动</div>
+                <div class="panel-tab" onclick="switchTab('info')">信息</div>
             </div>
             <div class="panel-content">
                 <div class="panel-view active" id="statsPanel">
-                    <div class="stat-card">
-                        <div class="stat-label">迭代次数</div>
-                        <div class="stat-value" id="iterationCount">0</div>
-                    </div>
                     <div class="stat-card">
                         <div class="stat-label">工具调用</div>
                         <div class="stat-value" id="toolCallCount">0</div>
@@ -779,8 +735,15 @@
                         <div class="stat-value" id="messageCount">0</div>
                     </div>
                 </div>
-                <div class="panel-view" id="activityPanel">
-                    <div id="activityList"></div>
+                <div class="panel-view" id="infoPanel">
+                    <div class="stat-card">
+                        <div class="stat-label">模型</div>
+                        <div style="font-size: 14px; color: var(--text); margin-top: 4px;">LongCat-2.0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">状态</div>
+                        <div style="font-size: 14px; color: var(--ok); margin-top: 4px;">✓ 已连接</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -790,7 +753,6 @@
         let ws = null;
         let messageCount = 0;
         let toolCallCount = 0;
-        let iterationCount = 0;
         let isStreaming = false;
         
         function initWebSocket() {
@@ -804,13 +766,11 @@
             };
             
             ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                handleMessage(data);
+                handleMessage(JSON.parse(event.data));
             };
             
             ws.onerror = () => {
                 document.getElementById('connectionStatus').innerHTML = '<span class="status-dot"></span><span>连接错误</span>';
-                document.getElementById('connectionStatus').className = 'connection-status';
             };
             
             ws.onclose = () => {
@@ -833,7 +793,6 @@
                 case 'tool_call':
                     showToolCall(data.tool, data.arguments);
                     toolCallCount++;
-                    iterationCount++;
                     updateStats();
                     break;
                 case 'tool_result':
@@ -850,30 +809,22 @@
             const welcome = document.getElementById('welcomeScreen');
             if (welcome) welcome.remove();
             
-            let panel = thread.querySelector('.thinking-panel');
+            let panel = thread.querySelector('.chat-thinking');
             if (!panel) {
                 panel = document.createElement('div');
-                panel.className = 'thinking-panel';
-                panel.innerHTML = `
-                    <div class="thinking-header">
-                        <div class="thinking-icon">🧠</div>
-                        <span class="thinking-label">AI 思考中</span>
-                    </div>
-                    <div class="thinking-body">
-                        <div class="thinking-stream" id="thinkingStream"></div>
-                    </div>
-                `;
+                panel.className = 'chat-thinking';
+                panel.textContent = content;
                 thread.appendChild(panel);
+            } else {
+                panel.textContent = content;
             }
-            
-            document.getElementById('thinkingStream').textContent = content;
             thread.scrollTop = thread.scrollHeight;
         }
         
         function updateStreamMessage(text) {
             const thread = document.getElementById('chatThread');
             
-            const panel = thread.querySelector('.thinking-panel');
+            const panel = thread.querySelector('.chat-thinking');
             if (panel) panel.remove();
             
             let msg = thread.querySelector('.message.streaming');
@@ -887,13 +838,13 @@
                             <span class="message-name">OpenHands</span>
                             <span class="message-time">${new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'})}</span>
                         </div>
-                        <div class="message-text"></div>
+                        <div class="chat-text"></div>
                     </div>
                 `;
                 thread.appendChild(msg);
             }
             
-            msg.querySelector('.message-text').innerHTML = formatContent(text);
+            msg.querySelector('.chat-text').innerHTML = formatContent(text);
             thread.scrollTop = thread.scrollHeight;
         }
         
@@ -903,11 +854,10 @@
             
             if (msg) {
                 msg.classList.remove('streaming');
-                msg.querySelector('.message-text').innerHTML = formatContent(text);
-                msg.querySelector('.message-text').style.borderRight = 'none';
+                msg.querySelector('.chat-text').innerHTML = formatContent(text);
             }
             
-            const panel = thread.querySelector('.thinking-panel');
+            const panel = thread.querySelector('.chat-thinking');
             if (panel) panel.remove();
             
             messageCount++;
@@ -920,12 +870,12 @@
             const welcome = document.getElementById('welcomeScreen');
             if (welcome) welcome.remove();
             
-            const panel = thread.querySelector('.thinking-panel');
+            const panel = thread.querySelector('.chat-thinking');
             if (panel) panel.remove();
             
             const time = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
             const avatar = role === 'user' ? '👤' : '🤖';
-            const name = role === 'user' ? '您' : 'OpenHands';
+            const name = role === 'user' ? '你' : 'OpenHands';
             
             const msg = document.createElement('div');
             msg.className = `message ${role}`;
@@ -936,7 +886,7 @@
                         <span class="message-name">${name}</span>
                         <span class="message-time">${time}</span>
                     </div>
-                    <div class="message-text">${formatContent(content)}</div>
+                    <div class="chat-text">${formatContent(content)}</div>
                 </div>
             `;
             
@@ -948,22 +898,22 @@
         
         function formatContent(content) {
             if (!content) return '';
-            return content
+            let html = content
                 .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
                 .replace(/`([^`]+)`/g, '<code>$1</code>')
                 .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
                 .replace(/\n/g, '<br>');
+            return '<p>' + html.replace(/<br>/g, '</p><p>') + '</p>';
         }
         
         function showToolCall(tool, args) {
             const thread = document.getElementById('chatThread');
             
-            const panel = thread.querySelector('.thinking-panel');
+            const panel = thread.querySelector('.chat-thinking');
             if (panel) panel.remove();
             
             const card = document.createElement('div');
             card.className = 'tool-card';
-            card.id = `tool-${Date.now()}`;
             card.innerHTML = `
                 <div class="tool-header" onclick="this.parentElement.classList.toggle('expanded')">
                     <div class="tool-icon">🔧</div>
@@ -988,17 +938,11 @@
             
             if (cards.length > 0) {
                 const last = cards[cards.length - 1];
-                const status = last.querySelector('.tool-status');
+                last.querySelector('.tool-status').className = `tool-status ${isError ? 'error' : 'success'}`;
+                last.querySelector('.tool-status').textContent = isError ? '失败' : '成功';
                 const resultEl = last.querySelector('.tool-result');
-                
-                status.className = `tool-status ${isError ? 'error' : 'success'}`;
-                status.textContent = isError ? '失败' : '成功';
-                
-                if (resultEl) {
-                    resultEl.className = `tool-result ${isError ? 'error' : ''}`;
-                    resultEl.textContent = result || '无输出';
-                }
-                
+                resultEl.className = `tool-result ${isError ? 'error' : ''}`;
+                resultEl.textContent = result || '无输出';
                 last.classList.add('expanded');
             }
         }
@@ -1006,7 +950,6 @@
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const content = input.value.trim();
-            
             if (!content) return;
             if (!ws || ws.readyState !== WebSocket.OPEN) return;
             
@@ -1024,44 +967,16 @@
         }
         
         function clearChat() {
-            const thread = document.getElementById('chatThread');
-            thread.innerHTML = `
-                <div class="agent-chat__welcome" id="welcomeScreen">
-                    <div class="agent-chat__welcome-glow"></div>
-                    <div class="agent-chat__avatar">🤚</div>
-                    <h2>OpenHands</h2>
-                    <div class="agent-chat__badges">
-                        <span class="agent-chat__badge">🟢 Ready to chat</span>
-                        <span class="agent-chat__badge">🤖 LongCat-2.0</span>
-                    </div>
-                    <p class="agent-chat__hint">输入消息开始对话 · 按 <kbd>/</kbd> 使用命令</p>
-                    <div class="agent-chat__suggestions">
-                        <button class="agent-chat__suggestion" onclick="sendSuggestion('你能做什么？')">你能做什么？</button>
-                        <button class="agent-chat__suggestion" onclick="sendSuggestion('列出当前目录文件')">列出当前目录文件</button>
-                        <button class="agent-chat__suggestion" onclick="sendSuggestion('执行 pwd 命令')">执行 pwd 命令</button>
-                        <button class="agent-chat__suggestion" onclick="sendSuggestion('帮我写一个Python脚本')">帮我写一个Python脚本</button>
-                    </div>
-                </div>
-            `;
-            
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({type: 'clear'}));
-            }
-            
-            messageCount = 0;
-            toolCallCount = 0;
-            iterationCount = 0;
-            updateStats();
+            location.reload();
         }
         
         function newSession() {
-            clearChat();
+            location.reload();
         }
         
         function updateStats() {
             document.getElementById('toolCallCount').textContent = toolCallCount;
             document.getElementById('messageCount').textContent = messageCount;
-            document.getElementById('iterationCount').textContent = iterationCount;
         }
         
         function switchTab(tab) {
