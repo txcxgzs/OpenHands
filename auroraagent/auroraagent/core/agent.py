@@ -13,9 +13,11 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 
 from .config import AgentConfig
-from .adapters.base import ModelAdapter, NormalizedResponse
-from .adapters.anthropic_adapter import AnthropicAdapter
+from .adapters.base import ModelAdapter, NormalizedResponse, Message, ToolCall
+from .adapters import get_adapter_class, list_adapters
 from ..tools.registry import ToolRegistry, ToolResult, tool_registry
+from ..tools.tool_policy import ToolPolicyManager
+from ..memory.memory_system import MemorySystem
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +70,7 @@ SYSTEM_PROMPT = """你是 Aurora，一个强大的 Windows AI 助手。
 - 执行终端命令
 - 读写文件
 - 进行多模态交互（处理图像）
+- 记忆重要信息
 
 重要说明：
 1. 优先使用安全方法
@@ -88,10 +91,13 @@ class AuroraAgent:
         self.config = config or AgentConfig.load()
         self._adapter: Optional[ModelAdapter] = None
         self._registry: Optional[ToolRegistry] = None
+        self._policy_manager: ToolPolicyManager = ToolPolicyManager()
+        self._memory: Optional[MemorySystem] = None
         self._initialized = False
         self._messages: List[Dict[str, Any]] = []
         self._iteration_count = 0
         self._tool_errors: List[Dict] = []
+        self._tool_profile: str = "coding"
     
     async def initialize(self):
         """初始化 Agent"""
@@ -100,6 +106,9 @@ class AuroraAgent:
         
         # 初始化工具注册表
         self._registry = tool_registry()
+        
+        # 初始化记忆系统
+        self._memory = MemorySystem(self.config.memory)
         
         # 加载工具集
         await self._load_toolsets()
@@ -122,25 +131,80 @@ class AuroraAgent:
         windows_tools.register_tools(self._registry)
         multimodal_tools.register_tools(self._registry)
         
+        # 注册记忆工具
+        self._register_memory_tools()
+        
         logger.info(f"Loaded toolsets: {self._registry.list_toolsets()}")
+    
+    def _register_memory_tools(self):
+        """注册记忆相关工具"""
+        
+        @self._registry.register_tool(
+            name="memory_add",
+            description="Add content to memory",
+            toolset="memory"
+        )
+        async def memory_add(content: str, metadata: Optional[Dict] = None) -> str:
+            item_id = self._memory.add(content, metadata)
+            return f"Added to memory with ID: {item_id}"
+        
+        @self._registry.register_tool(
+            name="memory_search",
+            description="Search memory for relevant content",
+            toolset="memory"
+        )
+        async def memory_search(query: str, limit: int = 5) -> str:
+            results = self._memory.search(query, limit)
+            if not results:
+                return "No matching memories found"
+            
+            output = f"Found {len(results)} memories:\n\n"
+            for i, (item, score) in enumerate(results, 1):
+                output += f"[{i}] (Score: {score})\n{item.content}\n\n"
+            return output
+        
+        @self._registry.register_tool(
+            name="memory_list",
+            description="List all stored memories",
+            toolset="memory"
+        )
+        async def memory_list(limit: int = 10) -> str:
+            items = self._memory.list_all(limit)
+            if not items:
+                return "No memories stored"
+            
+            output = f"Stored memories ({len(items)}):\n\n"
+            for i, item in enumerate(items, 1):
+                output += f"[{i}] {item.id}\n{item.content[:100]}...\n\n"
+            return output
     
     async def _create_adapter(self) -> ModelAdapter:
         """创建模型适配器"""
         provider = self.config.model.provider
+        adapter_class = get_adapter_class(provider)
         
-        if provider == "anthropic":
-            adapter = AnthropicAdapter()
-        else:
-            raise ValueError(f"Unsupported provider: {provider}")
+        if not adapter_class:
+            available = list_adapters()
+            raise ValueError(f"Unsupported provider: {provider}. Available: {available}")
         
-        await adapter.initialize(self.config.model)
+        adapter = adapter_class(self.config.model)
+        await adapter.initialize()
         return adapter
+    
+    def set_tool_profile(self, profile_name: str):
+        """设置工具配置文件"""
+        profile = self._policy_manager.get_profile(profile_name)
+        if not profile:
+            available = [p.name for p in self._policy_manager.list_profiles()]
+            raise ValueError(f"Unknown profile: {profile_name}. Available: {available}")
+        self._tool_profile = profile_name
     
     async def chat(
         self,
         user_message: str,
         images: Optional[List[str]] = None,
         max_iterations: Optional[int] = None,
+        tool_profile: Optional[str] = None,
     ) -> AgentResponse:
         """
         主要聊天接口
@@ -149,6 +213,7 @@ class AuroraAgent:
             user_message: 用户消息
             images: 可选的图像路径列表
             max_iterations: 最大迭代次数
+            tool_profile: 工具配置文件
         
         Returns:
             AgentResponse
@@ -156,8 +221,14 @@ class AuroraAgent:
         if not self._initialized:
             await self.initialize()
         
+        if tool_profile:
+            self.set_tool_profile(tool_profile)
+        
         max_iter = max_iterations or self.config.max_iterations
         budget = IterationBudget(max_total=max_iter)
+        
+        # 添加用户消息到记忆
+        self._memory.add(user_message, {"type": "user_message", "timestamp": datetime.now().isoformat()})
         
         # 添加用户消息
         user_msg = self._build_user_message(user_message, images)
@@ -223,6 +294,28 @@ class AuroraAgent:
             },
         }
     
+    def _convert_to_adapter_messages(self) -> List[Message]:
+        """转换为适配器消息格式"""
+        result = []
+        for msg in self._messages:
+            message = Message(
+                role=msg["role"],
+                content=msg["content"]
+            )
+            if "tool_calls" in msg:
+                message.tool_calls = [
+                    ToolCall(
+                        id=tc.get("id", ""),
+                        name=tc.get("name", ""),
+                        arguments=tc.get("arguments", {})
+                    )
+                    for tc in msg["tool_calls"]
+                ]
+            if "tool_call_id" in msg:
+                message.tool_call_id = msg["tool_call_id"]
+            result.append(message)
+        return result
+    
     async def _agent_loop(self, budget: IterationBudget) -> AgentResponse:
         """主 Agent Loop - 深度参考 OpenClaw 和 Hermes"""
         
@@ -236,8 +329,9 @@ class AuroraAgent:
             budget.consume()
             self._iteration_count += 1
             
-            response = await self._adapter.call(
-                messages=self._messages,
+            adapter_messages = self._convert_to_adapter_messages()
+            response = await self._adapter.chat(
+                messages=adapter_messages,
                 tools=tools,
                 system_prompt=SYSTEM_PROMPT,
             )
@@ -252,6 +346,8 @@ class AuroraAgent:
                 await self._execute_tool_calls(response.tool_calls, budget, tool_errors)
             else:
                 # 无工具调用，结束
+                if response.content:
+                    self._memory.add(response.content, {"type": "assistant_message"})
                 return AgentResponse(
                     messages=self._messages,
                     iteration_count=self._iteration_count,
@@ -268,24 +364,49 @@ class AuroraAgent:
         )
     
     def _get_available_tools(self) -> List[Dict]:
-        """获取可用工具列表"""
-        return self._registry.get_definitions(
+        """获取可用工具列表（应用策略）"""
+        all_tools = self._registry.get_definitions(
             enabled_toolsets=set(self.config.enabled_toolsets),
             disabled_toolsets=set(self.config.disabled_toolsets),
         )
+        
+        # 应用工具策略
+        all_tool_names = [t["name"] for t in all_tools]
+        allowed_names = self._policy_manager.filter_tools(
+            all_tool_names,
+            profile_name=self._tool_profile
+        )
+        
+        # 过滤工具
+        filtered_tools = [
+            t for t in all_tools
+            if t["name"] in allowed_names
+        ]
+        
+        return filtered_tools
     
     def _build_assistant_message(self, response: NormalizedResponse) -> Dict[str, Any]:
         """构建助手消息"""
         msg = {"role": "assistant", "content": response.content}
         
         if response.tool_calls:
-            msg["tool_calls"] = response.tool_calls
+            msg["tool_calls"] = [
+                {
+                    "id": tc.id,
+                    "type": "function",
+                    "function": {
+                        "name": tc.name,
+                        "arguments": tc.arguments
+                    }
+                }
+                for tc in response.tool_calls
+            ]
         
         return msg
     
     async def _execute_tool_calls(
         self,
-        tool_calls: List[Dict],
+        tool_calls: List[ToolCall],
         budget: IterationBudget,
         tool_errors: List[Dict],
     ):
@@ -293,7 +414,7 @@ class AuroraAgent:
         tool_results = []
         
         # 检查是否可并行执行
-        if _should_parallelize_tool_batch(tool_calls):
+        if _should_parallelize_tool_batch([tc.__dict__ for tc in tool_calls]):
             results = await asyncio.gather(
                 *[self._execute_single_tool(tc, budget, tool_errors) for tc in tool_calls],
                 return_exceptions=True,
@@ -302,10 +423,10 @@ class AuroraAgent:
             for tc, result in zip(tool_calls, results):
                 if isinstance(result, Exception):
                     tool_errors.append({
-                        "tool": tc.get("name"),
+                        "tool": tc.name,
                         "error": str(result),
                     })
-                    tool_results.append(self._error_tool_result(tc.get("id"), str(result)))
+                    tool_results.append(self._error_tool_result(tc.id, str(result)))
                 else:
                     tool_results.append(result)
         else:
@@ -314,21 +435,19 @@ class AuroraAgent:
                 tool_results.append(result)
         
         # 添加工具结果消息
-        self._messages.append({
-            "role": "user",
-            "content": tool_results,
-        })
+        for result in tool_results:
+            self._messages.append(result)
     
     async def _execute_single_tool(
         self,
-        tool_call: Dict,
+        tool_call: ToolCall,
         budget: IterationBudget,
         tool_errors: List[Dict],
     ) -> Dict[str, Any]:
         """执行单个工具"""
-        tool_id = tool_call.get("id", "")
-        name = tool_call.get("name", "")
-        arguments = tool_call.get("arguments", {})
+        tool_id = tool_call.id
+        name = tool_call.name
+        arguments = tool_call.arguments
         
         # 修复参数格式
         arguments = _repair_tool_call_arguments(arguments, name)
