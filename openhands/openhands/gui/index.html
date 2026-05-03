@@ -3,641 +3,1557 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenHands - AI 控制台</title>
+    <title>OpenHands - AI Assistant</title>
     <style>
+        /* ============================================
+           OPENHANDS DESIGN SYSTEM - Inspired by OpenClaw
+           ============================================ */
+        
+        :root {
+            /* Background - Deep, rich dark with layered depth */
+            --bg: #0e1015;
+            --bg-accent: #13151b;
+            --bg-elevated: #191c24;
+            --bg-hover: #1f2330;
+            --bg-muted: #1f2330;
+
+            /* Card / Surface - Clear hierarchy between levels */
+            --card: #161920;
+            --card-foreground: #f0f0f2;
+            --card-highlight: rgba(255, 255, 255, 0.04);
+            --popover: #191c24;
+            --popover-foreground: #f0f0f2;
+
+            /* Panel */
+            --panel: #0e1015;
+            --panel-strong: #191c24;
+            --panel-hover: #1f2330;
+            --chrome: rgba(14, 16, 21, 0.96);
+            --chrome-strong: rgba(14, 16, 21, 0.98);
+
+            /* Text - Clean contrast */
+            --text: #d4d4d8;
+            --text-strong: #f4f4f5;
+            --chat-text: #d4d4d8;
+            --muted: #838387;
+            --muted-strong: #75757d;
+            --muted-foreground: #838387;
+
+            /* Border - Whisper-thin, barely there */
+            --border: #1e2028;
+            --border-strong: #2e3040;
+            --border-hover: #3e4050;
+            --input: #1e2028;
+            --ring: #ff5c5c;
+
+            /* Accent - Punchy signature red */
+            --accent: #ff5c5c;
+            --accent-hover: #ff7070;
+            --accent-muted: #ff5c5c;
+            --accent-subtle: rgba(255, 92, 92, 0.1);
+            --accent-foreground: #fafafa;
+            --accent-glow: rgba(255, 92, 92, 0.2);
+            --selection-bg: #005fcc;
+            --selection-fg: #ffffff;
+            --primary: #ff5c5c;
+            --primary-foreground: #ffffff;
+
+            /* Secondary */
+            --secondary: #161920;
+            --secondary-foreground: #f0f0f2;
+            --accent-2: #14b8a6;
+            --accent-2-muted: rgba(20, 184, 166, 0.7);
+            --accent-2-subtle: rgba(20, 184, 166, 0.1);
+
+            /* Semantic */
+            --ok: #22c55e;
+            --ok-muted: rgba(34, 197, 94, 0.75);
+            --ok-subtle: rgba(34, 197, 94, 0.08);
+            --destructive: #ef4444;
+            --destructive-foreground: #fafafa;
+            --warn: #f59e0b;
+            --warn-muted: rgba(245, 158, 11, 0.75);
+            --warn-subtle: rgba(245, 158, 11, 0.08);
+            --danger: #ef4444;
+            --danger-muted: rgba(239, 68, 68, 0.75);
+            --danger-subtle: rgba(239, 68, 68, 0.08);
+            --info: #3b82f6;
+
+            /* Focus */
+            --focus: rgba(255, 92, 92, 0.2);
+            --focus-ring: 0 0 0 2px var(--bg), 0 0 0 3px color-mix(in srgb, var(--ring) 80%, transparent);
+            --focus-glow: 0 0 0 2px var(--bg), 0 0 0 3px var(--ring), 0 0 16px var(--accent-glow);
+
+            /* Typography */
+            --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+
+            /* Shadows - Subtle, layered depth */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
+            --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 24px var(--accent-glow);
+
+            /* Radii - Slightly larger for modern feel */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 20px;
+            --radius-full: 9999px;
+            --radius: 10px;
+
+            /* Transitions - Crisp and responsive */
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+            --duration-fast: 100ms;
+            --duration-normal: 180ms;
+            --duration-slow: 300ms;
+
+            color-scheme: dark;
+        }
+
         * {
-            margin: 0;
-            padding: 0;
             box-sizing: border-box;
         }
-        
+
+        html,
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f0f0f;
-            color: #fff;
-            height: 100vh;
-            display: flex;
+            height: 100%;
+            margin: 0;
+            padding: 0;
         }
-        
-        /* 左侧 - 屏幕预览 */
-        .screen-panel {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid #333;
-        }
-        
-        .screen-header {
-            padding: 12px 16px;
-            background: #1a1a1a;
-            border-bottom: 1px solid #333;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .screen-title {
-            font-size: 14px;
-            color: #888;
-        }
-        
-        .control-buttons {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        
-        .btn-primary {
-            background: #0066ff;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #0052cc;
-        }
-        
-        .btn-danger {
-            background: #ff3b30;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #cc2f26;
-        }
-        
-        .btn-success {
-            background: #34c759;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #2aa84a;
-        }
-        
-        .screen-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #000;
-            position: relative;
+
+        body {
+            font: 400 14px/1.55 var(--font-body);
+            letter-spacing: -0.01em;
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             overflow: hidden;
         }
-        
-        #screen-preview {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
+
+        ::selection {
+            background: var(--selection-bg);
+            color: var(--selection-fg);
         }
-        
-        .mouse-indicator {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #00ff00;
-            border-radius: 50%;
-            pointer-events: none;
-            transform: translate(-50%, -50%);
-            transition: all 0.1s;
+
+        /* Scrollbar styling - Minimal, barely visible */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-        
-        .mouse-indicator.clicking {
-            background: rgba(0, 255, 0, 0.3);
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
         }
-        
-        .screen-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-full);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        /* Animations */
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slide-up {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+
+        /* ============================================
+           LAYOUT
+           ============================================ */
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Header */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .app-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--text-strong);
+        }
+
+        .app-logo-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            gap: 16px;
+            font-size: 16px;
+            color: white;
+            font-weight: 700;
         }
-        
-        .screen-overlay.hidden {
-            display: none;
-        }
-        
-        .overlay-text {
-            font-size: 18px;
-            color: #888;
-        }
-        
-        /* 右侧 - 控制面板 */
-        .control-panel {
-            flex: 1;
+
+        .app-status {
             display: flex;
-            flex-direction: column;
-            min-width: 400px;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--muted);
         }
-        
-        /* 状态栏 */
-        .status-bar {
-            padding: 12px 16px;
-            background: #1a1a1a;
-            border-bottom: 1px solid #333;
+
+        .app-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--ok);
+            box-shadow: 0 0 0 4px var(--ok-subtle);
         }
-        
-        .status-item {
+
+        .app-status-dot.disconnected {
+            background: var(--danger);
+            box-shadow: 0 0 0 4px var(--danger-subtle);
+        }
+
+        .app-header-right {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 14px;
             font-size: 13px;
+            font-weight: 500;
+            line-height: 1;
+            border: 1px solid transparent;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition:
+                background var(--duration-fast) var(--ease-out),
+                color var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out);
+            user-select: none;
+            white-space: nowrap;
         }
-        
-        .status-label {
-            color: #888;
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
-        
-        .status-value {
-            color: #fff;
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--primary-foreground);
+            border-color: var(--primary);
         }
-        
-        .status-value.active {
-            color: #34c759;
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-hover);
+            box-shadow: var(--shadow-glow);
         }
-        
-        .status-value.inactive {
-            color: #ff3b30;
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text);
+            border-color: var(--border);
         }
-        
-        /* 操作日志 */
-        .log-panel {
+
+        .btn-ghost:hover:not(:disabled) {
+            background: var(--bg-hover);
+            border-color: var(--border-hover);
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+        }
+
+        .btn-icon:hover:not(:disabled) {
+            background: var(--bg-hover);
+            color: var(--text);
+            border-color: var(--border-hover);
+        }
+
+        .btn-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Main content */
+        .app-main {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted-strong);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 12px;
+        }
+
+        .sidebar-content {
             flex: 1;
             overflow-y: auto;
+            padding: 12px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
             padding: 16px;
-            background: #0a0a0a;
+            margin-bottom: 12px;
         }
-        
-        .log-entry {
-            padding: 8px 12px;
-            margin-bottom: 8px;
-            background: #1a1a1a;
-            border-radius: 6px;
-            font-size: 13px;
-            border-left: 3px solid #333;
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
         }
-        
-        .log-entry.action {
-            border-left-color: #0066ff;
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-strong);
         }
-        
-        .log-entry.success {
-            border-left-color: #34c759;
-        }
-        
-        .log-entry.error {
-            border-left-color: #ff3b30;
-        }
-        
-        .log-entry.info {
-            border-left-color: #888;
-        }
-        
-        .log-time {
-            color: #666;
-            font-size: 11px;
-            margin-bottom: 4px;
-        }
-        
-        .log-content {
-            color: #fff;
-        }
-        
-        /* 聊天区域 */
-        .chat-panel {
-            border-top: 1px solid #333;
+
+        .stat {
             display: flex;
             flex-direction: column;
-            height: 300px;
+            gap: 4px;
         }
-        
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-strong);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Chat area */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            background: var(--bg);
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .chat-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-session-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .chat-session-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-strong);
+        }
+
+        .chat-model-info {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .chat-header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .chat-messages {
             flex: 1;
             overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Welcome screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 16px;
+            padding: 48px 24px;
+            flex: 1;
+            animation: fade-in var(--duration-slow) var(--ease-out);
+        }
+
+        .welcome-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            font-weight: 700;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .welcome-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-strong);
+            margin: 0;
+        }
+
+        .welcome-hint {
+            font-size: 14px;
+            color: var(--muted);
+            margin: 0;
+            max-width: 400px;
+        }
+
+        .welcome-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            max-width: 500px;
+            margin-top: 8px;
+        }
+
+        .welcome-suggestion {
+            font-size: 13px;
+            padding: 10px 18px;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            cursor: pointer;
+            transition:
+                background var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out);
+        }
+
+        .welcome-suggestion:hover {
+            background: var(--panel-strong);
+            border-color: var(--accent);
+        }
+
+        /* Messages */
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: slide-up var(--duration-normal) var(--ease-out);
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            background: var(--card);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+
+        .message-avatar.user {
+            background: var(--secondary);
+        }
+
+        .message-avatar.assistant {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+            border: none;
+        }
+
+        .message-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .message-role {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-strong);
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .message-body {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 14px 16px;
+            line-height: 1.6;
+        }
+
+        .message.user .message-body {
+            background: var(--secondary);
+            border-color: var(--border);
+        }
+
+        .message-body p {
+            margin: 0 0 8px 0;
+        }
+
+        .message-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-body code {
+            font-family: var(--font-mono);
+            background: var(--bg-muted);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+        }
+
+        .message-body pre {
+            background: var(--bg-accent);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+
+        .message-body pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+            animation: typing 1.4s var(--ease-in-out) infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        /* Input area */
+        .chat-input-container {
+            padding: 16px 20px 20px;
+            flex-shrink: 0;
+            background: linear-gradient(to bottom, transparent, var(--bg) 30%);
+        }
+
+        .chat-input-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            transition:
+                border-color var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out);
+        }
+
+        @supports (backdrop-filter: blur(1px)) {
+            .chat-input-wrapper {
+                backdrop-filter: blur(12px) saturate(1.6);
+                -webkit-backdrop-filter: blur(12px) saturate(1.6);
+            }
+        }
+
+        .chat-input-wrapper:focus-within {
+            border-color: var(--border-strong);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--border-strong) 24%, transparent);
+        }
+
+        .chat-input {
+            width: 100%;
+            min-height: 48px;
+            max-height: 160px;
+            resize: none;
+            padding: 14px 16px 10px;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            font-size: 14px;
+            font-family: var(--font-body);
+            line-height: 1.5;
+            outline: none;
+        }
+
+        .chat-input::placeholder {
+            color: var(--muted);
+        }
+
+        .chat-input-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+        }
+
+        .chat-input-tools {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .chat-input-tool {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition:
+                background var(--duration-fast) var(--ease-out),
+                color var(--duration-fast) var(--ease-out);
+        }
+
+        .chat-input-tool:hover {
+            background: var(--bg-hover);
+            color: var(--text);
+        }
+
+        .chat-input-tool.active {
+            color: var(--accent);
+            background: var(--accent-subtle);
+        }
+
+        .chat-input-tool svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .chat-input-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-send-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            border: none;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            transition:
+                background var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out),
+                transform var(--duration-fast) var(--ease-out);
+        }
+
+        .chat-send-btn:hover:not(:disabled) {
+            background: var(--accent-hover);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .chat-send-btn:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+
+        .chat-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .chat-send-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .chat-send-btn.stop {
+            background: var(--danger);
+        }
+
+        .chat-send-btn.stop:hover:not(:disabled) {
+            background: var(--danger);
+            box-shadow: 0 0 0 4px var(--danger-subtle);
+        }
+
+        /* Screen control panel */
+        .screen-control {
+            display: none;
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 300px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            overflow: hidden;
+            animation: slide-up var(--duration-normal) var(--ease-out);
+        }
+
+        .screen-control.active {
+            display: block;
+        }
+
+        .screen-control-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .screen-control-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-strong);
+        }
+
+        .screen-control-content {
             padding: 16px;
         }
-        
-        .message {
+
+        .screen-preview {
+            width: 100%;
+            aspect-ratio: 16/10;
+            background: var(--bg-accent);
+            border-radius: var(--radius-md);
+            overflow: hidden;
             margin-bottom: 12px;
         }
-        
-        .message-user {
-            text-align: right;
+
+        .screen-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
-        
-        .message-content {
-            display: inline-block;
-            padding: 10px 14px;
-            border-radius: 12px;
-            max-width: 80%;
-            font-size: 14px;
-        }
-        
-        .message-user .message-content {
-            background: #0066ff;
-            color: white;
-        }
-        
-        .message-assistant .message-content {
-            background: #2a2a2a;
-            color: white;
-        }
-        
-        .chat-input-area {
-            padding: 12px 16px;
-            background: #1a1a1a;
+
+        .screen-control-actions {
             display: flex;
             gap: 8px;
         }
-        
-        .chat-input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1px solid #333;
-            border-radius: 8px;
-            background: #0a0a0a;
-            color: white;
-            font-size: 14px;
+
+        /* Status indicator */
+        .status-toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: var(--radius-full);
+            font-size: 13px;
+            color: var(--text);
+            box-shadow: var(--shadow-lg);
+            z-index: 200;
+            animation: slide-up var(--duration-normal) var(--ease-out);
+            display: none;
         }
-        
-        .chat-input:focus {
-            outline: none;
-            border-color: #0066ff;
-        }
-        
-        .send-btn {
-            padding: 10px 20px;
-            background: #0066ff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        
-        /* 工具栏 */
-        .toolbar {
-            padding: 8px 16px;
-            background: #1a1a1a;
-            border-bottom: 1px solid #333;
+
+        .status-toast.show {
             display: flex;
+            align-items: center;
             gap: 8px;
-            flex-wrap: wrap;
         }
-        
-        .tool-btn {
-            padding: 6px 12px;
-            background: #2a2a2a;
-            border: 1px solid #333;
-            border-radius: 4px;
-            color: #888;
-            font-size: 12px;
-            cursor: pointer;
+
+        .status-toast.info {
+            border-color: color-mix(in srgb, var(--info) 40%, var(--border));
         }
-        
-        .tool-btn:hover {
-            background: #333;
-            color: #fff;
+
+        .status-toast.success {
+            border-color: color-mix(in srgb, var(--ok) 40%, var(--border));
         }
-        
-        .tool-btn.active {
-            background: #0066ff;
-            border-color: #0066ff;
-            color: white;
+
+        .status-toast.error {
+            border-color: color-mix(in srgb, var(--danger) 40%, var(--border));
+        }
+
+        /* Markdown */
+        .markdown {
+            line-height: 1.6;
+        }
+
+        .markdown h1, .markdown h2, .markdown h3, .markdown h4 {
+            margin: 16px 0 8px 0;
+            color: var(--text-strong);
+        }
+
+        .markdown h1 {
+            font-size: 20px;
+        }
+
+        .markdown h2 {
+            font-size: 18px;
+        }
+
+        .markdown h3 {
+            font-size: 16px;
+        }
+
+        .markdown ul, .markdown ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+
+        .markdown li {
+            margin: 4px 0;
+        }
+
+        .markdown blockquote {
+            border-left: 3px solid var(--accent-subtle);
+            padding-left: 12px;
+            margin: 8px 0;
+            color: var(--muted);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .app-header {
+                padding: 10px 16px;
+            }
+
+            .chat-messages {
+                padding: 16px;
+            }
+
+            .chat-input-container {
+                padding: 12px 16px 16px;
+            }
+
+            .message-avatar {
+                width: 32px;
+                height: 32px;
+            }
+
+            .welcome-avatar {
+                width: 56px;
+                height: 56px;
+                font-size: 24px;
+            }
+
+            .welcome-title {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- 左侧 - 屏幕预览 -->
-    <div class="screen-panel">
-        <div class="screen-header">
-            <span class="screen-title">🖥️ 屏幕预览</span>
-            <div class="control-buttons">
-                <button class="btn btn-primary" id="takeControl" onclick="takeControl()">
-                    🎮 接管控制
-                </button>
-                <button class="btn btn-danger hidden" id="releaseControl" onclick="releaseControl()">
-                    ⏹️ 释放控制
-                </button>
-                <button class="btn btn-success" id="refreshScreen" onclick="refreshScreen()">
-                    🔄 刷新
-                </button>
-            </div>
-        </div>
-        <div class="screen-container" id="screenContainer">
-            <img id="screen-preview" src="" alt="屏幕预览">
-            <div class="mouse-indicator" id="mouseIndicator"></div>
-            <div class="screen-overlay" id="screenOverlay">
-                <span class="overlay-text">点击"接管控制"开始</span>
-                <button class="btn btn-primary" onclick="takeControl()">开始控制</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 右侧 - 控制面板 -->
-    <div class="control-panel">
-        <!-- 状态栏 -->
-        <div class="status-bar">
-            <div class="status-item">
-                <span class="status-label">控制状态</span>
-                <span class="status-value inactive" id="controlStatus">未接管</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">鼠标位置</span>
-                <span class="status-value" id="mousePos">--</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">当前模型</span>
-                <span class="status-value" id="currentModel">--</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">操作次数</span>
-                <span class="status-value" id="actionCount">0</span>
-            </div>
-        </div>
-        
-        <!-- 工具栏 -->
-        <div class="toolbar">
-            <button class="tool-btn" onclick="executeAction('screenshot')">📸 截图</button>
-            <button class="tool-btn" onclick="executeAction('click', {x: 100, y: 100})">🖱️ 点击</button>
-            <button class="tool-btn" onclick="executeAction('type', {text: 'Hello'})">⌨️ 输入</button>
-            <button class="tool-btn" onclick="executeAction('hotkey', {keys: 'ctrl+c'})">📋 复制</button>
-            <button class="tool-btn" onclick="executeAction('hotkey', {keys: 'ctrl+v'})">📄 粘贴</button>
-            <button class="tool-btn" onclick="executeAction('scroll', {direction: 'down'})">⬇️ 滚动</button>
-        </div>
-        
-        <!-- 操作日志 -->
-        <div class="log-panel" id="logPanel">
-            <div class="log-entry info">
-                <div class="log-time">系统</div>
-                <div class="log-content">OpenHands 控制台已启动，等待连接...</div>
-            </div>
-        </div>
-        
-        <!-- 聊天区域 -->
-        <div class="chat-panel">
-            <div class="chat-messages" id="chatMessages">
-                <div class="message message-assistant">
-                    <div class="message-content">你好！我是 OpenHands，我可以帮你操作电脑。告诉我你想做什么？</div>
+    <div class="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="app-header-left">
+                <div class="app-logo">
+                    <div class="app-logo-icon">OH</div>
+                    <span>OpenHands</span>
                 </div>
             </div>
-            <div class="chat-input-area">
-                <input type="text" class="chat-input" id="chatInput" placeholder="输入指令或问题..." onkeypress="handleKeyPress(event)">
-                <button class="send-btn" onclick="sendMessage()">发送</button>
+            <div class="app-status">
+                <div class="app-status-dot" id="status-dot"></div>
+                <span id="status-text">连接中...</span>
+            </div>
+            <div class="app-header-right">
+                <button class="btn-icon" id="btn-screen-control" title="屏幕控制">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                </button>
+                <button class="btn-icon" id="btn-clear" title="清除对话">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <main class="app-main">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-title">会话状态</div>
+                </div>
+                <div class="sidebar-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">运行统计</span>
+                        </div>
+                        <div class="stat-grid">
+                            <div class="stat">
+                                <span class="stat-label">消息数</span>
+                                <span class="stat-value" id="stat-messages">0</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">操作数</span>
+                                <span class="stat-value" id="stat-actions">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">控制模式</span>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="control-toggle" style="width: 18px; height: 18px;">
+                                <span>启用屏幕控制</span>
+                            </label>
+                        </div>
+                        <button class="btn btn-ghost" style="width: 100%;" id="btn-screenshot">
+                            📸 获取截图
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Chat area -->
+            <section class="chat-container">
+                <div class="chat-header">
+                    <div class="chat-header-left">
+                        <div class="chat-session-info">
+                            <div class="chat-session-name">会话</div>
+                            <div class="chat-model-info" id="model-info">模型: 加载中...</div>
+                        </div>
+                    </div>
+                    <div class="chat-header-right">
+                        <button class="btn-icon" id="btn-settings" title="设置">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Welcome screen -->
+                    <div class="welcome-screen" id="welcome-screen">
+                        <div class="welcome-avatar">🤖</div>
+                        <h2 class="welcome-title">你好，我是OpenHands</h2>
+                        <p class="welcome-hint">我可以帮你处理各种任务，从编程到日常事务。有什么需要我协助的吗？</p>
+                        <div class="welcome-suggestions">
+                            <button class="welcome-suggestion" data-text="帮我写一个Python脚本">写个Python脚本</button>
+                            <button class="welcome-suggestion" data-text="解释一下什么是机器学习">解释概念</button>
+                            <button class="welcome-suggestion" data-text="帮我调试一段代码">调试代码</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="chat-input-wrapper">
+                        <textarea 
+                            id="message-input" 
+                            class="chat-input" 
+                            placeholder="输入消息... (Shift+Enter 换行，Enter 发送)"
+                            rows="1"
+                        ></textarea>
+                        <div class="chat-input-toolbar">
+                            <div class="chat-input-tools">
+                                <button class="chat-input-tool" id="btn-attach" title="附件">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="chat-input-actions">
+                                <button class="chat-send-btn" id="send-btn">
+                                    <svg viewBox="0 0 24 24">
+                                        <line x1="22" y1="2" x2="11" y2="13"/>
+                                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Screen control panel -->
+        <div class="screen-control" id="screen-control">
+            <div class="screen-control-header">
+                <span class="screen-control-title">屏幕预览</span>
+                <button class="btn-icon" style="width: 28px; height: 28px;" id="btn-close-screen">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="screen-control-content">
+                <div class="screen-preview">
+                    <img id="screen-preview-img" src="" alt="屏幕预览" style="display: none;">
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-size: 13px;">
+                        暂无截图
+                    </div>
+                </div>
+                <div class="screen-control-actions">
+                    <button class="btn btn-primary" id="btn-refresh-screen" style="flex: 1;">刷新</button>
+                </div>
             </div>
         </div>
+
+        <!-- Status toast -->
+        <div class="status-toast" id="status-toast">
+            <span id="toast-icon"></span>
+            <span id="toast-message"></span>
+        </div>
     </div>
-    
+
     <script>
-        let ws = null;
-        let isConnected = false;
-        let isControlling = false;
-        let actionCount = 0;
-        
-        // 连接 WebSocket
-        function connect() {
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
-            
-            ws.onopen = () => {
-                isConnected = true;
-                addLog('info', '已连接到服务器');
-            };
-            
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                handleMessage(data);
-            };
-            
-            ws.onclose = () => {
-                isConnected = false;
-                addLog('error', '连接已断开，正在重连...');
-                setTimeout(connect, 3000);
-            };
-            
-            ws.onerror = (error) => {
-                addLog('error', '连接错误');
-            };
-        }
-        
-        // 处理消息
-        function handleMessage(data) {
-            switch (data.type) {
-                case 'status':
-                    addLog('info', data.content);
-                    break;
-                    
-                case 'message':
-                    addChatMessage('assistant', data.content);
-                    break;
-                    
-                case 'action':
-                    actionCount++;
-                    document.getElementById('actionCount').textContent = actionCount;
-                    addLog('action', data.content);
-                    
-                    // 更新鼠标位置
-                    if (data.mouse_x !== undefined && data.mouse_y !== undefined) {
-                        updateMousePosition(data.mouse_x, data.mouse_y);
+        // OpenHands Web Client
+        class OpenHandsClient {
+            constructor() {
+                this.ws = null;
+                this.isConnected = false;
+                this.isGenerating = false;
+                this.messageCount = 0;
+                this.actionCount = 0;
+                this.isControlMode = false;
+                
+                this.init();
+            }
+
+            init() {
+                this.bindElements();
+                this.bindEvents();
+                this.connect();
+            }
+
+            bindElements() {
+                this.messageInput = document.getElementById('message-input');
+                this.sendBtn = document.getElementById('send-btn');
+                this.chatMessages = document.getElementById('chat-messages');
+                this.welcomeScreen = document.getElementById('welcome-screen');
+                this.statusDot = document.getElementById('status-dot');
+                this.statusText = document.getElementById('status-text');
+                this.modelInfo = document.getElementById('model-info');
+                this.statMessages = document.getElementById('stat-messages');
+                this.statActions = document.getElementById('stat-actions');
+                this.btnClear = document.getElementById('btn-clear');
+                this.btnScreenshot = document.getElementById('btn-screenshot');
+                this.controlToggle = document.getElementById('control-toggle');
+                this.screenControl = document.getElementById('screen-control');
+                this.btnScreenControl = document.getElementById('btn-screen-control');
+                this.btnCloseScreen = document.getElementById('btn-close-screen');
+                this.btnRefreshScreen = document.getElementById('btn-refresh-screen');
+                this.screenPreviewImg = document.getElementById('screen-preview-img');
+                this.statusToast = document.getElementById('status-toast');
+                this.toastIcon = document.getElementById('toast-icon');
+                this.toastMessage = document.getElementById('toast-message');
+            }
+
+            bindEvents() {
+                this.sendBtn.addEventListener('click', () => this.sendMessage());
+                
+                this.messageInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
                     }
-                    break;
-                    
-                case 'screenshot':
-                    document.getElementById('screen-preview').src = `data:image/png;base64,${data.image}`;
-                    break;
-                    
-                case 'mouse_move':
-                    updateMousePosition(data.x, data.y);
-                    break;
-                    
-                case 'mouse_click':
-                    showClickAnimation(data.x, data.y);
-                    addLog('action', `点击: (${data.x}, ${data.y})`);
-                    break;
-                    
-                case 'key_press':
-                    addLog('action', `按键: ${data.keys}`);
-                    break;
-                    
-                case 'type_text':
-                    addLog('action', `输入: ${data.text}`);
-                    break;
-                    
-                case 'error':
-                    addLog('error', data.content);
-                    break;
-            }
-        }
-        
-        // 添加日志
-        function addLog(type, content) {
-            const logPanel = document.getElementById('logPanel');
-            const entry = document.createElement('div');
-            entry.className = `log-entry ${type}`;
-            
-            const time = new Date().toLocaleTimeString();
-            entry.innerHTML = `
-                <div class="log-time">${time}</div>
-                <div class="log-content">${content}</div>
-            `;
-            
-            logPanel.appendChild(entry);
-            logPanel.scrollTop = logPanel.scrollHeight;
-        }
-        
-        // 添加聊天消息
-        function addChatMessage(role, content) {
-            const chatMessages = document.getElementById('chatMessages');
-            const message = document.createElement('div');
-            message.className = `message message-${role}`;
-            message.innerHTML = `<div class="message-content">${content}</div>`;
-            chatMessages.appendChild(message);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-        
-        // 发送消息
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const content = input.value.trim();
-            
-            if (!content || !isConnected) return;
-            
-            addChatMessage('user', content);
-            input.value = '';
-            
-            ws.send(JSON.stringify({
-                type: 'message',
-                content: content
-            }));
-        }
-        
-        // 按键处理
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
-        
-        // 接管控制
-        function takeControl() {
-            if (!isConnected) {
-                addLog('error', '未连接到服务器');
-                return;
-            }
-            
-            isControlling = true;
-            document.getElementById('controlStatus').textContent = '已接管';
-            document.getElementById('controlStatus').className = 'status-value active';
-            document.getElementById('takeControl').classList.add('hidden');
-            document.getElementById('releaseControl').classList.remove('hidden');
-            document.getElementById('screenOverlay').classList.add('hidden');
-            
-            ws.send(JSON.stringify({ type: 'take_control' }));
-            addLog('success', '已接管控制权');
-            
-            // 开始屏幕更新
-            startScreenUpdate();
-        }
-        
-        // 释放控制
-        function releaseControl() {
-            isControlling = false;
-            document.getElementById('controlStatus').textContent = '未接管';
-            document.getElementById('controlStatus').className = 'status-value inactive';
-            document.getElementById('takeControl').classList.remove('hidden');
-            document.getElementById('releaseControl').classList.add('hidden');
-            
-            ws.send(JSON.stringify({ type: 'release_control' }));
-            addLog('info', '已释放控制权');
-        }
-        
-        // 刷新屏幕
-        function refreshScreen() {
-            if (isConnected) {
-                ws.send(JSON.stringify({ type: 'screenshot' }));
-            }
-        }
-        
-        // 开始屏幕更新
-        let screenUpdateInterval;
-        function startScreenUpdate() {
-            if (screenUpdateInterval) {
-                clearInterval(screenUpdateInterval);
-            }
-            
-            screenUpdateInterval = setInterval(() => {
-                if (isControlling && isConnected) {
-                    ws.send(JSON.stringify({ type: 'screenshot' }));
-                }
-            }, 1000); // 每秒更新一次
-        }
-        
-        // 更新鼠标位置
-        function updateMousePosition(x, y) {
-            document.getElementById('mousePos').textContent = `(${x}, ${y})`;
-            
-            const indicator = document.getElementById('mouseIndicator');
-            const container = document.getElementById('screenContainer');
-            const img = document.getElementById('screen-preview');
-            
-            // 计算缩放比例
-            const scaleX = img.clientWidth / img.naturalWidth;
-            const scaleY = img.clientHeight / img.naturalHeight;
-            
-            indicator.style.left = `${x * scaleX}px`;
-            indicator.style.top = `${y * scaleY}px`;
-        }
-        
-        // 显示点击动画
-        function showClickAnimation(x, y) {
-            const indicator = document.getElementById('mouseIndicator');
-            indicator.classList.add('clicking');
-            setTimeout(() => indicator.classList.remove('clicking'), 200);
-        }
-        
-        // 执行操作
-        function executeAction(action, params = {}) {
-            if (!isControlling) {
-                addLog('error', '请先接管控制');
-                return;
-            }
-            
-            ws.send(JSON.stringify({
-                type: 'execute_action',
-                action: action,
-                params: params
-            }));
-        }
-        
-        // 屏幕点击
-        document.getElementById('screenContainer').addEventListener('click', (e) => {
-            if (!isControlling) return;
-            
-            const img = document.getElementById('screen-preview');
-            const rect = img.getBoundingClientRect();
-            
-            const x = Math.round((e.clientX - rect.left) / rect.width * img.naturalWidth);
-            const y = Math.round((e.clientY - rect.top) / rect.height * img.naturalHeight);
-            
-            executeAction('click', { x, y });
+                });
+
+                this.messageInput.addEventListener('input', () => {
+                    this.autoResize();
+                });
+
+                this.btnClear.addEventListener('click', () => this.clearChat());
+                this.btnScreenshot.addEventListener('click', () => this.takeScreenshot());
+                this.controlToggle.addEventListener('change', (e) => this.toggleControl(e.target.checked));
+                
+                this.btnScreenControl.addEventListener('click', () => {
+                    this.screenControl.classList.toggle('active');
+                });
+                
+                this.btnCloseScreen.addEventListener('click', () => {
+                    this.screenControl.classList.remove('active');
+                });
+                
+                this.btnRefreshScreen.addEventListener('click', () => this.takeScreenshot());
+
+                document.querySelectorAll('.welcome-suggestion').forEach(btn => {
+ btn.addEventListener('click', () => {
+                    const text = btn.getAttribute('data-text');
+                    this.messageInput.value = text;
+                    this.autoResize();
+                    this.messageInput.focus();
+                });
+            });
         });
-        
-        // 初始化
-        connect();
+
+                // Auto focus
+                setTimeout(() => {
+                    this.messageInput.focus();
+                }, 100);
+            }
+
+            autoResize() {
+                this.messageInput.style.height = 'auto';
+                this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 160) + 'px';
+            }
+
+            connect() {
+                try {
+                    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                    const host = window.location.host;
+                    const wsUrl = `${protocol}//${host}/ws`;
+                    
+                    this.ws = new WebSocket(wsUrl);
+                    
+                    this.ws.onopen = () => {
+                        this.isConnected = true;
+                        this.updateStatus(true);
+                        this.showToast('success', '已连接');
+                    };
+                    
+                    this.ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        this.handleMessage(data);
+                    };
+                    
+                    this.ws.onclose = () => {
+                        this.isConnected = false;
+                        this.updateStatus(false);
+                        setTimeout(() => this.connect(), 3000);
+                    };
+                    
+                    this.ws.onerror = (error) => {
+                        console.error('WebSocket error:', error);
+                    };
+                } catch (e) {
+                    console.error('Failed to connect:', e);
+                    setTimeout(() => this.connect(), 3000);
+                }
+            }
+
+            updateStatus(connected) {
+                if (connected) {
+                    this.statusDot.classList.remove('disconnected');
+                    this.statusText.textContent = '已连接';
+                    this.modelInfo.textContent = '模型: LongCat-2.0-Preview';
+                } else {
+                    this.statusDot.classList.add('disconnected');
+                    this.statusText.textContent = '连接断开';
+                    this.modelInfo.textContent = '模型: 离线';
+                }
+            }
+
+            handleMessage(data) {
+                switch (data.type) {
+                    case 'status':
+                        this.handleStatus(data.content);
+                        break;
+                    case 'message':
+                        this.handleAssistantMessage(data.content);
+                        break;
+                    case 'screenshot':
+                        this.handleScreenshot(data.image);
+                        break;
+                    case 'action':
+                        this.handleAction(data.content, data.action);
+                        break;
+                    case 'error':
+                        this.handleError(data.content);
+                        break;
+                }
+            }
+
+            handleStatus(content) {
+                if (content === '正在思考...') {
+                    this.showTypingIndicator();
+                } else if (content === '控制权已接管') {
+                    this.isControlMode = true;
+                    this.controlToggle.checked = true;
+                    this.showToast('info', '屏幕控制已启用');
+                } else if (content === '控制权已释放') {
+                    this.isControlMode = false;
+                    this.controlToggle.checked = false;
+                    this.showToast('info', '屏幕控制已禁用');
+                }
+            }
+
+            handleAssistantMessage(content) {
+                this.hideTypingIndicator();
+                this.isGenerating = false;
+                this.updateSendButton();
+                this.addMessage('assistant', content);
+            }
+
+            handleScreenshot(imageData) {
+                if (imageData) {
+                    this.screenPreviewImg.src = `data:image/png;base64,${imageData}`;
+                    this.screenPreviewImg.style.display = 'block';
+                    const placeholder = this.screenPreviewImg.parentElement.querySelector('div:last-child');
+                    if (placeholder) placeholder.style.display = 'none';
+                }
+            }
+
+            handleAction(content, action) {
+                this.actionCount++;
+                this.statActions.textContent = this.actionCount;
+                this.showToast('info', content);
+            }
+
+            handleError(content) {
+                this.hideTypingIndicator();
+                this.isGenerating = false;
+                this.updateSendButton();
+                this.showToast('error', content);
+            }
+
+            sendMessage() {
+                const text = this.messageInput.value.trim();
+                if (!text || this.isGenerating) return;
+
+                if (!this.isConnected) {
+                    this.showToast('error', '未连接到服务器');
+                    return;
+                }
+
+                // Hide welcome screen if first message
+                if (this.welcomeScreen) {
+                    this.welcomeScreen.style.display = 'none';
+                }
+
+                this.addMessage('user', text);
+                this.messageInput.value = '';
+                this.autoResize();
+                
+                this.isGenerating = true;
+                this.updateSendButton();
+
+                this.send({
+                    type: 'message',
+                    content: text
+                });
+            }
+
+            takeScreenshot() {
+                if (!this.isConnected) return;
+                this.send({ type: 'screenshot' });
+            }
+
+            toggleControl(enabled) {
+                if (!this.isConnected) return;
+                this.send({ 
+                    type: enabled ? 'take_control' : 'release_control' 
+                });
+            }
+
+            send(data) {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify(data));
+                }
+            }
+
+            addMessage(role, content) {
+                this.messageCount++;
+                this.statMessages.textContent = this.messageCount;
+
+                const messageEl = document.createElement('div');
+                messageEl.className = `message ${role}`;
+                
+                const avatar = role === 'user' ? '👤' : '🤖';
+                
+                const time = new Date().toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                messageEl.innerHTML = `
+                    <div class="message-avatar ${role}">${avatar}</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-role">${role === 'user' ? '你' : 'OpenHands'}</span>
+                            <span class="message-time">${time}</span>
+                        </div>
+                        <div class="message-body">
+                            <div class="markdown">${this.formatMessage(content)}</div>
+                        </div>
+                    </div>
+                `;
+
+                this.chatMessages.appendChild(messageEl);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            formatMessage(text) {
+                let formatted = text
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+                
+                // Bold
+                formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                
+                // Italic
+                formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                
+                // Code blocks
+                formatted = formatted.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+                
+                // Inline code
+                formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+                
+                // Newlines
+                formatted = formatted.replace(/\n/g, '<br>');
+                
+                return formatted;
+            }
+
+            showTypingIndicator() {
+                const indicator = document.createElement('div');
+                indicator.className = 'message assistant';
+                indicator.id = 'typing-indicator';
+                indicator.innerHTML = `
+                    <div class="message-avatar assistant">🤖</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-role">OpenHands</span>
+                        </div>
+                        <div class="message-body">
+                            <div class="typing-indicator">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                this.chatMessages.appendChild(indicator);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            hideTypingIndicator() {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+            }
+
+            updateSendButton() {
+                if (this.isGenerating) {
+                    this.sendBtn.classList.add('stop');
+                    this.sendBtn.title = '停止生成';
+                    this.sendBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        </svg>
+                    `;
+                    // Add stop handler
+                    this.sendBtn.onclick = () => this.stopGeneration();
+                } else {
+                    this.sendBtn.classList.remove('stop');
+                    this.sendBtn.title = '发送';
+                    this.sendBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24">
+                            <line x1="22" y1="2" x2="11" y2="13"/>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                    `;
+                    this.sendBtn.onclick = () => this.sendMessage();
+                }
+            }
+
+            stopGeneration() {
+                // TODO: Implement stop
+                this.isGenerating = false;
+                this.updateSendButton();
+                this.hideTypingIndicator();
+            }
+
+            clearChat() {
+                if (confirm('确定要清除所有对话吗？')) {
+                    // Keep welcome screen but clear messages
+                    const messages = this.chatMessages.querySelectorAll('.message');
+                    messages.forEach(m => m.remove());
+                    if (this.welcomeScreen) {
+                        this.welcomeScreen.style.display = 'flex';
+                    }
+                    this.messageCount = 0;
+                    this.statMessages.textContent = '0';
+                    this.send({ type: 'clear' });
+                    this.showToast('info', '对话已清除');
+                }
+            }
+
+            showToast(type, message) {
+                this.statusToast.className = 'status-toast show ' + type;
+                
+                const icons = {
+                    success: '✓',
+                    error: '✕',
+                    info: 'ℹ'
+                };
+                
+                this.toastIcon.textContent = icons[type] || 'ℹ';
+                this.toastMessage.textContent = message;
+                
+                clearTimeout(this.toastTimeout);
+                this.toastTimeout = setTimeout(() => {
+                    this.statusToast.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            window.ohClient = new OpenHandsClient();
+        });
     </script>
 </body>
 </html>
