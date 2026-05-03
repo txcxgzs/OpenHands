@@ -1,3 +1,0 @@
-"""
-AuroraAgent Multimodal Module
-"""

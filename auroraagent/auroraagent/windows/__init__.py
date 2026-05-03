@@ -1,3 +1,0 @@
-"""
-AuroraAgent Windows Control Module
-"""
