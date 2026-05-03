@@ -1,0 +1,35 @@
+# AuroraAgent 配置示例
+name: "Aurora"
+
+model:
+  provider: "anthropic"
+  model: "claude-3-5-sonnet-20241022"
+  api_key: null # 或使用环境变量 ANTHROPIC_API_KEY
+  base_url: null
+  max_tokens: 4096
+  temperature: 0.7
+  top_p: 0.9
+
+windows:
+  enabled: true
+  mouse_speed: 1.0
+  keyboard_delay: 0.1
+  safe_mode: true # 启用安全模式（推荐）
+  screen_capture_enabled: true
+
+memory:
+  enabled: true
+  max_history: 50
+  auto_compress: true
+  compress_threshold: 0.8
+
+enabled_toolsets:
+  - "file"
+  - "terminal"
+  - "windows"
+  - "multimodal"
+
+disabled_toolsets: []
+
+max_iterations: 50
+auto_save: true

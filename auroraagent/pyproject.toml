@@ -1,0 +1,44 @@
+[project]
+name = "auroraagent"
+version = "0.1.0"
+description = "Windows 原生 AI Agent - 电脑操控与多模态支持"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    { name = "Aurora Team" }
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "anthropic>=0.30.0",
+    "openai>=1.0.0",
+    "pyautogui>=0.9.54",
+    "mss>=9.0.0",
+    "opencv-python>=4.8.0",
+    "Pillow>=10.0.0",
+    "pynput>=1.7.6",
+    "pywin32>=306; sys_platform == 'win32'",
+    "pyyaml>=6.0",
+    "rich>=13.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black",
+    "ruff",
+]
+
+[project.scripts]
+aurora = "auroraagent.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
