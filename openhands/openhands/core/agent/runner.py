@@ -1,6 +1,7 @@
 
 """
 Agent Runtime - Deep reference to OpenClaw's pi-embedded-runner
+With Hermes-style self-improving capabilities
 """
 
 from typing import Dict, List, Optional, Any, AsyncGenerator
@@ -23,6 +24,9 @@ from ...tools import file_tools, terminal_tools, memory_tools
 from ..tools.registry import ToolRegistry, tool_registry
 from ..tools.policy import ToolPolicyManager
 from ..memory.store import MemoryStore
+from ...skills import SkillManager, skill_manager
+from ...skills.nudge_engine import NudgeEngine, NudgeConfig
+from ...skills.enhanced_memory import EnhancedMemoryStore, MEMORY_GUIDANCE
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +94,7 @@ class EmbeddedAgentRunResult:
     error: Optional[str] = None
 
 
-DEFAULT_SYSTEM_PROMPT = """You are Aurora, a powerful AI assistant.
+DEFAULT_SYSTEM_PROMPT = """You are OpenHands, a powerful AI assistant that learns and grows.
 
 You can use tools to help the user. You have access to:
 - Memory system to store and retrieve information
@@ -98,6 +102,9 @@ You can use tools to help the user. You have access to:
 - Terminal to run commands
 - Windows automation to control the desktop
 - Web search and browsing
+- Skills system to learn from experience
+
+""" + MEMORY_GUIDANCE + """
 
 Use the tools appropriately and explain what you are doing.
 """
@@ -107,16 +114,22 @@ class EmbeddedAgent:
     """
     Embedded Agent - Core runtime
     Deep reference to OpenClaw's embedded agent
+    With Hermes-style self-improving capabilities
     """
 
     def __init__(self, config: Optional[AgentConfig] = None):
         self.config = config or AgentConfig.load()
-        self.agent_id = self.config.agent_id or f"aurora-{uuid.uuid4().hex[:8]}"
+        self.agent_id = self.config.agent_id or f"openhands-{uuid.uuid4().hex[:8]}"
 
         self._adapter: Optional[ModelAdapter] = None
         self._tool_registry: Optional[ToolRegistry] = None
         self._policy_manager: ToolPolicyManager = ToolPolicyManager()
         self._memory: Optional[MemoryStore] = None
+        
+        # Self-improving components
+        self._enhanced_memory: Optional[EnhancedMemoryStore] = None
+        self._skill_manager: Optional[SkillManager] = None
+        self._nudge_engine: Optional[NudgeEngine] = None
 
         self._sessions: Dict[str, SessionState] = {}
         self._active_runs: Dict[str, EmbeddedAgentRunMeta] = {}
@@ -126,6 +139,16 @@ class EmbeddedAgent:
     def tool_registry(self) -> ToolRegistry:
         """获取工具注册表"""
         return self._tool_registry
+    
+    @property
+    def skill_manager(self) -> SkillManager:
+        """获取技能管理器"""
+        return self._skill_manager
+    
+    @property
+    def nudge_engine(self) -> NudgeEngine:
+        """获取学习触发引擎"""
+        return self._nudge_engine
 
     async def initialize(self):
         """Initialize agent components"""
@@ -134,12 +157,33 @@ class EmbeddedAgent:
 
         self._tool_registry = tool_registry()
         self._memory = MemoryStore(self.config.memory.path)
+        
+        # Initialize self-improving components
+        self._enhanced_memory = EnhancedMemoryStore()
+        self._skill_manager = skill_manager
+        self._nudge_engine = NudgeEngine(NudgeConfig(
+            memory_nudge_interval=10,
+            skill_nudge_interval=10,
+            enable_background_review=True,
+        ))
+        
+        # Register nudge handlers
+        self._nudge_engine.register_memory_handler(self._handle_memory_nudge)
+        self._nudge_engine.register_skill_handler(self._handle_skill_nudge)
 
         await self._load_core_tools()
         await self._init_adapter()
 
         self._initialized = True
-        logger.info(f"EmbeddedAgent initialized: {self.agent_id}")
+        logger.info(f"OpenHands Agent initialized: {self.agent_id}")
+
+    async def _handle_memory_nudge(self, messages: List[Dict], memory_store: Any):
+        """Handle memory review nudge"""
+        logger.debug("Memory nudge triggered")
+    
+    async def _handle_skill_nudge(self, messages: List[Dict], tool_results: List[Dict], skill_manager: Any):
+        """Handle skill review nudge"""
+        logger.debug("Skill nudge triggered")
 
     async def _init_adapter(self):
         """Initialize model adapter"""
@@ -320,13 +364,36 @@ class EmbeddedAgent:
     ) -> EmbeddedAgentRunResult:
         """
         Core agent loop - Reference OpenClaw
+        With Hermes-style self-improving
         """
         profile = tool_profile or session.current_tool_profile or self.config.tools.default_profile
         system_prompt = system_prompt_override or self.config.system_prompt or DEFAULT_SYSTEM_PROMPT
+        
+        # Add memory snapshot to system prompt
+        if self._enhanced_memory:
+            memory_block = self._enhanced_memory.get_system_prompt_block()
+            if memory_block:
+                system_prompt = system_prompt + "\n\n" + memory_block
+        
+        # Add skill index to system prompt
+        if self._skill_manager:
+            skill_index = self._skill_manager.get_skill_index()
+            if skill_index:
+                skill_block = "\n\n## Available Skills\n"
+                for category, skills in skill_index.items():
+                    skill_block += f"### {category}\n"
+                    for name, desc in skills.items():
+                        skill_block += f"- {name}: {desc}\n"
+                system_prompt = system_prompt + skill_block
 
         while budget.remaining > 0:
             budget.consume()
             run_meta.iteration_count += 1
+            
+            # Check for skill nudge
+            if self._nudge_engine:
+                if self._nudge_engine.on_tool_iteration():
+                    logger.debug("Skill review nudge triggered")
 
             adapter_messages = self._to_adapter_messages(session.messages)
             tool_defs = self._get_available_tools(profile)
@@ -355,6 +422,10 @@ class EmbeddedAgent:
                         "type": "assistant_message",
                         "session_id": session.session_id,
                     })
+                
+                # Trigger background review after completion
+                if self._nudge_engine and run_meta.tool_call_count >= 5:
+                    self._trigger_background_review(session, tool_results, run_meta)
 
                 return EmbeddedAgentRunResult(
                     meta=run_meta,
@@ -467,6 +538,53 @@ class EmbeddedAgent:
             run_meta.error_count += 1
 
         return result
+    
+    def _trigger_background_review(
+        self,
+        session: SessionState,
+        tool_results: List[ToolResult],
+        run_meta: EmbeddedAgentRunMeta,
+    ):
+        """Trigger background review for self-improving"""
+        if not self._nudge_engine or not self._adapter:
+            return
+        
+        had_errors = run_meta.error_count > 0
+        should_review_skills = self._skill_manager and self._skill_manager.should_create_skill(
+            tool_call_count=run_meta.tool_call_count,
+            had_errors=had_errors,
+            user_corrected=False,
+        )
+        
+        if should_review_skills:
+            messages_snapshot = [
+                {"role": m.role.value, "content": m.content}
+                for m in session.messages
+            ]
+            tool_results_snapshot = [
+                {"tool_name": tr.tool_call_id, "content": tr.content, "is_error": tr.is_error}
+                for tr in tool_results
+            ]
+            
+            self._nudge_engine.spawn_background_review(
+                agent_factory=lambda max_iterations=8, quiet_mode=True: self._create_review_agent(max_iterations),
+                messages_snapshot=messages_snapshot,
+                review_memory=True,
+                review_skills=True,
+                memory_store=self._enhanced_memory,
+                skill_manager=self._skill_manager,
+            )
+    
+    def _create_review_agent(self, max_iterations: int = 8) -> "EmbeddedAgent":
+        """Create a review agent for background learning"""
+        from ...skills.review_agent import ReviewAgent
+        
+        return ReviewAgent(
+            model_adapter=self._adapter,
+            memory_store=self._enhanced_memory,
+            skill_manager=self._skill_manager,
+            max_iterations=max_iterations,
+        )
 
 
 def _repair_tool_call_arguments(args: Any, tool_name: str) -> Dict[str, Any]:

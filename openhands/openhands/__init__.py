@@ -1,9 +1,10 @@
 """
 OpenHands - AI Assistant with Windows Control
 Deep reference from OpenClaw and Hermes Agent
+With Self-Improving Capabilities
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 # Core
 from .core import AgentConfig, ModelConfig, MemoryConfig, ToolConfig, WindowsConfig
@@ -42,6 +43,18 @@ from .monitoring import MonitoringManager, PrometheusMetrics, OpenTelemetryExpor
 
 # Memory
 from .memory import MemorySystem
+
+# Self-Improving (Hermes-style)
+from .skills import (
+    SkillManager,
+    Skill,
+    skill_manager,
+    NudgeEngine,
+    NudgeConfig,
+    ReviewAgent,
+    EnhancedMemoryStore,
+    MEMORY_GUIDANCE,
+)
 
 __all__ = [
     # Version
@@ -87,6 +100,15 @@ __all__ = [
     "OpenTelemetryExporter",
     # Memory
     "MemorySystem",
+    # Self-Improving
+    "SkillManager",
+    "Skill",
+    "skill_manager",
+    "NudgeEngine",
+    "NudgeConfig",
+    "ReviewAgent",
+    "EnhancedMemoryStore",
+    "MEMORY_GUIDANCE",
 ]
 
 # Alias for backwards compatibility
