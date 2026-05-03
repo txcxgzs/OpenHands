@@ -51,75 +51,29 @@
             --transition-slow: 400ms cubic-bezier(0.2, 0.8, 0.3, 1);
         }
 
-        * {
-            box-sizing: border-box;
-        }
-
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; padding: 0; }
 
         body {
             font-family: var(--font-sans);
             background: var(--bg-0);
             color: var(--text-primary);
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
             overflow: hidden;
         }
 
-        ::selection {
-            background: var(--accent-soft);
-            color: var(--text-primary);
-        }
+        ::selection { background: var(--accent-soft); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 999px; }
 
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slide-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-glow { 0%, 100% { opacity: 1; box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.15); } 50% { opacity: 0.7; box-shadow: 0 0 0 8px rgba(46, 204, 113, 0.08); } }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes typing { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 999px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.14);
-        }
-
-        @keyframes fade-in {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slide-up {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        @keyframes typing {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
-        }
-
-        .app {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            min-height: 100vh;
-            position: relative;
-        }
+        .app { display: flex; flex-direction: column; height: 100vh; }
 
         .header {
             display: flex;
@@ -132,859 +86,343 @@
             z-index: 50;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            color: inherit;
-        }
-
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
         .logo-mark {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 36px; height: 36px; border-radius: 10px;
             background: linear-gradient(135deg, var(--accent) 0%, #ff8a5b 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 16px;
-            letter-spacing: -0.02em;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 16px;
             box-shadow: 0 0 32px var(--accent-glow);
         }
-
-        .logo-text {
-            font-size: 18px;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-        }
-
+        .logo-text { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
         .status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            background: var(--surface);
-            border-radius: 999px;
-            border: 1px solid var(--border-subtle);
-            font-size: 13px;
-            color: var(--text-secondary);
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 12px; background: var(--surface);
+            border-radius: 999px; border: 1px solid var(--border-subtle);
+            font-size: 13px; color: var(--text-secondary);
         }
-
         .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
+            width: 8px; height: 8px; border-radius: 50%;
             background: var(--success);
-            box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.15);
             animation: pulse-glow 2s ease-in-out infinite;
         }
-
-        .status-dot.disconnected {
-            background: var(--error);
-            box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.15);
-            animation: none;
-        }
-
-        .status-dot.thinking {
-            background: var(--warning);
-            box-shadow: 0 0 0 4px rgba(243, 156, 18, 0.15);
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
+        .status-dot.thinking { background: var(--warning); animation: pulse-glow 1s ease-in-out infinite; }
+        .status-dot.error { background: var(--error); animation: none; }
+        .header-right { display: flex; align-items: center; gap: 8px; }
         .icon-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-subtle);
-            background: var(--surface);
-            color: var(--text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 40px; height: 40px; border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle); background: var(--surface);
+            color: var(--text-secondary); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
             transition: all var(--transition-fast);
         }
+        .icon-btn:hover { background: var(--surface-hover); border-color: var(--border-strong); color: var(--text-primary); }
+        .icon-btn svg { width: 20px; height: 20px; stroke-width: 1.8; }
 
-        .icon-btn:hover {
-            background: var(--surface-hover);
-            border-color: var(--border-strong);
-            color: var(--text-primary);
-        }
-
-        .icon-btn svg {
-            width: 20px;
-            height: 20px;
-            stroke-width: 1.8;
-        }
-
-        .main {
-            display: flex;
-            flex: 1;
-            min-height: 0;
-            overflow: hidden;
-        }
+        .main { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 
         .sidebar {
-            width: 300px;
-            border-right: 1px solid var(--border-subtle);
-            background: var(--bg-1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            width: 300px; border-right: 1px solid var(--border-subtle);
+            background: var(--bg-1); display: flex; flex-direction: column; overflow: hidden;
         }
-
-        .sidebar-tabs {
-            display: flex;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
+        .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border-subtle); }
         .sidebar-tab {
-            flex: 1;
-            padding: 14px;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-muted);
-            background: transparent;
-            border: none;
-            cursor: pointer;
+            flex: 1; padding: 14px; font-size: 13px; font-weight: 500;
+            color: var(--text-muted); background: transparent; border: none;
+            cursor: pointer; border-bottom: 2px solid transparent;
             transition: all var(--transition-fast);
-            border-bottom: 2px solid transparent;
         }
-
-        .sidebar-tab:hover {
-            color: var(--text-secondary);
-            background: var(--surface);
-        }
-
-        .sidebar-tab.active {
-            color: var(--text-primary);
-            border-bottom-color: var(--accent);
-        }
-
-        .sidebar-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-        }
-
-        .sidebar-panel {
-            display: none;
-        }
-
-        .sidebar-panel.active {
-            display: block;
-        }
+        .sidebar-tab:hover { color: var(--text-secondary); background: var(--surface); }
+        .sidebar-tab.active { color: var(--text-primary); border-bottom-color: var(--accent); }
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 16px; }
+        .sidebar-panel { display: none; }
+        .sidebar-panel.active { display: block; }
 
         .panel {
-            background: var(--surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 16px;
-            margin-bottom: 12px;
+            background: var(--surface); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg); padding: 16px; margin-bottom: 12px;
         }
-
-        .panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 14px;
-        }
-
-        .panel-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .stat-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
+        .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .panel-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .stat {
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-subtle);
+            padding: 12px; background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-md); border: 1px solid var(--border-subtle);
         }
+        .stat-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 4px; }
+        .stat-value { font-size: 20px; font-weight: 700; color: var(--text-primary); }
 
-        .stat-label {
-            font-size: 11px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .stat-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .control-toggle {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 14px;
-            cursor: pointer;
-        }
-
+        .control-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; cursor: pointer; }
         .toggle-switch {
-            width: 48px;
-            height: 28px;
-            background: var(--surface-hover);
-            border-radius: 999px;
-            position: relative;
-            transition: all var(--transition-fast);
-            border: 1px solid var(--border-subtle);
+            width: 48px; height: 28px; background: var(--surface-hover);
+            border-radius: 999px; position: relative;
+            transition: all var(--transition-fast); border: 1px solid var(--border-subtle);
         }
-
-        .toggle-switch.active {
-            background: var(--accent-soft);
-            border-color: var(--accent);
-        }
-
+        .toggle-switch.active { background: var(--accent-soft); border-color: var(--accent); }
         .toggle-knob {
-            width: 22px;
-            height: 22px;
-            background: var(--text-muted);
-            border-radius: 50%;
-            position: absolute;
-            top: 50%;
-            left: 3px;
-            transform: translateY(-50%);
-            transition: all var(--transition-fast);
+            width: 22px; height: 22px; background: var(--text-muted);
+            border-radius: 50%; position: absolute; top: 50%; left: 3px;
+            transform: translateY(-50%); transition: all var(--transition-fast);
         }
-
-        .toggle-switch.active .toggle-knob {
-            left: 23px;
-            background: var(--accent);
-            box-shadow: 0 0 12px var(--accent-glow);
-        }
-
-        .toggle-label {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
+        .toggle-switch.active .toggle-knob { left: 23px; background: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+        .toggle-label { font-size: 14px; color: var(--text-secondary); }
 
         .btn {
-            padding: 10px 16px;
-            border-radius: var(--radius-md);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            border: 1px solid transparent;
+            padding: 10px 16px; border-radius: var(--radius-md);
+            font-size: 14px; font-weight: 500; cursor: pointer;
+            transition: all var(--transition-fast); border: 1px solid transparent;
         }
+        .btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+        .btn-primary:hover { background: var(--accent-hover); box-shadow: 0 0 24px var(--accent-glow); }
+        .btn-secondary { background: var(--surface); color: var(--text-primary); border-color: var(--border-subtle); }
+        .btn-secondary:hover { background: var(--surface-hover); border-color: var(--border-strong); }
+        .btn-full { width: 100%; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
 
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
-
-        .btn-primary:hover {
-            background: var(--accent-hover);
-            box-shadow: 0 0 24px var(--accent-glow);
-        }
-
-        .btn-secondary {
-            background: var(--surface);
-            color: var(--text-primary);
-            border-color: var(--border-subtle);
-        }
-
-        .btn-secondary:hover {
-            background: var(--surface-hover);
-            border-color: var(--border-strong);
-        }
-
-        .btn-full {
-            width: 100%;
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 12px;
-        }
-
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            background: var(--bg-1);
-        }
-
+        .chat-container { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-1); }
         .chat-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border-subtle);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 24px; border-bottom: 1px solid var(--border-subtle);
         }
+        .chat-info { display: flex; flex-direction: column; gap: 2px; }
+        .chat-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+        .chat-model { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
+        .chat-actions { display: flex; gap: 8px; }
 
-        .chat-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .chat-name {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .chat-model {
-            font-size: 12px;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-        }
-
-        .chat-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 
         .welcome-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            gap: 18px;
-            padding: 60px 24px;
-            flex: 1;
-            animation: fade-in var(--transition-slow);
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; text-align: center; gap: 18px;
+            padding: 60px 24px; flex: 1; animation: fade-in var(--transition-slow);
         }
-
         .welcome-avatar {
-            width: 72px;
-            height: 72px;
-            border-radius: var(--radius-xl);
+            width: 72px; height: 72px; border-radius: var(--radius-xl);
             background: linear-gradient(135deg, var(--accent) 0%, #ff8a5b 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            box-shadow: 0 0 64px var(--accent-glow);
-            animation: pulse-glow 3s ease-in-out infinite;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; box-shadow: 0 0 64px var(--accent-glow);
         }
-
-        .welcome-title {
-            font-size: 24px;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            margin: 0;
-        }
-
-        .welcome-hint {
-            font-size: 15px;
-            color: var(--text-secondary);
-            max-width: 420px;
-            line-height: 1.6;
-            margin: 0;
-        }
-
-        .welcome-suggestions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 12px;
-        }
-
+        .welcome-title { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; margin: 0; }
+        .welcome-hint { font-size: 15px; color: var(--text-secondary); max-width: 420px; line-height: 1.6; margin: 0; }
+        .welcome-suggestions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 12px; }
         .suggestion-pill {
-            padding: 10px 18px;
-            border-radius: 999px;
-            border: 1px solid var(--border-subtle);
-            background: var(--surface);
-            color: var(--text-secondary);
-            font-size: 14px;
-            cursor: pointer;
-            transition: all var(--transition-fast);
+            padding: 10px 18px; border-radius: 999px; border: 1px solid var(--border-subtle);
+            background: var(--surface); color: var(--text-secondary); font-size: 14px;
+            cursor: pointer; transition: all var(--transition-fast);
         }
+        .suggestion-pill:hover { background: var(--surface-hover); border-color: var(--border-strong); color: var(--text-primary); transform: translateY(-2px); }
 
-        .suggestion-pill:hover {
-            background: var(--surface-hover);
-            border-color: var(--border-strong);
-            color: var(--text-primary);
-            transform: translateY(-2px);
+        .message { display: flex; gap: 14px; animation: slide-up var(--transition-normal); }
+        .message-avatar {
+            width: 40px; height: 40px; border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
         }
+        .message-avatar.user { background: linear-gradient(135deg, var(--accent-alt) 0%, #25d3b9 100%); }
+        .message-avatar.assistant { background: linear-gradient(135deg, var(--accent) 0%, #ff8a5b 100%); box-shadow: 0 0 24px var(--accent-glow); }
+        .message-wrapper { flex: 1; min-width: 0; }
+        .message-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+        .message-role { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+        .message-time { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
+        .message-body {
+            background: var(--surface); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg); padding: 16px 18px; line-height: 1.65;
+        }
+        .message.user .message-body { background: rgba(33, 195, 161, 0.06); border-color: rgba(33, 195, 161, 0.2); }
 
-        .message {
-            display: flex;
-            gap: 14px;
+        .tool-call-card {
+            margin-top: 16px;
+            background: rgba(255, 77, 77, 0.04);
+            border: 1px solid rgba(255, 77, 77, 0.15);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
             animation: slide-up var(--transition-normal);
         }
 
-        .message-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-md);
+        .tool-call-header {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
+            gap: 10px;
+            padding: 12px 16px;
+            background: rgba(255, 77, 77, 0.08);
+            border-bottom: 1px solid rgba(255, 77, 77, 0.1);
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+        .tool-call-header:hover { background: rgba(255, 77, 77, 0.12); }
+
+        .tool-icon {
+            width: 32px; height: 32px; border-radius: var(--radius-md);
+            background: var(--accent-soft); display: flex;
+            align-items: center; justify-content: center;
+            color: var(--accent); font-size: 16px;
         }
 
-        .message-avatar.user {
-            background: linear-gradient(135deg, var(--accent-alt) 0%, #25d3b9 100%);
+        .tool-info { flex: 1; min-width: 0; }
+        .tool-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+        .tool-status { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .tool-status.running { color: var(--warning); }
+        .tool-status.success { color: var(--success); }
+        .tool-status.error { color: var(--error); }
+
+        .tool-toggle {
+            width: 24px; height: 24px; border: none; background: transparent;
+            color: var(--text-muted); cursor: pointer; transition: transform var(--transition-fast);
+        }
+        .tool-toggle.expanded { transform: rotate(180deg); }
+
+        .tool-body { display: none; padding: 16px; }
+        .tool-body.expanded { display: block; }
+
+        .tool-section { margin-bottom: 16px; }
+        .tool-section:last-child { margin-bottom: 0; }
+        .tool-section-title {
+            font-size: 11px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 8px;
         }
 
-        .message-avatar.assistant {
-            background: linear-gradient(135deg, var(--accent) 0%, #ff8a5b 100%);
-            box-shadow: 0 0 24px var(--accent-glow);
+        .tool-args, .tool-result {
+            background: var(--bg-0); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md); padding: 12px;
+            font-family: var(--font-mono); font-size: 13px;
+            line-height: 1.5; color: var(--text-primary);
+            overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+            max-height: 300px; overflow-y: auto;
         }
 
-        .message-wrapper {
-            flex: 1;
-            min-width: 0;
-        }
+        .tool-result { margin-top: 8px; }
+        .tool-result.success { border-color: rgba(46, 204, 113, 0.3); }
+        .tool-result.error { border-color: rgba(231, 76, 60, 0.3); }
 
-        .message-header {
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-            margin-bottom: 6px;
-        }
-
-        .message-role {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .message-time {
-            font-size: 12px;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-        }
-
-        .message-body {
-            background: var(--surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 16px 18px;
-            line-height: 1.65;
-        }
-
-        .message.user .message-body {
-            background: rgba(33, 195, 161, 0.06);
-            border-color: rgba(33, 195, 161, 0.2);
-        }
-
-        .message-body code {
-            font-family: var(--font-mono);
-            background: rgba(255, 255, 255, 0.06);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-
-        .message-body pre {
-            background: var(--bg-0);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            padding: 14px;
-            margin: 10px 0;
-            overflow-x: auto;
-        }
-
-        .message-body pre code {
-            background: none;
-            padding: 0;
-        }
-
-        .tool-call {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border-subtle);
-        }
-
-        .tool-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            background: var(--accent-soft);
-            border: 1px solid rgba(255, 77, 77, 0.2);
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--accent);
-            margin-bottom: 8px;
-        }
-
-        .typing-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 8px;
-        }
-
+        .typing-indicator { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; }
         .typing-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--text-muted);
-            animation: typing 1.4s ease-in-out infinite;
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--text-muted); animation: typing 1.4s ease-in-out infinite;
         }
-
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
+        .activity-log { max-height: 300px; overflow-y: auto; }
+        .activity-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 10px; background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-md); margin-bottom: 8px;
+            border: 1px solid var(--border-subtle);
+        }
+        .activity-icon {
+            width: 28px; height: 28px; border-radius: var(--radius-sm);
+            background: var(--accent-soft); display: flex;
+            align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+        }
+        .activity-content { flex: 1; min-width: 0; }
+        .activity-name { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; }
+        .activity-time { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+
+        .settings-group { margin-bottom: 20px; }
+        .settings-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 8px; }
+        .settings-select {
+            width: 100%; padding: 10px 12px; background: var(--surface);
+            border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+            color: var(--text-primary); font-size: 14px; font-family: var(--font-sans);
+            cursor: pointer; transition: all var(--transition-fast);
+        }
+        .settings-select:hover { border-color: var(--border-strong); }
+        .settings-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
         .chat-input-area {
-            padding: 16px 24px 24px;
-            flex-shrink: 0;
+            padding: 16px 24px 24px; flex-shrink: 0;
             background: linear-gradient(180deg, transparent 0%, var(--bg-1) 40%);
         }
-
         .chat-input-wrapper {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            background: var(--surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-xl);
-            overflow: hidden;
+            position: relative; display: flex; flex-direction: column;
+            background: var(--surface); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl); overflow: hidden;
             transition: all var(--transition-fast);
         }
-
-        .chat-input-wrapper:focus-within {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px var(--accent-soft);
-        }
-
+        .chat-input-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
         .chat-input {
-            width: 100%;
-            min-height: 52px;
-            max-height: 180px;
-            resize: none;
-            padding: 16px 18px;
-            padding-right: 64px;
-            border: none;
-            background: transparent;
-            color: var(--text-primary);
-            font-size: 15px;
-            font-family: var(--font-sans);
-            line-height: 1.5;
-            outline: none;
+            width: 100%; min-height: 52px; max-height: 180px; resize: none;
+            padding: 16px 18px; padding-right: 64px; border: none;
+            background: transparent; color: var(--text-primary); font-size: 15px;
+            font-family: var(--font-sans); line-height: 1.5; outline: none;
         }
-
-        .chat-input::placeholder {
-            color: var(--text-muted);
-        }
-
+        .chat-input::placeholder { color: var(--text-muted); }
         .chat-input-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 14px 12px;
-            border-top: 1px solid var(--border-subtle);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 14px 12px; border-top: 1px solid var(--border-subtle);
         }
-
-        .chat-input-tools {
-            display: flex;
-            gap: 4px;
-        }
-
+        .chat-input-tools { display: flex; gap: 4px; }
         .tool-btn {
-            width: 34px;
-            height: 34px;
-            border-radius: var(--radius-sm);
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 34px; height: 34px; border-radius: var(--radius-sm);
+            border: none; background: transparent; color: var(--text-muted);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
             transition: all var(--transition-fast);
         }
-
-        .tool-btn:hover {
-            background: var(--surface-hover);
-            color: var(--text-primary);
-        }
-
-        .tool-btn svg {
-            width: 18px;
-            height: 18px;
-            stroke-width: 1.8;
-        }
+        .tool-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+        .tool-btn svg { width: 18px; height: 18px; stroke-width: 1.8; }
 
         .send-btn {
-            position: absolute;
-            right: 12px;
-            bottom: 50px;
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-md);
-            border: none;
-            background: var(--accent);
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute; right: 12px; bottom: 50px;
+            width: 40px; height: 40px; border-radius: var(--radius-md);
+            border: none; background: var(--accent); color: white;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
             transition: all var(--transition-fast);
         }
-
-        .send-btn:hover:not(:disabled) {
-            background: var(--accent-hover);
-            box-shadow: 0 0 24px var(--accent-glow);
-            transform: scale(1.04);
-        }
-
-        .send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .send-btn.stop {
-            background: var(--error);
-        }
-
-        .send-btn svg {
-            width: 20px;
-            height: 20px;
-        }
+        .send-btn:hover:not(:disabled) { background: var(--accent-hover); box-shadow: 0 0 24px var(--accent-glow); transform: scale(1.04); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .send-btn.stop { background: var(--error); }
+        .send-btn svg { width: 20px; height: 20px; }
 
         .screen-control {
-            display: none;
-            position: fixed;
-            bottom: 90px;
-            right: 24px;
-            width: 360px;
-            background: var(--bg-2);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-strong);
-            z-index: 100;
-            overflow: hidden;
-            animation: slide-up var(--transition-normal);
+            display: none; position: fixed; bottom: 90px; right: 24px;
+            width: 360px; background: var(--bg-2); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl); box-shadow: var(--shadow-strong);
+            z-index: 100; overflow: hidden; animation: slide-up var(--transition-normal);
         }
-
-        .screen-control.active {
-            display: block;
-        }
-
+        .screen-control.active { display: block; }
         .screen-control-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border-subtle);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px; border-bottom: 1px solid var(--border-subtle);
         }
-
-        .screen-control-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .screen-control-content {
-            padding: 16px;
-        }
-
+        .screen-control-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+        .screen-control-content { padding: 16px; }
         .screen-preview {
-            width: 100%;
-            aspect-ratio: 16/10;
-            background: var(--bg-0);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            margin-bottom: 14px;
+            width: 100%; aspect-ratio: 16/10; background: var(--bg-0);
+            border-radius: var(--radius-md); overflow: hidden; margin-bottom: 14px;
             border: 1px solid var(--border-subtle);
         }
-
-        .screen-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .placeholder-text {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: var(--text-muted);
-            font-size: 13px;
-        }
+        .screen-preview img { width: 100%; height: 100%; object-fit: contain; }
+        .placeholder-text { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); font-size: 13px; }
 
         .toast {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--bg-2);
-            border: 1px solid var(--border-subtle);
-            padding: 12px 18px;
-            border-radius: var(--radius-xl);
-            font-size: 14px;
-            color: var(--text-primary);
-            box-shadow: var(--shadow-soft);
-            z-index: 200;
-            display: none;
-            align-items: center;
-            gap: 10px;
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: var(--bg-2); border: 1px solid var(--border-subtle);
+            padding: 12px 18px; border-radius: var(--radius-xl);
+            font-size: 14px; color: var(--text-primary); box-shadow: var(--shadow-soft);
+            z-index: 200; display: none; align-items: center; gap: 10px;
         }
-
-        .toast.show {
-            display: flex;
-            animation: slide-up var(--transition-normal);
-        }
-
-        .toast-icon {
-            font-size: 16px;
-        }
-
+        .toast.show { display: flex; animation: slide-up var(--transition-normal); }
         .toast.info { border-color: rgba(52, 152, 219, 0.3); }
         .toast.success { border-color: rgba(46, 204, 113, 0.3); }
         .toast.error { border-color: rgba(231, 76, 60, 0.3); }
 
-        /* Settings Panel */
-        .settings-group {
-            margin-bottom: 20px;
+        .message-body code {
+            font-family: var(--font-mono); background: rgba(255, 255, 255, 0.06);
+            padding: 2px 6px; border-radius: 4px; font-size: 0.9em;
         }
-
-        .settings-label {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-muted);
-            margin-bottom: 8px;
+        .message-body pre {
+            background: var(--bg-0); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md); padding: 14px; margin: 10px 0;
+            overflow-x: auto;
         }
+        .message-body pre code { background: none; padding: 0; }
 
-        .settings-select {
-            width: 100%;
-            padding: 10px 12px;
-            background: var(--surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-size: 14px;
-            font-family: var(--font-sans);
-            cursor: pointer;
-            transition: all var(--transition-fast);
-        }
-
-        .settings-select:hover {
-            border-color: var(--border-strong);
-        }
-
-        .settings-select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-soft);
-        }
-
-        .settings-input {
-            width: 100%;
-            padding: 10px 12px;
-            background: var(--surface);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-size: 14px;
-            font-family: var(--font-mono);
-            transition: all var(--transition-fast);
-        }
-
-        .settings-input:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-soft);
-        }
-
-        /* Activity Log */
-        .activity-log {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .activity-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: var(--radius-md);
-            margin-bottom: 8px;
-            border: 1px solid var(--border-subtle);
-        }
-
-        .activity-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: var(--radius-sm);
-            background: var(--accent-soft);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            flex-shrink: 0;
-        }
-
-        .activity-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .activity-name {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-        }
-
-        .activity-time {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-        }
-
-        @media (max-width: 900px) {
-            .sidebar { display: none; }
-        }
-
+        @media (max-width: 900px) { .sidebar { display: none; } }
         @media (max-width: 640px) {
             .header { padding: 12px 16px; }
             .chat-messages { padding: 16px; }
             .chat-input-area { padding: 12px 16px 16px; }
-            .logo-mark { width: 32px; height: 32px; font-size: 14px; }
-            .logo-text { font-size: 16px; }
-            .welcome-avatar { width: 60px; height: 60px; font-size: 26px; }
-            .welcome-title { font-size: 20px; }
         }
     </style>
 </head>
@@ -1025,76 +463,42 @@
                     <button class="sidebar-tab" data-panel="settings">Settings</button>
                     <button class="sidebar-tab" data-panel="activity">Activity</button>
                 </div>
-
                 <div class="sidebar-content">
-                    <!-- Stats Panel -->
                     <div class="sidebar-panel active" id="panel-stats">
                         <div class="panel">
-                            <div class="panel-header">
-                                <span class="panel-title">Session Overview</span>
-                            </div>
+                            <div class="panel-header"><span class="panel-title">Session Overview</span></div>
                             <div class="stat-grid">
-                                <div class="stat">
-                                    <div class="stat-label">Messages</div>
-                                    <div class="stat-value" id="stat-messages">0</div>
-                                </div>
-                                <div class="stat">
-                                    <div class="stat-label">Actions</div>
-                                    <div class="stat-value" id="stat-actions">0</div>
-                                </div>
-                                <div class="stat">
-                                    <div class="stat-label">Tokens</div>
-                                    <div class="stat-value" id="stat-tokens">0</div>
-                                </div>
-                                <div class="stat">
-                                    <div class="stat-label">Time</div>
-                                    <div class="stat-value" id="stat-time">0:00</div>
-                                </div>
+                                <div class="stat"><div class="stat-label">Messages</div><div class="stat-value" id="stat-messages">0</div></div>
+                                <div class="stat"><div class="stat-label">Actions</div><div class="stat-value" id="stat-actions">0</div></div>
+                                <div class="stat"><div class="stat-label">Tools</div><div class="stat-value" id="stat-tools">0</div></div>
+                                <div class="stat"><div class="stat-label">Time</div><div class="stat-value" id="stat-time">0:00</div></div>
                             </div>
                         </div>
-
                         <div class="panel">
-                            <div class="panel-header">
-                                <span class="panel-title">Screen Control</span>
-                            </div>
+                            <div class="panel-header"><span class="panel-title">Screen Control</span></div>
                             <label class="control-toggle" id="control-toggle">
-                                <div class="toggle-switch">
-                                    <div class="toggle-knob"></div>
-                                </div>
+                                <div class="toggle-switch"><div class="toggle-knob"></div></div>
                                 <span class="toggle-label">Enable control</span>
                             </label>
-                            <button class="btn btn-secondary btn-full" id="btn-screenshot">
-                                📸 Capture screenshot
-                            </button>
+                            <button class="btn btn-secondary btn-full" id="btn-screenshot">📸 Capture screenshot</button>
                         </div>
-
                         <div class="panel">
-                            <div class="panel-header">
-                                <span class="panel-title">Current Task</span>
-                            </div>
-                            <div id="current-task" style="font-size: 13px; color: var(--text-secondary);">
-                                No active task
-                            </div>
+                            <div class="panel-header"><span class="panel-title">Current Task</span></div>
+                            <div id="current-task" style="font-size: 13px; color: var(--text-secondary);">No active task</div>
                         </div>
                     </div>
 
-                    <!-- Settings Panel -->
                     <div class="sidebar-panel" id="panel-settings">
                         <div class="panel">
-                            <div class="panel-header">
-                                <span class="panel-title">Model Configuration</span>
-                            </div>
-                            
+                            <div class="panel-header"><span class="panel-title">Model Configuration</span></div>
                             <div class="settings-group">
                                 <label class="settings-label">Provider</label>
                                 <select class="settings-select" id="setting-provider">
                                     <option value="longcat">LongCat</option>
                                     <option value="anthropic">Anthropic</option>
                                     <option value="openai">OpenAI</option>
-                                    <option value="openrouter">OpenRouter</option>
                                 </select>
                             </div>
-
                             <div class="settings-group">
                                 <label class="settings-label">Model</label>
                                 <select class="settings-select" id="setting-model">
@@ -1103,41 +507,10 @@
                                     <option value="gpt-4o">GPT-4o</option>
                                 </select>
                             </div>
-
-                            <div class="settings-group">
-                                <label class="settings-label">Temperature</label>
-                                <input type="range" id="setting-temperature" min="0" max="100" value="70" 
-                                    style="width: 100%; accent-color: var(--accent);">
-                                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-                                    Value: <span id="temp-value">0.7</span>
-                                </div>
-                            </div>
                         </div>
-
-                        <div class="panel">
-                            <div class="panel-header">
-                                <span class="panel-title">Agent Settings</span>
-                            </div>
-
-                            <div class="settings-group">
-                                <label class="settings-label">Max Iterations</label>
-                                <input type="number" class="settings-input" id="setting-max-iterations" value="50" min="1" max="200">
-                            </div>
-
-                            <div class="settings-group">
-                                <label class="settings-label">System Prompt</label>
-                                <textarea class="settings-input" id="setting-prompt" rows="4" 
-                                    style="resize: vertical; font-family: var(--font-sans); line-height: 1.5;"
-                                    placeholder="Enter system prompt...">You are OpenHands, a helpful AI assistant.</textarea>
-                            </div>
-                        </div>
-
-                        <button class="btn btn-primary btn-full" id="btn-apply-settings">
-                            Apply Settings
-                        </button>
+                        <button class="btn btn-primary btn-full" id="btn-apply-settings">Apply Settings</button>
                     </div>
 
-                    <!-- Activity Panel -->
                     <div class="sidebar-panel" id="panel-activity">
                         <div class="panel">
                             <div class="panel-header">
@@ -1145,9 +518,7 @@
                                 <button class="btn btn-sm btn-secondary" id="btn-clear-activity">Clear</button>
                             </div>
                             <div class="activity-log" id="activity-log">
-                                <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 13px;">
-                                    No activity yet
-                                </div>
+                                <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 13px;">No activity yet</div>
                             </div>
                         </div>
                     </div>
@@ -1161,9 +532,7 @@
                         <div class="chat-model" id="model-info">Model: Loading...</div>
                     </div>
                     <div class="chat-actions">
-                        <button class="btn btn-sm btn-secondary" id="btn-stop" disabled>
-                            ⏹ Stop
-                        </button>
+                        <button class="btn btn-sm btn-secondary" id="btn-stop" disabled>⏹ Stop</button>
                     </div>
                 </div>
 
@@ -1182,12 +551,7 @@
 
                 <div class="chat-input-area">
                     <div class="chat-input-wrapper">
-                        <textarea 
-                            id="message-input" 
-                            class="chat-input" 
-                            placeholder="Type a message... (Shift+Enter for new line)"
-                            rows="1"
-                        ></textarea>
+                        <textarea id="message-input" class="chat-input" placeholder="Type a message... (Shift+Enter for new line)" rows="1"></textarea>
                         <button class="send-btn" id="send-btn">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -1201,17 +565,8 @@
                                         <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
                                     </svg>
                                 </button>
-                                <button class="tool-btn" id="btn-screenshot-inline" title="Take screenshot">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                        <polyline points="21 15 16 10 5 21"></polyline>
-                                    </svg>
-                                </button>
                             </div>
-                            <div style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">
-                                ⏎ Enter to send
-                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">⏎ Enter to send</div>
                         </div>
                     </div>
                 </div>
@@ -1222,10 +577,7 @@
             <div class="screen-control-header">
                 <span class="screen-control-title">Screen Preview</span>
                 <button class="icon-btn" id="btn-close-screen" style="width: 32px; height: 32px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
             <div class="screen-control-content">
@@ -1233,9 +585,7 @@
                     <img id="screen-preview-img" src="" alt="Preview" style="display: none;">
                     <div class="placeholder-text" id="screen-placeholder">No screenshot</div>
                 </div>
-                <button class="btn btn-primary btn-full" id="btn-refresh-screen">
-                    Refresh screenshot
-                </button>
+                <button class="btn btn-primary btn-full" id="btn-refresh-screen">Refresh screenshot</button>
             </div>
         </div>
 
@@ -1253,10 +603,10 @@
                 this.isGenerating = false;
                 this.messageCount = 0;
                 this.actionCount = 0;
-                this.tokenCount = 0;
-                this.isControlMode = false;
+                this.toolCount = 0;
                 this.startTime = null;
                 this.activityLog = [];
+                this.activeToolCards = new Map();
                 this.init();
             }
 
@@ -1277,26 +627,17 @@
                 this.modelInfo = document.getElementById('model-info');
                 this.statMessages = document.getElementById('stat-messages');
                 this.statActions = document.getElementById('stat-actions');
-                this.statTokens = document.getElementById('stat-tokens');
+                this.statTools = document.getElementById('stat-tools');
                 this.statTime = document.getElementById('stat-time');
                 this.currentTask = document.getElementById('current-task');
                 this.activityLogEl = document.getElementById('activity-log');
                 this.controlToggle = document.getElementById('control-toggle');
                 this.toggleSwitch = this.controlToggle.querySelector('.toggle-switch');
                 this.screenControl = document.getElementById('screen-control');
-                this.btnScreenControl = document.getElementById('btn-screen-control');
-                this.btnCloseScreen = document.getElementById('btn-close-screen');
-                this.btnRefreshScreen = document.getElementById('btn-refresh-screen');
-                this.btnScreenshot = document.getElementById('btn-screenshot');
-                this.btnScreenshotInline = document.getElementById('btn-screenshot-inline');
-                this.screenPreviewImg = document.getElementById('screen-preview-img');
-                this.screenPlaceholder = document.getElementById('screen-placeholder');
                 this.toast = document.getElementById('toast');
                 this.toastIcon = document.getElementById('toast-icon');
                 this.toastMessage = document.getElementById('toast-message');
                 this.btnStop = document.getElementById('btn-stop');
-                this.tempSlider = document.getElementById('setting-temperature');
-                this.tempValue = document.getElementById('temp-value');
                 this.sidebarTabs = document.querySelectorAll('.sidebar-tab');
                 this.sidebarPanels = document.querySelectorAll('.sidebar-panel');
             }
@@ -1305,116 +646,421 @@
                 this.sendBtn.addEventListener('click', () => this.sendMessage());
                 this.btnStop.addEventListener('click', () => this.stopGeneration());
                 this.messageInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        this.sendMessage();
-                    }
+                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendMessage(); }
                 });
                 this.messageInput.addEventListener('input', () => this.autoResize());
-
                 document.getElementById('btn-clear').addEventListener('click', () => this.clearChat());
-                this.btnScreenshot.addEventListener('click', () => this.takeScreenshot());
-                this.btnScreenshotInline.addEventListener('click', () => this.takeScreenshot());
-                
-                this.controlToggle.addEventListener('click', () => {
-                    this.toggleControl(!this.isControlMode);
-                });
-
-                this.btnScreenControl.addEventListener('click', () => {
-                    this.screenControl.classList.toggle('active');
-                });
-                this.btnCloseScreen.addEventListener('click', () => {
-                    this.screenControl.classList.remove('active');
-                });
-                this.btnRefreshScreen.addEventListener('click', () => this.takeScreenshot());
-
+                document.getElementById('btn-screenshot').addEventListener('click', () => this.takeScreenshot());
+                document.getElementById('btn-screen-control').addEventListener('click', () => this.screenControl.classList.toggle('active'));
+                document.getElementById('btn-close-screen').addEventListener('click', () => this.screenControl.classList.remove('active'));
+                document.getElementById('btn-refresh-screen').addEventListener('click', () => this.takeScreenshot());
+                this.controlToggle.addEventListener('click', () => this.toggleControl(!this.isControlMode));
                 document.querySelectorAll('.suggestion-pill').forEach(btn => {
                     btn.addEventListener('click', () => {
-                        const text = btn.getAttribute('data-text');
-                        this.messageInput.value = text;
+                        this.messageInput.value = btn.getAttribute('data-text');
                         this.autoResize();
                         this.messageInput.focus();
                     });
                 });
-
-                this.tempSlider.addEventListener('input', () => {
-                    this.tempValue.textContent = (this.tempSlider.value / 100).toFixed(2);
-                });
-
-                document.getElementById('btn-apply-settings').addEventListener('click', () => {
-                    this.applySettings();
-                });
-
-                document.getElementById('btn-clear-activity').addEventListener('click', () => {
-                    this.clearActivity();
-                });
-
+                document.getElementById('btn-apply-settings').addEventListener('click', () => this.showToast('success', 'Settings applied!'));
+                document.getElementById('btn-clear-activity').addEventListener('click', () => this.clearActivity());
                 this.sidebarTabs.forEach(tab => {
-                    tab.addEventListener('click', () => {
-                        const panel = tab.getAttribute('data-panel');
-                        this.showSidebarPanel(panel);
-                    });
+                    tab.addEventListener('click', () => this.showSidebarPanel(tab.getAttribute('data-panel')));
                 });
-
-                setTimeout(() => {
-                    this.messageInput.focus();
-                }, 100);
+                setTimeout(() => this.messageInput.focus(), 100);
             }
 
             showSidebarPanel(name) {
-                this.sidebarTabs.forEach(tab => {
-                    tab.classList.toggle('active', tab.getAttribute('data-panel') === name);
-                });
-                this.sidebarPanels.forEach(panel => {
-                    panel.classList.toggle('active', panel.id === `panel-${name}`);
-                });
+                this.sidebarTabs.forEach(tab => tab.classList.toggle('active', tab.getAttribute('data-panel') === name));
+                this.sidebarPanels.forEach(panel => panel.classList.toggle('active', panel.id === `panel-${name}`));
             }
 
             startTimer() {
                 setInterval(() => {
                     if (this.startTime && this.isGenerating) {
                         const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
-                        const mins = Math.floor(elapsed / 60);
-                        const secs = elapsed % 60;
-                        this.statTime.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+                        this.statTime.textContent = `${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')}`;
                     }
                 }, 1000);
             }
 
-            applySettings() {
-                const provider = document.getElementById('setting-provider').value;
-                const model = document.getElementById('setting-model').value;
-                const temp = this.tempSlider.value / 100;
-                const maxIter = document.getElementById('setting-max-iterations').value;
-                const prompt = document.getElementById('setting-prompt').value;
+            autoResize() {
+                this.messageInput.style.height = 'auto';
+                this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 180) + 'px';
+            }
+
+            connect() {
+                try {
+                    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                    const wsUrl = `${protocol}//${window.location.host}/ws`;
+                    this.ws = new WebSocket(wsUrl);
+                    this.ws.onopen = () => {
+                        this.isConnected = true;
+                        this.updateStatus(true);
+                        this.showToast('success', 'Connected to server');
+                        this.addActivity('🔗', 'Connected', 'WebSocket established');
+                    };
+                    this.ws.onmessage = (event) => this.handleMessage(JSON.parse(event.data));
+                    this.ws.onclose = () => {
+                        this.isConnected = false;
+                        this.updateStatus(false);
+                        this.addActivity('⚠️', 'Disconnected', 'Reconnecting...');
+                        setTimeout(() => this.connect(), 3000);
+                    };
+                } catch (e) {
+                    console.error('Failed to connect:', e);
+                    setTimeout(() => this.connect(), 3000);
+                }
+            }
+
+            updateStatus(connected) {
+                if (connected) {
+                    this.statusDot.className = 'status-dot';
+                    this.statusText.textContent = 'Connected';
+                    this.modelInfo.textContent = 'Model: LongCat-2.0-Preview';
+                } else {
+                    this.statusDot.className = 'status-dot error';
+                    this.statusText.textContent = 'Disconnected';
+                }
+            }
+
+            handleMessage(data) {
+                switch (data.type) {
+                    case 'status': this.handleStatus(data.content); break;
+                    case 'message': this.handleAssistantMessage(data.content); break;
+                    case 'tool_start': this.handleToolStart(data); break;
+                    case 'tool_update': this.handleToolUpdate(data); break;
+                    case 'tool_result': this.handleToolResult(data); break;
+                    case 'tool_error': this.handleToolError(data); break;
+                    case 'screenshot': this.handleScreenshot(data.image); break;
+                    case 'action': this.handleAction(data.content, data.action); break;
+                    case 'error': this.handleError(data.content); break;
+                }
+            }
+
+            handleStatus(content) {
+                this.statusDot.className = 'status-dot thinking';
+                this.currentTask.textContent = content || 'Thinking...';
+                if (!document.getElementById('typing-indicator')) {
+                    this.showTypingIndicator();
+                }
+                this.addActivity('🤔', 'AI thinking', content);
+            }
+
+            handleAssistantMessage(content) {
+                this.hideTypingIndicator();
+                this.isGenerating = false;
+                this.statusDot.className = 'status-dot';
+                this.updateSendButton();
+                this.currentTask.textContent = 'Task completed';
+                this.addMessage('assistant', content);
+                this.addActivity('✅', 'Response generated', `${content.length} chars`);
+            }
+
+            handleToolStart(data) {
+                const toolId = data.tool_id || `tool-${Date.now()}`;
+                const toolName = data.name || 'Unknown Tool';
+                const args = data.args || {};
                 
-                this.showToast('success', 'Settings applied!');
-                this.addActivity('⚙️', `Provider: ${provider}`, `Model: ${model}`);
+                this.toolCount++;
+                this.statTools.textContent = this.toolCount;
+                
+                const cardId = `tool-card-${toolId}`;
+                this.activeToolCards.set(toolId, { id: cardId, status: 'running', args, output: null });
+                
+                const card = document.createElement('div');
+                card.className = 'tool-call-card';
+                card.id = cardId;
+                card.innerHTML = `
+                    <div class="tool-call-header" onclick="window.ohClient.toggleToolCard('${toolId}')">
+                        <div class="tool-icon">⚡</div>
+                        <div class="tool-info">
+                            <div class="tool-name">${this.formatToolName(toolName)}</div>
+                            <div class="tool-status running">⏳ Running...</div>
+                        </div>
+                        <button class="tool-toggle">▼</button>
+                    </div>
+                    <div class="tool-body expanded">
+                        <div class="tool-section">
+                            <div class="tool-section-title">Input Parameters</div>
+                            <pre class="tool-args">${this.formatJSON(args)}</pre>
+                        </div>
+                        <div class="tool-section" style="display: none;">
+                            <div class="tool-section-title">Output</div>
+                            <pre class="tool-result" style="display: none;"></pre>
+                        </div>
+                    </div>
+                `;
+                
+                this.chatMessages.appendChild(card);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                
+                this.addActivity('🔧', `Tool called: ${toolName}`, this.truncate(JSON.stringify(args), 50));
+                this.currentTask.textContent = `Running ${toolName}...`;
+            }
+
+            handleToolUpdate(data) {
+                const toolId = data.tool_id || data.toolCallId;
+                const entry = this.activeToolCards.get(toolId);
+                if (!entry) return;
+                
+                const card = document.getElementById(entry.id);
+                if (!card) return;
+                
+                entry.output = data.partial || data.output || '';
+                const resultEl = card.querySelector('.tool-result');
+                if (resultEl) {
+                    resultEl.textContent = this.truncate(entry.output, 500);
+                    resultEl.style.display = 'block';
+                }
+                
+                const statusEl = card.querySelector('.tool-status');
+                if (statusEl) {
+                    statusEl.textContent = '⚡ Executing...';
+                    statusEl.className = 'tool-status running';
+                }
+            }
+
+            handleToolResult(data) {
+                const toolId = data.tool_id || data.toolCallId;
+                const entry = this.activeToolCards.get(toolId);
+                if (!entry) return;
+                
+                entry.status = 'success';
+                entry.output = data.result || data.output || '';
+                
+                const card = document.getElementById(entry.id);
+                if (card) {
+                    const resultEl = card.querySelector('.tool-result');
+                    if (resultEl) {
+                        resultEl.textContent = this.formatJSON(JSON.parse(entry.output) || entry.output);
+                        resultEl.style.display = 'block';
+                        resultEl.className = 'tool-result success';
+                    }
+                    const statusEl = card.querySelector('.tool-status');
+                    if (statusEl) {
+                        statusEl.textContent = '✓ Completed';
+                        statusEl.className = 'tool-status success';
+                    }
+                    const body = card.querySelector('.tool-body');
+                    if (body) body.classList.add('expanded');
+                }
+                
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                this.addActivity('✅', `Tool completed: ${entry.args?.name || 'tool'}`, this.truncate(entry.output, 100));
+            }
+
+            handleToolError(data) {
+                const toolId = data.tool_id || data.toolCallId;
+                const entry = this.activeToolCards.get(toolId);
+                if (entry) {
+                    entry.status = 'error';
+                    const card = document.getElementById(entry.id);
+                    if (card) {
+                        const resultEl = card.querySelector('.tool-result');
+                        if (resultEl) {
+                            resultEl.textContent = data.error || 'Tool execution failed';
+                            resultEl.style.display = 'block';
+                            resultEl.className = 'tool-result error';
+                        }
+                        const statusEl = card.querySelector('.tool-status');
+                        if (statusEl) {
+                            statusEl.textContent = '✕ Failed';
+                            statusEl.className = 'tool-status error';
+                        }
+                    }
+                    this.addActivity('❌', 'Tool failed', data.error);
+                }
+            }
+
+            toggleToolCard(toolId) {
+                const entry = this.activeToolCards.get(toolId);
+                if (!entry) return;
+                const card = document.getElementById(entry.id);
+                if (!card) return;
+                const body = card.querySelector('.tool-body');
+                const toggle = card.querySelector('.tool-toggle');
+                if (body.classList.contains('expanded')) {
+                    body.classList.remove('expanded');
+                    if (toggle) toggle.classList.remove('expanded');
+                } else {
+                    body.classList.add('expanded');
+                    if (toggle) toggle.classList.add('expanded');
+                }
+            }
+
+            formatToolName(name) {
+                return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            }
+
+            formatJSON(obj) {
+                try {
+                    if (typeof obj === 'string') obj = JSON.parse(obj);
+                    return JSON.stringify(obj, null, 2);
+                } catch {
+                    return String(obj);
+                }
+            }
+
+            truncate(str, len) {
+                return str.length > len ? str.substring(0, len) + '...' : str;
+            }
+
+            handleScreenshot(imageData) {
+                if (imageData) {
+                    const img = document.getElementById('screen-preview-img');
+                    const placeholder = document.getElementById('screen-placeholder');
+                    if (img) { img.src = `data:image/png;base64,${imageData}`; img.style.display = 'block'; }
+                    if (placeholder) placeholder.style.display = 'none';
+                    this.addActivity('📸', 'Screenshot captured');
+                }
+            }
+
+            handleAction(content, action) {
+                this.actionCount++;
+                this.statActions.textContent = this.actionCount;
+                this.showToast('info', content);
+                this.addActivity('🖱️', content, `Action: ${action}`);
+            }
+
+            handleError(content) {
+                this.hideTypingIndicator();
+                this.isGenerating = false;
+                this.statusDot.className = 'status-dot error';
+                this.updateSendButton();
+                this.currentTask.textContent = 'Error occurred';
+                this.showToast('error', content);
+                this.addActivity('❌', 'Error', content);
+            }
+
+            sendMessage() {
+                const text = this.messageInput.value.trim();
+                if (!text || this.isGenerating) return;
+                if (!this.isConnected) { this.showToast('error', 'Not connected'); return; }
+                
+                if (this.welcomeScreen) this.welcomeScreen.style.display = 'none';
+                this.addMessage('user', text);
+                this.messageInput.value = '';
+                this.autoResize();
+                this.isGenerating = true;
+                this.startTime = Date.now();
+                this.statusDot.className = 'status-dot thinking';
+                this.updateSendButton();
+                this.addActivity('💬', 'Message sent', this.truncate(text, 30));
+                this.send({ type: 'message', content: text });
+            }
+
+            takeScreenshot() {
+                if (!this.isConnected) return;
+                this.send({ type: 'screenshot' });
+            }
+
+            toggleControl(enabled) {
+                this.isControlMode = enabled;
+                this.toggleSwitch.classList.toggle('active', enabled);
+                if (!this.isConnected) return;
+                this.send({ type: enabled ? 'take_control' : 'release_control' });
+            }
+
+            send(data) {
+                if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(data));
+            }
+
+            addMessage(role, content) {
+                this.messageCount++;
+                this.statMessages.textContent = this.messageCount;
+                
+                const msg = document.createElement('div');
+                msg.className = `message ${role}`;
+                msg.innerHTML = `
+                    <div class="message-avatar ${role}">${role === 'user' ? '👤' : '🤖'}</div>
+                    <div class="message-wrapper">
+                        <div class="message-header">
+                            <span class="message-role">${role === 'user' ? 'You' : 'OpenHands'}</span>
+                            <span class="message-time">${new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'})}</span>
+                        </div>
+                        <div class="message-body">${this.formatMessage(content)}</div>
+                    </div>
+                `;
+                this.chatMessages.appendChild(msg);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            formatMessage(text) {
+                let f = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                f = f.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
+                f = f.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>').replace(/`([^`]+)`/g, '<code>$1</code>');
+                return f.replace(/\n/g, '<br>');
+            }
+
+            showTypingIndicator() {
+                const ind = document.createElement('div');
+                ind.className = 'message assistant';
+                ind.id = 'typing-indicator';
+                ind.innerHTML = `
+                    <div class="message-avatar assistant">🤖</div>
+                    <div class="message-wrapper">
+                        <div class="message-header"><span class="message-role">OpenHands</span></div>
+                        <div class="message-body"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>
+                    </div>
+                `;
+                this.chatMessages.appendChild(ind);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            hideTypingIndicator() {
+                document.getElementById('typing-indicator')?.remove();
+            }
+
+            updateSendButton() {
+                if (this.isGenerating) {
+                    this.sendBtn.classList.add('stop');
+                    this.sendBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>';
+                    this.btnStop.disabled = false;
+                } else {
+                    this.sendBtn.classList.remove('stop');
+                    this.sendBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
+                    this.btnStop.disabled = true;
+                }
+            }
+
+            stopGeneration() {
+                this.isGenerating = false;
+                this.updateSendButton();
+                this.hideTypingIndicator();
+                this.statusDot.className = 'status-dot';
+                this.currentTask.textContent = 'Task stopped';
+                this.showToast('info', 'Generation stopped');
+            }
+
+            clearChat() {
+                if (confirm('Clear all messages?')) {
+                    this.chatMessages.querySelectorAll('.message, .tool-call-card').forEach(m => m.remove());
+                    if (this.welcomeScreen) this.welcomeScreen.style.display = 'flex';
+                    this.messageCount = 0; this.statMessages.textContent = '0';
+                    this.activeToolCards.clear();
+                    this.showToast('info', 'Chat cleared');
+                }
+            }
+
+            clearActivity() {
+                this.activityLog = [];
+                this.renderActivity();
+                this.showToast('info', 'Activity cleared');
             }
 
             addActivity(icon, name, detail = '') {
-                const time = new Date().toLocaleTimeString('zh-CN', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-                
+                const time = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
                 this.activityLog.unshift({ icon, name, detail, time });
                 if (this.activityLog.length > 50) this.activityLog.pop();
-                
                 this.renderActivity();
             }
 
             renderActivity() {
                 if (this.activityLog.length === 0) {
-                    this.activityLogEl.innerHTML = `
-                        <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 13px;">
-                            No activity yet
-                        </div>
-                    `;
+                    this.activityLogEl.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 13px;">No activity yet</div>';
                     return;
                 }
-
                 this.activityLogEl.innerHTML = this.activityLog.map(item => `
                     <div class="activity-item">
                         <div class="activity-icon">${item.icon}</div>
@@ -1427,308 +1073,16 @@
                 `).join('');
             }
 
-            clearActivity() {
-                this.activityLog = [];
-                this.renderActivity();
-                this.showToast('info', 'Activity cleared');
-            }
-
-            autoResize() {
-                this.messageInput.style.height = 'auto';
-                this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 180) + 'px';
-            }
-
-            connect() {
-                try {
-                    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                    const host = window.location.host;
-                    const wsUrl = `${protocol}//${host}/ws`;
-                    this.ws = new WebSocket(wsUrl);
-                    this.ws.onopen = () => {
-                        this.isConnected = true;
-                        this.updateStatus(true);
-                        this.showToast('success', 'Connected to server');
-                        this.addActivity('🔗', 'Connected', 'WebSocket established');
-                    };
-                    this.ws.onmessage = (event) => {
-                        const data = JSON.parse(event.data);
-                        this.handleMessage(data);
-                    };
-                    this.ws.onclose = () => {
-                        this.isConnected = false;
-                        this.updateStatus(false);
-                        this.addActivity('⚠️', 'Disconnected', 'Connection lost');
-                        setTimeout(() => this.connect(), 3000);
-                    };
-                    this.ws.onerror = (error) => {
-                        console.error('WebSocket error:', error);
-                        this.addActivity('❌', 'Connection error', 'Check console');
-                    };
-                } catch (e) {
-                    console.error('Failed to connect:', e);
-                    setTimeout(() => this.connect(), 3000);
-                }
-            }
-
-            updateStatus(connected) {
-                if (connected) {
-                    this.statusDot.classList.remove('disconnected');
-                    this.statusText.textContent = 'Connected';
-                    this.modelInfo.textContent = 'Model: LongCat-2.0-Preview';
-                } else {
-                    this.statusDot.classList.add('disconnected');
-                    this.statusText.textContent = 'Disconnected';
-                    this.modelInfo.textContent = 'Model: Offline';
-                }
-            }
-
-            handleMessage(data) {
-                switch (data.type) {
-                    case 'status':
-                        this.handleStatus(data.content);
-                        break;
-                    case 'message':
-                        this.handleAssistantMessage(data.content);
-                        break;
-                    case 'screenshot':
-                        this.handleScreenshot(data.image);
-                        break;
-                    case 'action':
-                        this.handleAction(data.content, data.action);
-                        break;
-                    case 'error':
-                        this.handleError(data.content);
-                        break;
-                    case 'tool':
-                        this.handleToolCall(data.name, data.input);
-                        break;
-                    case 'thinking':
-                        this.currentTask.textContent = data.content || 'Thinking...';
-                        break;
-                }
-            }
-
-            handleStatus(content) {
-                if (content === '正在思考...' || content === 'Thinking...') {
-                    this.startTime = Date.now();
-                    this.statusDot.classList.add('thinking');
-                    this.showTypingIndicator();
-                    this.currentTask.textContent = 'Thinking...';
-                    this.addActivity('🤔', 'AI is thinking', content);
-                }
-            }
-
-            handleAssistantMessage(content) {
-                this.hideTypingIndicator();
-                this.isGenerating = false;
-                this.updateSendButton();
-                this.statusDot.classList.remove('thinking');
-                this.currentTask.textContent = 'Task completed';
-                this.addMessage('assistant', content);
-                this.addActivity('✅', 'Response generated', `${content.length} chars`);
-            }
-
-            handleScreenshot(imageData) {
-                if (imageData) {
-                    this.screenPreviewImg.src = `data:image/png;base64,${imageData}`;
-                    this.screenPreviewImg.style.display = 'block';
-                    this.screenPlaceholder.style.display = 'none';
-                    this.addActivity('📸', 'Screenshot captured', 'Screen updated');
-                }
-            }
-
-            handleAction(content, action) {
-                this.actionCount++;
-                this.statActions.textContent = this.actionCount;
-                this.showToast('info', content);
-                this.addActivity('🖱️', content, `Action: ${action}`);
-            }
-
-            handleToolCall(name, input) {
-                this.addActivity('🔧', `Tool: ${name}`, JSON.stringify(input).substring(0, 50));
-            }
-
-            handleError(content) {
-                this.hideTypingIndicator();
-                this.isGenerating = false;
-                this.updateSendButton();
-                this.statusDot.classList.remove('thinking');
-                this.currentTask.textContent = 'Error occurred';
-                this.showToast('error', content);
-                this.addActivity('❌', 'Error', content);
-            }
-
-            sendMessage() {
-                const text = this.messageInput.value.trim();
-                if (!text || this.isGenerating) return;
-                if (!this.isConnected) {
-                    this.showToast('error', 'Not connected to server');
-                    return;
-                }
-                if (this.welcomeScreen) {
-                    this.welcomeScreen.style.display = 'none';
-                }
-                this.addMessage('user', text);
-                this.messageInput.value = '';
-                this.autoResize();
-                this.isGenerating = true;
-                this.startTime = Date.now();
-                this.statusDot.classList.add('thinking');
-                this.updateSendButton();
-                this.addActivity('💬', 'Message sent', text.substring(0, 30));
-                this.send({ type: 'message', content: text });
-            }
-
-            takeScreenshot() {
-                if (!this.isConnected) return;
-                this.send({ type: 'screenshot' });
-            }
-
-            toggleControl(enabled) {
-                this.isControlMode = enabled;
-                if (enabled) {
-                    this.toggleSwitch.classList.add('active');
-                } else {
-                    this.toggleSwitch.classList.remove('active');
-                }
-                if (!this.isConnected) return;
-                this.send({ type: enabled ? 'take_control' : 'release_control' });
-            }
-
-            send(data) {
-                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-                    this.ws.send(JSON.stringify(data));
-                }
-            }
-
-            addMessage(role, content) {
-                this.messageCount++;
-                this.statMessages.textContent = this.messageCount;
-
-                const messageEl = document.createElement('div');
-                messageEl.className = `message ${role}`;
-                
-                const avatar = role === 'user' ? '👤' : '🤖';
-                const time = new Date().toLocaleTimeString('zh-CN', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                messageEl.innerHTML = `
-                    <div class="message-avatar ${role}">${avatar}</div>
-                    <div class="message-wrapper">
-                        <div class="message-header">
-                            <span class="message-role">${role === 'user' ? 'You' : 'OpenHands'}</span>
-                            <span class="message-time">${time}</span>
-                        </div>
-                        <div class="message-body">
-                            ${this.formatMessage(content)}
-                        </div>
-                    </div>
-                `;
-                this.chatMessages.appendChild(messageEl);
-                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
-            }
-
-            formatMessage(text) {
-                let formatted = text
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;');
-                formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
-                formatted = formatted.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-                formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
-                formatted = formatted.replace(/\n/g, '<br>');
-                return formatted;
-            }
-
-            showTypingIndicator() {
-                const indicator = document.createElement('div');
-                indicator.className = 'message assistant';
-                indicator.id = 'typing-indicator';
-                indicator.innerHTML = `
-                    <div class="message-avatar assistant">🤖</div>
-                    <div class="message-wrapper">
-                        <div class="message-header">
-                            <span class="message-role">OpenHands</span>
-                        </div>
-                        <div class="message-body">
-                            <div class="typing-indicator">
-                                <div class="typing-dot"></div>
-                                <div class="typing-dot"></div>
-                                <div class="typing-dot"></div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                this.chatMessages.appendChild(indicator);
-                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
-            }
-
-            hideTypingIndicator() {
-                const indicator = document.getElementById('typing-indicator');
-                if (indicator) indicator.remove();
-            }
-
-            updateSendButton() {
-                if (this.isGenerating) {
-                    this.sendBtn.classList.add('stop');
-                    this.sendBtn.innerHTML = `
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <rect x="6" y="6" width="12" height="12" rx="2"></rect>
-                        </svg>
-                    `;
-                    this.btnStop.disabled = false;
-                } else {
-                    this.sendBtn.classList.remove('stop');
-                    this.sendBtn.innerHTML = `
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <line x1="22" y1="2" x2="11" y2="13"></line>
-                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                        </svg>
-                    `;
-                    this.btnStop.disabled = true;
-                }
-            }
-
-            stopGeneration() {
-                this.isGenerating = false;
-                this.updateSendButton();
-                this.hideTypingIndicator();
-                this.statusDot.classList.remove('thinking');
-                this.currentTask.textContent = 'Task stopped';
-                this.showToast('info', 'Generation stopped');
-                this.addActivity('⏹', 'Generation stopped', 'User interrupted');
-            }
-
-            clearChat() {
-                if (confirm('Clear all messages?')) {
-                    const messages = this.chatMessages.querySelectorAll('.message');
-                    messages.forEach(m => m.remove());
-                    if (this.welcomeScreen) this.welcomeScreen.style.display = 'flex';
-                    this.messageCount = 0;
-                    this.statMessages.textContent = '0';
-                    this.send({ type: 'clear' });
-                    this.showToast('info', 'Chat cleared');
-                }
-            }
-
             showToast(type, message) {
-                this.toast.className = 'toast show ' + type;
-                const icons = { success: '✓', error: '✗', info: 'ℹ' };
-                this.toastIcon.textContent = icons[type] || 'ℹ';
+                this.toast.className = `toast show ${type}`;
+                this.toastIcon.textContent = { success: '✓', error: '✗', info: 'ℹ' }[type] || 'ℹ';
                 this.toastMessage.textContent = message;
                 clearTimeout(this.toastTimeout);
-                this.toastTimeout = setTimeout(() => {
-                    this.toast.classList.remove('show');
-                }, 3000);
+                this.toastTimeout = setTimeout(() => this.toast.classList.remove('show'), 3000);
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            window.ohClient = new OpenHandsClient();
-        });
+        document.addEventListener('DOMContentLoaded', () => { window.ohClient = new OpenHandsClient(); });
     </script>
 </body>
 </html>
