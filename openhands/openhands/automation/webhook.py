@@ -27,6 +27,7 @@ class WebhookEvent(str, Enum):
 
 @dataclass
 class WebhookConfig:
+    name: str
     url: str
     events: List[WebhookEvent]
     secret: Optional[str] = None

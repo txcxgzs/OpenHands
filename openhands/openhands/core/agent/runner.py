@@ -122,6 +122,11 @@ class EmbeddedAgent:
         self._active_runs: Dict[str, EmbeddedAgentRunMeta] = {}
         self._initialized = False
 
+    @property
+    def tool_registry(self) -> ToolRegistry:
+        """获取工具注册表"""
+        return self._tool_registry
+
     async def initialize(self):
         """Initialize agent components"""
         if self._initialized:

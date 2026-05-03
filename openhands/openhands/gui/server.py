@@ -7,31 +7,40 @@ import asyncio
 import logging
 from pathlib import Path
 from typing import Optional
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-import uvicorn
+
+try:
+    from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+    from fastapi.responses import HTMLResponse
+    from fastapi.staticfiles import StaticFiles
+    import uvicorn
+    FASTAPI_AVAILABLE = True
+except ImportError:
+    FASTAPI_AVAILABLE = False
+    FastAPI = None
 
 from openhands import EmbeddedAgent, AgentConfig
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="OpenHands GUI")
+if FASTAPI_AVAILABLE:
+    app = FastAPI(title="OpenHands GUI")
+else:
+    app = None
 
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: list[WebSocket] = []
+        self.active_connections: list = []
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, websocket):
         await websocket.accept()
         self.active_connections.append(websocket)
 
-    def disconnect(self, websocket: WebSocket):
+    def disconnect(self, websocket):
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
 
-    async def send_message(self, message: dict, websocket: WebSocket):
+    async def send_message(self, message: dict, websocket):
         await websocket.send_json(message)
 
 
@@ -41,63 +50,72 @@ agent: Optional[EmbeddedAgent] = None
 current_session: Optional[str] = None
 
 
-@app.on_event("startup")
-async def startup():
-    global agent, current_session
-    config = AgentConfig.load()
-    agent = EmbeddedAgent(config)
-    await agent.initialize()
-    current_session = await agent.create_session(tool_profile="coding")
+def get_app():
+    """获取FastAPI应用实例，如果FastAPI未安装则返回None"""
+    if not FASTAPI_AVAILABLE:
+        logger.warning("FastAPI not installed. Install with: pip install fastapi uvicorn")
+        return None
+    return app
+
+
+if FASTAPI_AVAILABLE:
+    @app.on_event("startup")
+    async def startup():
+        global agent, current_session
+        config = AgentConfig.load()
+        agent = EmbeddedAgent(config)
+        await agent.initialize()
+        current_session = await agent.create_session(tool_profile="coding")
     logger.info("OpenHands GUI started")
 
 
-@app.get("/")
-async def get_index():
-    html_path = Path(__file__).parent / "index.html"
-    if html_path.exists():
-        return HTMLResponse(html_path.read_text())
-    return HTMLResponse(DEFAULT_HTML)
+    @app.get("/")
+    async def get_index():
+        html_path = Path(__file__).parent / "index.html"
+        if html_path.exists():
+            return HTMLResponse(html_path.read_text())
+        return HTMLResponse(DEFAULT_HTML)
 
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    try:
-        while True:
-            data = await websocket.receive_json()
+    @app.websocket("/ws")
+    async def websocket_endpoint(websocket: WebSocket):
+        await manager.connect(websocket)
+        try:
+            while True:
+                data = await websocket.receive_json()
 
-            if data["type"] == "message":
-                user_message = data["content"]
-                await manager.send_message(
-                    {"type": "status", "content": "Thinking..."},
-                    websocket
-                )
+                if data["type"] == "message":
+                    user_message = data["content"]
+                    await manager.send_message(
+                        {"type": "status", "content": "Thinking..."},
+                        websocket
+                    )
 
-                await agent.queue_message(current_session, user_message)
-                result = await agent.run(current_session)
+                    await agent.queue_message(current_session, user_message)
+                    result = await agent.run(current_session)
 
-                await manager.send_message(
-                    {"type": "message", "content": result.final_answer or "No response"},
-                    websocket
-                )
+                    await manager.send_message(
+                        {"type": "message", "content": result.final_answer or "No response"},
+                        websocket
+                    )
 
-            elif data["type"] == "clear":
-                agent.clear_history()
-                await manager.send_message(
-                    {"type": "status", "content": "History cleared"},
-                    websocket
-                )
+                elif data["type"] == "clear":
+                    agent.clear_history()
+                    await manager.send_message(
+                        {"type": "status", "content": "History cleared"},
+                        websocket
+                    )
 
-            elif data["type"] == "switch_profile":
-                profile = data["profile"]
-                agent.set_tool_profile(profile)
-                await manager.send_message(
-                    {"type": "status", "content": f"Profile switched to: {profile}"},
-                    websocket
-                )
+                elif data["type"] == "switch_profile":
+                    profile = data["profile"]
+                    agent.set_tool_profile(profile)
+                    await manager.send_message(
+                        {"type": "status", "content": f"Profile switched to: {profile}"},
+                        websocket
+                    )
 
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        except WebSocketDisconnect:
+            manager.disconnect(websocket)
 
 
 DEFAULT_HTML = """
@@ -264,6 +282,8 @@ DEFAULT_HTML = """
 
 def run_gui(host: str = "0.0.0.0", port: int = 8000):
     """Run the GUI server"""
+    if not FASTAPI_AVAILABLE:
+        raise ImportError("FastAPI not installed. Install with: pip install fastapi uvicorn")
     uvicorn.run(app, host=host, port=port)
 
 

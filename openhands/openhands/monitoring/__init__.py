@@ -70,6 +70,19 @@ class PrometheusMetrics:
         label_str = ",".join(f'{k}="{v}"' for k, v in sorted(labels.items()))
         return f"{name}{{{label_str}}}"
 
+    def record_tool_call(self, tool_name: str, duration: float, success: bool) -> None:
+        """记录工具调用"""
+        labels = {"tool": tool_name, "status": "success" if success else "error"}
+        self.counter("tool_calls_total", 1, labels)
+        self.histogram("tool_call_duration_seconds", duration, labels)
+
+    def record_agent_iteration(self, agent_id: str, duration: float, tools_used: int) -> None:
+        """记录Agent迭代"""
+        labels = {"agent_id": agent_id}
+        self.counter("agent_iterations_total", 1, labels)
+        self.histogram("agent_iteration_duration_seconds", duration, labels)
+        self.gauge("agent_tools_used", tools_used, labels)
+
     def _format_labels(self, key: str) -> str:
         """格式化标签"""
         labels = self._labels.get(key, {})
