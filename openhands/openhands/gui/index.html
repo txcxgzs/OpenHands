@@ -829,6 +829,170 @@
         .empty-state-text {
             font-size: 14px;
         }
+        
+        /* Slash Commands Menu */
+        .slash-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-bottom: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .slash-menu.show { display: block; }
+        
+        .slash-menu-header {
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--bg-elevated);
+        }
+        
+        .slash-command-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        
+        .slash-command-item:hover,
+        .slash-command-item.selected {
+            background: var(--bg-hover);
+        }
+        
+        .slash-command-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--card);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .slash-command-info { flex: 1; }
+        
+        .slash-command-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-strong);
+        }
+        
+        .slash-command-desc {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+        
+        .slash-command-shortcut {
+            font-size: 11px;
+            color: var(--muted);
+            font-family: var(--font-mono);
+            background: var(--bg);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+        }
+        
+        /* Compose wrapper */
+        .compose-wrapper {
+            position: relative;
+        }
+        
+        /* Thinking animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .thinking-dots {
+            display: inline-flex;
+            gap: 4px;
+        }
+        
+        .thinking-dots span {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.4s infinite;
+        }
+        
+        .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+        
+        /* Session history */
+        .session-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            margin-bottom: 4px;
+        }
+        
+        .session-item:hover { background: var(--bg-hover); }
+        
+        .session-item.active {
+            background: var(--accent-subtle);
+            border-left: 3px solid var(--accent);
+        }
+        
+        .session-preview {
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .session-title {
+            font-size: 13px;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .session-time {
+            font-size: 11px;
+            color: var(--muted);
+        }
+        
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px 20px;
+            font-size: 14px;
+            color: var(--text);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .toast.show { opacity: 1; }
+        .toast.success { border-color: var(--ok); }
+        .toast.error { border-color: var(--danger); }
     </style>
 </head>
 <body>
@@ -983,11 +1147,17 @@
                 </div>
                 
                 <div class="compose">
-                    <div class="compose-box">
-                        <textarea class="compose-input" id="messageInput" placeholder="输入消息..." rows="1"></textarea>
-                        <div class="compose-actions">
-                            <span style="font-size: 12px; color: var(--muted);">LongCat-2.0</span>
-                            <button class="send-btn" id="sendBtn" onclick="sendMessage()">发送 ➤</button>
+                    <div class="compose-wrapper">
+                        <div class="slash-menu" id="slashMenu">
+                            <div class="slash-menu-header">命令</div>
+                            <div id="slashMenuItems"></div>
+                        </div>
+                        <div class="compose-box">
+                            <textarea class="compose-input" id="messageInput" placeholder="输入消息... (/ 显示命令)" rows="1"></textarea>
+                            <div class="compose-actions">
+                                <span style="font-size: 12px; color: var(--muted);">LongCat-2.0</span>
+                                <button class="send-btn" id="sendBtn" onclick="sendMessage()">发送 ➤</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1031,6 +1201,112 @@
         let isStreaming = false;
         let currentPath = '/workspace/openhands-workspace';
         let terminalHistory = [];
+        let slashMenuIndex = 0;
+        
+        // Slash commands
+        const SLASH_COMMANDS = [
+            { name: 'help', icon: '📖', desc: '显示帮助信息', action: () => showHelp() },
+            { name: 'clear', icon: '🗑️', desc: '清空对话', action: () => clearChat() },
+            { name: 'new', icon: '✨', desc: '新建会话', action: () => newSession() },
+            { name: 'status', icon: '📊', desc: '显示状态信息', action: () => sendCommand('/status') },
+            { name: 'pwd', icon: '📁', desc: '显示当前目录', action: () => sendSuggestion('执行 pwd') },
+            { name: 'ls', icon: '📂', desc: '列出当前目录', action: () => sendSuggestion('列出当前目录') },
+            { name: 'files', icon: '📄', desc: '打开文件浏览器', action: () => showView('files') },
+            { name: 'terminal', icon: '💻', desc: '打开终端', action: () => showView('terminal') },
+            { name: 'memory', icon: '🧠', desc: '查看记忆', action: () => showView('memory') },
+            { name: 'config', icon: '⚙️', desc: '打开配置', action: () => showView('config') },
+        ];
+        
+        function showHelp() {
+            const helpText = `📖 **OpenHands 帮助**
+
+**基本命令:**
+- /help - 显示帮助
+- /clear - 清空对话
+- /new - 新建会话
+- /status - 显示状态
+
+**工具命令:**
+- /pwd - 显示当前目录
+- /ls - 列出目录内容
+- /files - 打开文件浏览器
+- /terminal - 打开终端
+- /memory - 查看记忆
+- /config - 打开配置
+
+**快捷键:**
+- Enter - 发送消息
+- Shift+Enter - 换行
+- / - 打开命令菜单
+- Esc - 关闭菜单`;
+            
+            addMessage('assistant', helpText);
+        }
+        
+        function sendCommand(cmd) {
+            sendSuggestion(cmd);
+        }
+        
+        function showSlashMenu(show) {
+            const menu = document.getElementById('slashMenu');
+            if (show) {
+                menu.classList.add('show');
+                renderSlashMenuItems('');
+            } else {
+                menu.classList.remove('show');
+            }
+        }
+        
+        function renderSlashMenuItems(filter) {
+            const container = document.getElementById('slashMenuItems');
+            const filterLower = filter.toLowerCase();
+            const filtered = SLASH_COMMANDS.filter(c => 
+                c.name.toLowerCase().includes(filterLower) || 
+                c.desc.toLowerCase().includes(filterLower)
+            );
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="padding: 12px; color: var(--muted); text-align: center;">无匹配命令</div>';
+                return;
+            }
+            
+            container.innerHTML = filtered.map((cmd, i) => `
+                <div class="slash-command-item ${i === slashMenuIndex ? 'selected' : ''}" 
+                     onclick="executeSlashCommand('${cmd.name}')"
+                     onmouseenter="slashMenuIndex = ${i}; renderSlashMenuItems('${filter}')">
+                    <div class="slash-command-icon">${cmd.icon}</div>
+                    <div class="slash-command-info">
+                        <div class="slash-command-name">/${cmd.name}</div>
+                        <div class="slash-command-desc">${cmd.desc}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function executeSlashCommand(name) {
+            const cmd = SLASH_COMMANDS.find(c => c.name === name);
+            if (cmd) {
+                cmd.action();
+                document.getElementById('messageInput').value = '';
+                showSlashMenu(false);
+            }
+        }
+        
+        function showToast(message, type = '') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
         
         function initWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -1373,15 +1649,51 @@
         }
         
         document.getElementById('messageInput').addEventListener('keydown', (e) => {
+            const menu = document.getElementById('slashMenu');
+            const menuVisible = menu.classList.contains('show');
+            
             if (e.key === 'Enter' && !e.shiftKey) {
+                if (menuVisible) {
+                    e.preventDefault();
+                    const items = SLASH_COMMANDS;
+                    if (items[slashMenuIndex]) {
+                        executeSlashCommand(items[slashMenuIndex].name);
+                    }
+                } else {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            } else if (e.key === 'Escape') {
+                showSlashMenu(false);
+            } else if (e.key === 'ArrowDown' && menuVisible) {
                 e.preventDefault();
-                sendMessage();
+                slashMenuIndex = Math.min(slashMenuIndex + 1, SLASH_COMMANDS.length - 1);
+                renderSlashMenuItems(document.getElementById('messageInput').value.slice(1));
+            } else if (e.key === 'ArrowUp' && menuVisible) {
+                e.preventDefault();
+                slashMenuIndex = Math.max(slashMenuIndex - 1, 0);
+                renderSlashMenuItems(document.getElementById('messageInput').value.slice(1));
             }
         });
         
         document.getElementById('messageInput').addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+            
+            const value = this.value;
+            if (value.startsWith('/')) {
+                showSlashMenu(true);
+                renderSlashMenuItems(value.slice(1));
+            } else {
+                showSlashMenu(false);
+            }
+        });
+        
+        // Close slash menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.compose-wrapper')) {
+                showSlashMenu(false);
+            }
         });
         
         initWebSocket();
