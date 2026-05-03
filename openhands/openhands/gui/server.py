@@ -8,8 +8,10 @@ import asyncio
 import logging
 import json
 import os
+import subprocess
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Dict, Any
+from datetime import datetime
 
 try:
     from dotenv import load_dotenv
@@ -56,6 +58,79 @@ class StreamState:
         self.is_streaming = False
 
 stream_state = StreamState()
+
+
+def list_files(path: str) -> List[Dict[str, Any]]:
+    """列出目录下的文件"""
+    result = []
+    try:
+        p = Path(path)
+        if not p.exists():
+            return []
+        for item in sorted(p.iterdir(), key=lambda x: (not x.is_dir(), x.name)):
+            result.append({
+                "name": item.name,
+                "is_dir": item.is_dir(),
+                "size": item.stat().st_size if item.is_file() else 0,
+                "modified": datetime.fromtimestamp(item.stat().st_mtime).isoformat() if item.exists() else ""
+            })
+    except Exception as e:
+        logger.error(f"列出文件失败: {e}")
+    return result
+
+
+def list_memory() -> List[Dict[str, Any]]:
+    """列出记忆存储"""
+    result = []
+    memory_dir = Path("/workspace/openhands-workspace")
+    memory_file = memory_dir / "memory.json"
+    
+    if memory_file.exists():
+        try:
+            with open(memory_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if isinstance(data, list):
+                    result = data
+                elif isinstance(data, dict):
+                    for k, v in data.items():
+                        result.append({"key": k, "value": str(v), "timestamp": ""})
+        except Exception as e:
+            logger.error(f"读取记忆失败: {e}")
+    
+    user_file = memory_dir / "user.md"
+    if user_file.exists():
+        try:
+            content = user_file.read_text(encoding='utf-8')
+            result.append({
+                "key": "user.md",
+                "value": content[:200] + "..." if len(content) > 200 else content,
+                "timestamp": datetime.fromtimestamp(user_file.stat().st_mtime).isoformat()
+            })
+        except:
+            pass
+    
+    return result
+
+
+def execute_terminal_command(command: str) -> str:
+    """执行终端命令"""
+    try:
+        result = subprocess.run(
+            command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            cwd="/workspace/openhands-workspace"
+        )
+        output = result.stdout
+        if result.stderr:
+            output += "\n" + result.stderr
+        return output.strip() or "(无输出)"
+    except subprocess.TimeoutExpired:
+        return "命令执行超时"
+    except Exception as e:
+        return f"执行错误: {str(e)}"
 
 
 @app.on_event("startup")
@@ -226,6 +301,51 @@ async def websocket_endpoint(websocket: WebSocket):
                         "current_thinking": stream_state.current_thinking
                     }
                 })
+            
+            elif msg_type == "list_files":
+                path = data.get("path", "/workspace/openhands-workspace")
+                try:
+                    files = list_files(path)
+                    await websocket.send_json({
+                        "type": "files",
+                        "path": path,
+                        "files": files
+                    })
+                except Exception as e:
+                    await websocket.send_json({
+                        "type": "error",
+                        "content": f"列出文件失败: {str(e)}"
+                    })
+            
+            elif msg_type == "list_memory":
+                try:
+                    memories = list_memory()
+                    await websocket.send_json({
+                        "type": "memory",
+                        "memories": memories
+                    })
+                except Exception as e:
+                    await websocket.send_json({
+                        "type": "error",
+                        "content": f"获取记忆失败: {str(e)}"
+                    })
+            
+            elif msg_type == "terminal":
+                command = data.get("command", "")
+                if command:
+                    try:
+                        result = execute_terminal_command(command)
+                        await websocket.send_json({
+                            "type": "terminal",
+                            "content": result,
+                            "kind": "output"
+                        })
+                    except Exception as e:
+                        await websocket.send_json({
+                            "type": "terminal",
+                            "content": str(e),
+                            "kind": "error"
+                        })
                 
     except WebSocketDisconnect:
         logger.info("WebSocket连接断开")
