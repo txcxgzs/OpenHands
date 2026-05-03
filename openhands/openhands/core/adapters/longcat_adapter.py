@@ -29,6 +29,26 @@ class LongCatResponse:
     tool_calls: Optional[List[LongCatToolCall]] = None
 
 
+def convert_tools_to_openai_format(tools: List[Dict]) -> List[Dict]:
+    """转换工具定义为 OpenAI 格式"""
+    openai_tools = []
+    for tool in tools:
+        if "type" in tool and tool["type"] == "function":
+            openai_tools.append(tool)
+        elif "function" in tool:
+            openai_tools.append(tool)
+        else:
+            openai_tools.append({
+                "type": "function",
+                "function": {
+                    "name": tool.get("name", "unnamed"),
+                    "description": tool.get("description", ""),
+                    "parameters": tool.get("input_schema", tool.get("parameters", {"type": "object", "properties": {}}))
+                }
+            })
+    return openai_tools
+
+
 class LongCatAdapter:
     """
     LongCat AI模型适配器
@@ -147,13 +167,14 @@ class LongCatAdapter:
             request_data["max_tokens"] = tokens
         
         if tools and len(tools) > 0:
-            request_data["tools"] = tools
-            logger.debug(f"发送工具定义给模型: {[t['name'] for t in tools]}")
+            request_data["tools"] = convert_tools_to_openai_format(tools)
+            tool_names = [t.get('function', {}).get('name', t.get('name', 'unknown')) for t in tools]
+            logger.info(f"发送工具定义给模型: {tool_names}")
             if "tool_choice" in kwargs:
                 request_data["tool_choice"] = kwargs["tool_choice"]
         
         try:
-            logger.debug(f"发送请求到LongCat API")
+            logger.info(f"发送请求到LongCat API")
             response = await self._client.post("/chat/completions", json=request_data)
             response.raise_for_status()
             text = response.text
@@ -177,7 +198,7 @@ class LongCatAdapter:
         system_prompt: Optional[str] = None,
         **kwargs,
     ) -> AsyncGenerator[Any, None]:
-        """流式响应"""
+        """流式响应 - 正确处理工具调用"""
         if not self._client:
             await self.initialize()
         
@@ -200,12 +221,13 @@ class LongCatAdapter:
             "model": self.model,
             "messages": all_messages,
             "stream": True,
-            "stream_options": {"include_usage": True},
         }
         
         if tools and len(tools) > 0:
-            request_data["tools"] = tools
-            logger.debug(f"流式发送工具定义给模型: {[t['name'] for t in tools]}")
+            openai_tools = convert_tools_to_openai_format(tools)
+            request_data["tools"] = openai_tools
+            tool_names = [t.get('function', {}).get('name', t.get('name', 'unknown')) for t in openai_tools]
+            logger.info(f"流式发送工具定义给模型: {tool_names}")
         
         if self.temperature:
             request_data["temperature"] = self.temperature
@@ -213,6 +235,11 @@ class LongCatAdapter:
             request_data["max_tokens"] = self.max_tokens
         
         try:
+            accumulated_content = ""
+            pending_tool_call = None
+            pending_tool_id = None
+            pending_tool_name = None
+            
             async with self._client.stream("POST", "/chat/completions", json=request_data) as response:
                 response.raise_for_status()
                 async for line in response.aiter_lines():
@@ -226,21 +253,60 @@ class LongCatAdapter:
                             if not choices:
                                 continue
                             
-                            delta = choices[0].get("delta", {})
+                            choice = choices[0]
+                            delta = choice.get("delta", {})
+                            finish_reason = choice.get("finish_reason")
                             
-                            # 先看有没有工具调用
-                            tool_calls = delta.get("tool_calls", [])
-                            if tool_calls and len(tool_calls) > 0:
-                                yield self._parse_tool_delta(data)
+                            if finish_reason == "tool_calls":
+                                if pending_tool_call:
+                                    logger.info(f"发送工具调用: {pending_tool_name} - {pending_tool_call}")
+                                    yield LongCatResponse(content=None, tool_calls=[pending_tool_call])
+                                pending_tool_call = None
+                                pending_tool_id = None
+                                pending_tool_name = None
+                            elif finish_reason == "stop":
+                                if accumulated_content:
+                                    yield self._create_simple_response(accumulated_content)
                             else:
-                                # 普通文本
                                 content = delta.get("content", "")
                                 if content:
+                                    accumulated_content += content
                                     yield self._create_simple_response(content)
+                                
+                                tool_calls_delta = delta.get("tool_calls", [])
+                                for tc_delta in tool_calls_delta:
+                                    func_delta = tc_delta.get("function", {})
+                                    tc_id = tc_delta.get("id")
+                                    tc_name = func_delta.get("name")
+                                    tc_args_str = func_delta.get("arguments", "")
+                                    
+                                    if tc_id and tc_name:
+                                        pending_tool_id = tc_id
+                                        pending_tool_name = tc_name
+                                        pending_tool_call = None
+                                        accumulated_args_str = ""
+                                    
+                                    if pending_tool_name and tc_args_str:
+                                        accumulated_args_str += tc_args_str
+                                        try:
+                                            pending_tool_call = LongCatToolCall(
+                                                id=pending_tool_id or f"tool-{id(pending_tool_name)}",
+                                                name=pending_tool_name,
+                                                arguments=json.loads(accumulated_args_str)
+                                            )
+                                        except json.JSONDecodeError:
+                                            pending_tool_call = LongCatToolCall(
+                                                id=pending_tool_id or f"tool-{id(pending_tool_name)}",
+                                                name=pending_tool_name,
+                                                arguments={"raw": accumulated_args_str}
+                                            )
+                                    
                         except json.JSONDecodeError:
                             continue
         except Exception as e:
             logger.error(f"LongCat流式错误: {e}")
+            import traceback
+            traceback.print_exc()
             raise
     
     def chat_sync(
@@ -273,46 +339,19 @@ class LongCatAdapter:
                     except json.JSONDecodeError:
                         args = {"raw": tc_args}
                     tool_calls.append(LongCatToolCall(id=tc_id, name=tc_name, arguments=args))
-                    logger.debug(f"解析到工具调用: {tc_name}")
+                    logger.info(f"解析到工具调用: {tc_name} - {args}")
             
             result = LongCatResponse(content=content, tool_calls=tool_calls)
             return result
         except Exception as e:
             logger.error(f"解析LongCat响应错误: {e}")
+            import traceback
+            traceback.print_exc()
             return self._create_simple_response("解析响应错误")
-    
-    def _parse_tool_delta(self, data):
-        """解析工具调用delta"""
-        choice = data.get("choices", [{}])[0]
-        delta = choice.get("delta", {})
-        
-        tool_calls = delta.get("tool_calls", [])
-        if not tool_calls:
-            return self._create_simple_response("")
-        
-        result = []
-        for tc in tool_calls:
-            tc_func = tc.get("function", {})
-            tc_name = tc_func.get("name", "")
-            tc_args_str = tc_func.get("arguments", "")
-            
-            try:
-                if tc_args_str:
-                    args = json.loads(tc_args_str)
-                else:
-                    args = {}
-            except json.JSONDecodeError:
-                args = {"raw": tc_args_str}
-            
-            tc_id = tc.get("id", f"tool-{id(tc)}")
-            result.append(LongCatToolCall(id=tc_id, name=tc_name, arguments=args))
-        
-        return LongCatResponse(content=None, tool_calls=result)
     
     def _create_simple_response(self, content):
         """创建简单响应"""
         return LongCatResponse(content=content, tool_calls=None)
 
 
-# 导出兼容类名
 ModelAdapter = LongCatAdapter

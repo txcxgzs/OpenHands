@@ -57,7 +57,7 @@ class ToolPolicyManager:
         self._profiles["minimal"] = ToolProfile(
             name="minimal",
             description="Minimal tools only",
-            allowed_tools=["read", "memory_search", "session_status"],
+            allowed_tools=["read_file", "memory_search", "session_status"],
             denied_tools=[],
             require_approval=[],
         )
@@ -66,7 +66,8 @@ class ToolPolicyManager:
             name="coding",
             description="Coding-focused tools",
             allowed_tools=[
-                "read", "write", "edit", "exec", "terminal",
+                "read_file", "write_file", "list_dir",
+                "terminal_run", "exec",
                 "memory_add", "memory_search", "memory_list",
                 "web_search", "web_fetch", "screenshot",
                 "list_windows", "activate_window",
@@ -83,7 +84,7 @@ class ToolPolicyManager:
             require_approval=["exec"],
         )
 
-        self._default_profile = "coding"
+        self._default_profile = "full"
 
         for name, profile in self._profiles.items():
             self._policies[name] = ToolPolicy(
