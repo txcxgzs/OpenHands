@@ -1,12 +1,16 @@
 """
 Web GUI for OpenHands
 FastAPI + HTML/JS frontend
+实时屏幕预览和控制
 """
 
 import asyncio
 import logging
+import base64
+import json
 from pathlib import Path
 from typing import Optional
+from datetime import datetime
 
 try:
     from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -43,247 +47,282 @@ class ConnectionManager:
     async def send_message(self, message: dict, websocket):
         await websocket.send_json(message)
 
+    async def broadcast(self, message: dict):
+        for connection in self.active_connections:
+            await connection.send_json(message)
+
 
 manager = ConnectionManager()
 
 agent: Optional[EmbeddedAgent] = None
 current_session: Optional[str] = None
+is_controlling: bool = False
+action_count: int = 0
 
 
 def get_app():
-    """获取FastAPI应用实例，如果FastAPI未安装则返回None"""
+    """获取FastAPI应用实例"""
     if not FASTAPI_AVAILABLE:
         logger.warning("FastAPI not installed. Install with: pip install fastapi uvicorn")
         return None
     return app
 
 
+async def capture_screenshot() -> Optional[str]:
+    """捕获屏幕截图并返回 base64"""
+    try:
+        import pyautogui
+        from io import BytesIO
+        
+        screenshot = pyautogui.screenshot()
+        buffer = BytesIO()
+        screenshot.save(buffer, format="PNG")
+        return base64.b64encode(buffer.getvalue()).decode('utf-8')
+    except Exception as e:
+        logger.error(f"Screenshot failed: {e}")
+        return None
+
+
+async def execute_windows_action(action: str, params: dict) -> dict:
+    """执行 Windows 控制操作"""
+    global action_count
+    
+    try:
+        import pyautogui
+        pyautogui.FAILSAFE = True
+        pyautogui.PAUSE = 0.1
+        
+        result = {"success": True, "action": action}
+        
+        if action == "click":
+            x, y = params.get("x", 0), params.get("y", 0)
+            button = params.get("button", "left")
+            pyautogui.click(x, y, button=button)
+            result["content"] = f"点击 ({x}, {y})"
+            result["x"], result["y"] = x, y
+            
+        elif action == "double_click":
+            x, y = params.get("x", 0), params.get("y", 0)
+            pyautogui.doubleClick(x, y)
+            result["content"] = f"双击 ({x}, {y})"
+            result["x"], result["y"] = x, y
+            
+        elif action == "right_click":
+            x, y = params.get("x", 0), params.get("y", 0)
+            pyautogui.rightClick(x, y)
+            result["content"] = f"右键点击 ({x}, {y})"
+            result["x"], result["y"] = x, y
+            
+        elif action == "move":
+            x, y = params.get("x", 0), params.get("y", 0)
+            pyautogui.moveTo(x, y, duration=0.2)
+            result["content"] = f"移动到 ({x}, {y})"
+            result["x"], result["y"] = x, y
+            
+        elif action == "drag":
+            x, y = params.get("x", 0), params.get("y", 0)
+            pyautogui.dragTo(x, y, duration=0.5)
+            result["content"] = f"拖拽到 ({x}, {y})"
+            
+        elif action == "type":
+            text = params.get("text", "")
+            interval = params.get("interval", 0.05)
+            pyautogui.write(text, interval=interval)
+            result["content"] = f"输入: {text[:50]}"
+            
+        elif action == "hotkey":
+            keys = params.get("keys", "")
+            key_list = keys.split("+")
+            pyautogui.hotkey(*key_list)
+            result["content"] = f"快捷键: {keys}"
+            result["keys"] = keys
+            
+        elif action == "press":
+            key = params.get("key", "")
+            pyautogui.press(key)
+            result["content"] = f"按键: {key}"
+            
+        elif action == "scroll":
+            direction = params.get("direction", "down")
+            clicks = params.get("clicks", 3)
+            if direction == "down":
+                pyautogui.scroll(-clicks)
+            else:
+                pyautogui.scroll(clicks)
+            result["content"] = f"滚动: {direction}"
+            
+        elif action == "screenshot":
+            screenshot_b64 = await capture_screenshot()
+            if screenshot_b64:
+                result["image"] = screenshot_b64
+                result["content"] = "截图成功"
+            else:
+                result["success"] = False
+                result["content"] = "截图失败"
+        
+        action_count += 1
+        return result
+        
+    except Exception as e:
+        return {"success": False, "action": action, "error": str(e)}
+
+
 if FASTAPI_AVAILABLE:
     @app.on_event("startup")
     async def startup():
         global agent, current_session
-        config = AgentConfig.load()
-        agent = EmbeddedAgent(config)
-        await agent.initialize()
-        current_session = await agent.create_session(tool_profile="coding")
-    logger.info("OpenHands GUI started")
-
+        try:
+            config = AgentConfig.load()
+            agent = EmbeddedAgent(config)
+            await agent.initialize()
+            current_session = await agent.create_session()
+            logger.info("OpenHands GUI started")
+        except Exception as e:
+            logger.error(f"Startup failed: {e}")
 
     @app.get("/")
     async def get_index():
         html_path = Path(__file__).parent / "index.html"
         if html_path.exists():
-            return HTMLResponse(html_path.read_text())
-        return HTMLResponse(DEFAULT_HTML)
+            return HTMLResponse(html_path.read_text(encoding="utf-8"))
+        return HTMLResponse("<h1>OpenHands GUI</h1><p>index.html not found</p>")
 
+    @app.get("/api/status")
+    async def get_status():
+        return {
+            "connected": True,
+            "controlling": is_controlling,
+            "action_count": action_count,
+            "model": str(agent.config.model) if agent else None,
+        }
 
     @app.websocket("/ws")
     async def websocket_endpoint(websocket: WebSocket):
+        global is_controlling, action_count
+        
         await manager.connect(websocket)
+        
         try:
             while True:
                 data = await websocket.receive_json()
-
-                if data["type"] == "message":
-                    user_message = data["content"]
-                    await manager.send_message(
-                        {"type": "status", "content": "Thinking..."},
-                        websocket
-                    )
-
-                    await agent.queue_message(current_session, user_message)
-                    result = await agent.run(current_session)
-
-                    await manager.send_message(
-                        {"type": "message", "content": result.final_answer or "No response"},
-                        websocket
-                    )
-
-                elif data["type"] == "clear":
-                    agent.clear_history()
-                    await manager.send_message(
-                        {"type": "status", "content": "History cleared"},
-                        websocket
-                    )
-
-                elif data["type"] == "switch_profile":
-                    profile = data["profile"]
-                    agent.set_tool_profile(profile)
-                    await manager.send_message(
-                        {"type": "status", "content": f"Profile switched to: {profile}"},
-                        websocket
-                    )
-
+                msg_type = data.get("type")
+                
+                if msg_type == "message":
+                    user_message = data.get("content", "")
+                    await manager.send_message({
+                        "type": "status",
+                        "content": "正在思考..."
+                    }, websocket)
+                    
+                    if agent and current_session:
+                        await agent.queue_message(current_session, user_message)
+                        result = await agent.run(current_session)
+                        
+                        await manager.send_message({
+                            "type": "message",
+                            "content": result.final_answer or "无响应"
+                        }, websocket)
+                
+                elif msg_type == "take_control":
+                    is_controlling = True
+                    await manager.send_message({
+                        "type": "status",
+                        "content": "控制权已接管"
+                    }, websocket)
+                    
+                    # 发送初始截图
+                    screenshot_b64 = await capture_screenshot()
+                    if screenshot_b64:
+                        await manager.send_message({
+                            "type": "screenshot",
+                            "image": screenshot_b64
+                        }, websocket)
+                
+                elif msg_type == "release_control":
+                    is_controlling = False
+                    await manager.send_message({
+                        "type": "status",
+                        "content": "控制权已释放"
+                    }, websocket)
+                
+                elif msg_type == "screenshot":
+                    screenshot_b64 = await capture_screenshot()
+                    if screenshot_b64:
+                        await manager.send_message({
+                            "type": "screenshot",
+                            "image": screenshot_b64
+                        }, websocket)
+                
+                elif msg_type == "execute_action":
+                    if not is_controlling:
+                        await manager.send_message({
+                            "type": "error",
+                            "content": "请先接管控制"
+                        }, websocket)
+                        continue
+                    
+                    action = data.get("action")
+                    params = data.get("params", {})
+                    
+                    result = await execute_windows_action(action, params)
+                    
+                    if result.get("success"):
+                        await manager.send_message({
+                            "type": "action",
+                            "content": result.get("content", ""),
+                            "action": action,
+                            **{k: v for k, v in result.items() if k not in ["success", "content"]}
+                        }, websocket)
+                        
+                        # 操作后更新截图
+                        if action in ["click", "double_click", "right_click", "type", "hotkey", "press", "scroll"]:
+                            await asyncio.sleep(0.3)
+                            screenshot_b64 = await capture_screenshot()
+                            if screenshot_b64:
+                                await manager.send_message({
+                                    "type": "screenshot",
+                                    "image": screenshot_b64
+                                }, websocket)
+                    else:
+                        await manager.send_message({
+                            "type": "error",
+                            "content": result.get("error", "操作失败")
+                        }, websocket)
+                
+                elif msg_type == "clear":
+                    if agent:
+                        agent.clear_history()
+                    await manager.send_message({
+                        "type": "status",
+                        "content": "对话历史已清除"
+                    }, websocket)
+                
+                elif msg_type == "get_stats":
+                    await manager.send_message({
+                        "type": "stats",
+                        "action_count": action_count,
+                        "is_controlling": is_controlling
+                    }, websocket)
+                    
         except WebSocketDisconnect:
             manager.disconnect(websocket)
-
-
-DEFAULT_HTML = """
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenHands</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #eee;
-            min-height: 100vh;
-        }
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-        header {
-            text-align: center;
-            padding: 30px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 20px;
-        }
-        h1 { font-size: 2.5em; color: #00d9ff; }
-        .subtitle { color: #888; margin-top: 5px; }
-        .chat-container {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 20px;
-            height: 60vh;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-        .message { margin-bottom: 15px; padding: 15px; border-radius: 10px; }
-        .user { background: rgba(0,217,255,0.2); margin-left: 20%; }
-        .assistant { background: rgba(255,255,255,0.1); margin-right: 20%; }
-        .input-area {
-            display: flex;
-            gap: 10px;
-        }
-        input {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            font-size: 16px;
-        }
-        input:focus { outline: 2px solid #00d9ff; }
-        button {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 10px;
-            background: #00d9ff;
-            color: #1a1a2e;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        button:hover { transform: scale(1.05); }
-        .status {
-            text-align: center;
-            color: #888;
-            padding: 10px;
-            font-size: 14px;
-        }
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .controls button {
-            padding: 8px 15px;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>🤖 OpenHands</h1>
-            <p class="subtitle">AI Assistant with Windows Control</p>
-        </header>
-
-        <div class="controls">
-            <button onclick="switchProfile('coding')">Coding</button>
-            <button onclick="switchProfile('minimal')">Minimal</button>
-            <button onclick="switchProfile('full')">Full</button>
-            <button onclick="clearHistory()">Clear</button>
-        </div>
-
-        <div class="chat-container" id="chat"></div>
-
-        <div class="input-area">
-            <input type="text" id="messageInput" placeholder="Type your message..." onkeypress="handleKey(event)">
-            <button onclick="sendMessage()">Send</button>
-        </div>
-
-        <div class="status" id="status">Ready</div>
-    </div>
-
-    <script>
-        let ws;
-        const chat = document.getElementById('chat');
-        const status = document.getElementById('status');
-
-        function connect() {
-            ws = new WebSocket(`ws://${location.host}/ws`);
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if (data.type === 'message') {
-                    addMessage(data.content, 'assistant');
-                    status.textContent = 'Ready';
-                } else if (data.type === 'status') {
-                    status.textContent = data.content;
-                }
-            };
-            ws.onclose = () => {
-                setTimeout(connect, 1000);
-            };
-        }
-
-        function addMessage(content, role) {
-            const div = document.createElement('div');
-            div.className = `message ${role}`;
-            div.innerHTML = content.replace(/\\n/g, '<br>');
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            if (!message) return;
-
-            addMessage(message, 'user');
-            ws.send(JSON.stringify({ type: 'message', content: message }));
-            input.value = '';
-            status.textContent = 'Thinking...';
-        }
-
-        function handleKey(e) {
-            if (e.key === 'Enter') sendMessage();
-        }
-
-        function clearHistory() {
-            ws.send(JSON.stringify({ type: 'clear' }));
-            chat.innerHTML = '';
-        }
-
-        function switchProfile(profile) {
-            ws.send(JSON.stringify({ type: 'switch_profile', profile }));
-        }
-
-        connect();
-    </script>
-</body>
-</html>
-"""
+        except Exception as e:
+            logger.error(f"WebSocket error: {e}")
+            manager.disconnect(websocket)
 
 
 def run_gui(host: str = "0.0.0.0", port: int = 8000):
     """Run the GUI server"""
     if not FASTAPI_AVAILABLE:
         raise ImportError("FastAPI not installed. Install with: pip install fastapi uvicorn")
+    
+    print(f"\n{'='*60}")
+    print("OpenHands Web GUI")
+    print(f"{'='*60}")
+    print(f"访问地址: http://localhost:{port}")
+    print("按 Ctrl+C 停止")
+    print(f"{'='*60}\n")
+    
     uvicorn.run(app, host=host, port=port)
 
 

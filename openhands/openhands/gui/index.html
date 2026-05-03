@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenHands - AI 控制台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+        }
+        
+        /* 左侧 - 屏幕预览 */
+        .screen-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #333;
+        }
+        
+        .screen-header {
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .screen-title {
+            font-size: 14px;
+            color: #888;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #0066ff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0052cc;
+        }
+        
+        .btn-danger {
+            background: #ff3b30;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #cc2f26;
+        }
+        
+        .btn-success {
+            background: #34c759;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #2aa84a;
+        }
+        
+        .screen-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #screen-preview {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .mouse-indicator {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #00ff00;
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s;
+        }
+        
+        .mouse-indicator.clicking {
+            background: rgba(0, 255, 0, 0.3);
+        }
+        
+        .screen-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .screen-overlay.hidden {
+            display: none;
+        }
+        
+        .overlay-text {
+            font-size: 18px;
+            color: #888;
+        }
+        
+        /* 右侧 - 控制面板 */
+        .control-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 400px;
+        }
+        
+        /* 状态栏 */
+        .status-bar {
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        
+        .status-label {
+            color: #888;
+        }
+        
+        .status-value {
+            color: #fff;
+        }
+        
+        .status-value.active {
+            color: #34c759;
+        }
+        
+        .status-value.inactive {
+            color: #ff3b30;
+        }
+        
+        /* 操作日志 */
+        .log-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: #0a0a0a;
+        }
+        
+        .log-entry {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            font-size: 13px;
+            border-left: 3px solid #333;
+        }
+        
+        .log-entry.action {
+            border-left-color: #0066ff;
+        }
+        
+        .log-entry.success {
+            border-left-color: #34c759;
+        }
+        
+        .log-entry.error {
+            border-left-color: #ff3b30;
+        }
+        
+        .log-entry.info {
+            border-left-color: #888;
+        }
+        
+        .log-time {
+            color: #666;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+        
+        .log-content {
+            color: #fff;
+        }
+        
+        /* 聊天区域 */
+        .chat-panel {
+            border-top: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            height: 300px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        
+        .message {
+            margin-bottom: 12px;
+        }
+        
+        .message-user {
+            text-align: right;
+        }
+        
+        .message-content {
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 80%;
+            font-size: 14px;
+        }
+        
+        .message-user .message-content {
+            background: #0066ff;
+            color: white;
+        }
+        
+        .message-assistant .message-content {
+            background: #2a2a2a;
+            color: white;
+        }
+        
+        .chat-input-area {
+            padding: 12px 16px;
+            background: #1a1a1a;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #0a0a0a;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: #0066ff;
+        }
+        
+        .send-btn {
+            padding: 10px 20px;
+            background: #0066ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        /* 工具栏 */
+        .toolbar {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .tool-btn {
+            padding: 6px 12px;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .tool-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+        
+        .tool-btn.active {
+            background: #0066ff;
+            border-color: #0066ff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- 左侧 - 屏幕预览 -->
+    <div class="screen-panel">
+        <div class="screen-header">
+            <span class="screen-title">🖥️ 屏幕预览</span>
+            <div class="control-buttons">
+                <button class="btn btn-primary" id="takeControl" onclick="takeControl()">
+                    🎮 接管控制
+                </button>
+                <button class="btn btn-danger hidden" id="releaseControl" onclick="releaseControl()">
+                    ⏹️ 释放控制
+                </button>
+                <button class="btn btn-success" id="refreshScreen" onclick="refreshScreen()">
+                    🔄 刷新
+                </button>
+            </div>
+        </div>
+        <div class="screen-container" id="screenContainer">
+            <img id="screen-preview" src="" alt="屏幕预览">
+            <div class="mouse-indicator" id="mouseIndicator"></div>
+            <div class="screen-overlay" id="screenOverlay">
+                <span class="overlay-text">点击"接管控制"开始</span>
+                <button class="btn btn-primary" onclick="takeControl()">开始控制</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 右侧 - 控制面板 -->
+    <div class="control-panel">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-label">控制状态</span>
+                <span class="status-value inactive" id="controlStatus">未接管</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">鼠标位置</span>
+                <span class="status-value" id="mousePos">--</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">当前模型</span>
+                <span class="status-value" id="currentModel">--</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">操作次数</span>
+                <span class="status-value" id="actionCount">0</span>
+            </div>
+        </div>
+        
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <button class="tool-btn" onclick="executeAction('screenshot')">📸 截图</button>
+            <button class="tool-btn" onclick="executeAction('click', {x: 100, y: 100})">🖱️ 点击</button>
+            <button class="tool-btn" onclick="executeAction('type', {text: 'Hello'})">⌨️ 输入</button>
+            <button class="tool-btn" onclick="executeAction('hotkey', {keys: 'ctrl+c'})">📋 复制</button>
+            <button class="tool-btn" onclick="executeAction('hotkey', {keys: 'ctrl+v'})">📄 粘贴</button>
+            <button class="tool-btn" onclick="executeAction('scroll', {direction: 'down'})">⬇️ 滚动</button>
+        </div>
+        
+        <!-- 操作日志 -->
+        <div class="log-panel" id="logPanel">
+            <div class="log-entry info">
+                <div class="log-time">系统</div>
+                <div class="log-content">OpenHands 控制台已启动，等待连接...</div>
+            </div>
+        </div>
+        
+        <!-- 聊天区域 -->
+        <div class="chat-panel">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message message-assistant">
+                    <div class="message-content">你好！我是 OpenHands，我可以帮你操作电脑。告诉我你想做什么？</div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="chatInput" placeholder="输入指令或问题..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let ws = null;
+        let isConnected = false;
+        let isControlling = false;
+        let actionCount = 0;
+        
+        // 连接 WebSocket
+        function connect() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+            
+            ws.onopen = () => {
+                isConnected = true;
+                addLog('info', '已连接到服务器');
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleMessage(data);
+            };
+            
+            ws.onclose = () => {
+                isConnected = false;
+                addLog('error', '连接已断开，正在重连...');
+                setTimeout(connect, 3000);
+            };
+            
+            ws.onerror = (error) => {
+                addLog('error', '连接错误');
+            };
+        }
+        
+        // 处理消息
+        function handleMessage(data) {
+            switch (data.type) {
+                case 'status':
+                    addLog('info', data.content);
+                    break;
+                    
+                case 'message':
+                    addChatMessage('assistant', data.content);
+                    break;
+                    
+                case 'action':
+                    actionCount++;
+                    document.getElementById('actionCount').textContent = actionCount;
+                    addLog('action', data.content);
+                    
+                    // 更新鼠标位置
+                    if (data.mouse_x !== undefined && data.mouse_y !== undefined) {
+                        updateMousePosition(data.mouse_x, data.mouse_y);
+                    }
+                    break;
+                    
+                case 'screenshot':
+                    document.getElementById('screen-preview').src = `data:image/png;base64,${data.image}`;
+                    break;
+                    
+                case 'mouse_move':
+                    updateMousePosition(data.x, data.y);
+                    break;
+                    
+                case 'mouse_click':
+                    showClickAnimation(data.x, data.y);
+                    addLog('action', `点击: (${data.x}, ${data.y})`);
+                    break;
+                    
+                case 'key_press':
+                    addLog('action', `按键: ${data.keys}`);
+                    break;
+                    
+                case 'type_text':
+                    addLog('action', `输入: ${data.text}`);
+                    break;
+                    
+                case 'error':
+                    addLog('error', data.content);
+                    break;
+            }
+        }
+        
+        // 添加日志
+        function addLog(type, content) {
+            const logPanel = document.getElementById('logPanel');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            
+            const time = new Date().toLocaleTimeString();
+            entry.innerHTML = `
+                <div class="log-time">${time}</div>
+                <div class="log-content">${content}</div>
+            `;
+            
+            logPanel.appendChild(entry);
+            logPanel.scrollTop = logPanel.scrollHeight;
+        }
+        
+        // 添加聊天消息
+        function addChatMessage(role, content) {
+            const chatMessages = document.getElementById('chatMessages');
+            const message = document.createElement('div');
+            message.className = `message message-${role}`;
+            message.innerHTML = `<div class="message-content">${content}</div>`;
+            chatMessages.appendChild(message);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const content = input.value.trim();
+            
+            if (!content || !isConnected) return;
+            
+            addChatMessage('user', content);
+            input.value = '';
+            
+            ws.send(JSON.stringify({
+                type: 'message',
+                content: content
+            }));
+        }
+        
+        // 按键处理
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        // 接管控制
+        function takeControl() {
+            if (!isConnected) {
+                addLog('error', '未连接到服务器');
+                return;
+            }
+            
+            isControlling = true;
+            document.getElementById('controlStatus').textContent = '已接管';
+            document.getElementById('controlStatus').className = 'status-value active';
+            document.getElementById('takeControl').classList.add('hidden');
+            document.getElementById('releaseControl').classList.remove('hidden');
+            document.getElementById('screenOverlay').classList.add('hidden');
+            
+            ws.send(JSON.stringify({ type: 'take_control' }));
+            addLog('success', '已接管控制权');
+            
+            // 开始屏幕更新
+            startScreenUpdate();
+        }
+        
+        // 释放控制
+        function releaseControl() {
+            isControlling = false;
+            document.getElementById('controlStatus').textContent = '未接管';
+            document.getElementById('controlStatus').className = 'status-value inactive';
+            document.getElementById('takeControl').classList.remove('hidden');
+            document.getElementById('releaseControl').classList.add('hidden');
+            
+            ws.send(JSON.stringify({ type: 'release_control' }));
+            addLog('info', '已释放控制权');
+        }
+        
+        // 刷新屏幕
+        function refreshScreen() {
+            if (isConnected) {
+                ws.send(JSON.stringify({ type: 'screenshot' }));
+            }
+        }
+        
+        // 开始屏幕更新
+        let screenUpdateInterval;
+        function startScreenUpdate() {
+            if (screenUpdateInterval) {
+                clearInterval(screenUpdateInterval);
+            }
+            
+            screenUpdateInterval = setInterval(() => {
+                if (isControlling && isConnected) {
+                    ws.send(JSON.stringify({ type: 'screenshot' }));
+                }
+            }, 1000); // 每秒更新一次
+        }
+        
+        // 更新鼠标位置
+        function updateMousePosition(x, y) {
+            document.getElementById('mousePos').textContent = `(${x}, ${y})`;
+            
+            const indicator = document.getElementById('mouseIndicator');
+            const container = document.getElementById('screenContainer');
+            const img = document.getElementById('screen-preview');
+            
+            // 计算缩放比例
+            const scaleX = img.clientWidth / img.naturalWidth;
+            const scaleY = img.clientHeight / img.naturalHeight;
+            
+            indicator.style.left = `${x * scaleX}px`;
+            indicator.style.top = `${y * scaleY}px`;
+        }
+        
+        // 显示点击动画
+        function showClickAnimation(x, y) {
+            const indicator = document.getElementById('mouseIndicator');
+            indicator.classList.add('clicking');
+            setTimeout(() => indicator.classList.remove('clicking'), 200);
+        }
+        
+        // 执行操作
+        function executeAction(action, params = {}) {
+            if (!isControlling) {
+                addLog('error', '请先接管控制');
+                return;
+            }
+            
+            ws.send(JSON.stringify({
+                type: 'execute_action',
+                action: action,
+                params: params
+            }));
+        }
+        
+        // 屏幕点击
+        document.getElementById('screenContainer').addEventListener('click', (e) => {
+            if (!isControlling) return;
+            
+            const img = document.getElementById('screen-preview');
+            const rect = img.getBoundingClientRect();
+            
+            const x = Math.round((e.clientX - rect.left) / rect.width * img.naturalWidth);
+            const y = Math.round((e.clientY - rect.top) / rect.height * img.naturalHeight);
+            
+            executeAction('click', { x, y });
+        });
+        
+        // 初始化
+        connect();
+    </script>
+</body>
+</html>
