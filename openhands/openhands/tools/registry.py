@@ -129,6 +129,7 @@ class ToolRegistry:
         Get tool definitions in OpenAI/Anthropic format
         """
         definitions = []
+        import inspect
 
         for entry in self._tools.values():
             if not entry.enabled:
@@ -141,13 +142,24 @@ class ToolRegistry:
             if allowed_tools and entry.name not in allowed_tools:
                 continue
 
+            # 分析函数签名来确定必填参数
+            required_params = []
+            try:
+                sig = inspect.signature(entry.handler)
+                for name, param in sig.parameters.items():
+                    # 没有默认值的参数是必填的
+                    if param.default == inspect.Parameter.empty:
+                        required_params.append(name)
+            except:
+                pass
+
             definition = {
                 "name": entry.name,
                 "description": entry.description,
                 "input_schema": {
                     "type": "object",
                     "properties": entry.parameters or {},
-                    "required": [],
+                    "required": required_params,
                 },
             }
             definitions.append(definition)
@@ -164,12 +176,35 @@ class ToolRegistry:
         if not entry:
             return ToolResult(content=f"Unknown tool: {tool_name}", is_error=True)
 
+        if not entry.enabled:
+            return ToolResult(content=f"Tool disabled: {tool_name}", is_error=True)
+
         try:
+            # 参数验证 - 过滤无效参数
+            valid_params = set(entry.parameters.keys())
+            provided_params = set(arguments.keys())
+            extra_params = provided_params - valid_params
+            if extra_params:
+                logger.warning(f"Extra parameters for {tool_name}: {extra_params}")
+            
             import asyncio
+            import inspect
+            
+            # 检查函数参数
+            sig = inspect.signature(entry.handler)
+            param_names = list(sig.parameters.keys())
+            
+            # 只传递函数接受的参数
+            filtered_args = {}
+            for k, v in arguments.items():
+                if k in param_names:
+                    filtered_args[k] = v
+            
+            # 执行工具
             if asyncio.iscoroutinefunction(entry.handler):
-                result = await entry.handler(**arguments)
+                result = await entry.handler(**filtered_args)
             else:
-                result = await asyncio.to_thread(entry.handler, **arguments)
+                result = await asyncio.to_thread(entry.handler, **filtered_args)
 
             if isinstance(result, str):
                 content = result
@@ -178,6 +213,13 @@ class ToolRegistry:
 
             return ToolResult(content=content, is_error=False)
 
+        except TypeError as e:
+            # 参数错误
+            logger.error(f"Parameter error for {tool_name}: {e}")
+            return ToolResult(
+                content=f"Parameter error for {tool_name}: {str(e)}\nExpected parameters: {list(entry.parameters.keys())}",
+                is_error=True
+            )
         except Exception as e:
             logger.exception(f"Tool execution failed: {tool_name}")
             return ToolResult(content=f"Error executing {tool_name}: {str(e)}", is_error=True)

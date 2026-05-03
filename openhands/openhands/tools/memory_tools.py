@@ -17,13 +17,15 @@ def register_tools(registry, memory_store):
         description="Add information to memory",
         toolset="memory",
         parameters={
-            "content": {"type": "string", "description": "Content to remember"},
+            "key": {"type": "string", "description": "Key for memory entry"},
+            "value": {"type": "string", "description": "Value/content to remember"},
         },
     )
-    async def memory_add(content: str) -> str:
+    async def memory_add(key: str, value: str) -> str:
         """Add to memory"""
+        content = f"{key}: {value}"
         item_id = await memory_store.add(content)
-        return f"Added to memory (ID: {item_id})"
+        return f"Added to memory (ID: {item_id}) - {key}: {value}"
 
     @registry.register_tool(
         name="memory_search",
@@ -50,9 +52,7 @@ def register_tools(registry, memory_store):
         name="memory_list",
         description="List all memories",
         toolset="memory",
-        parameters={
-            "limit": {"type": "number", "description": "Max memories to list"},
-        },
+        parameters={},
     )
     async def memory_list(limit: int = 10) -> str:
         """List memories"""

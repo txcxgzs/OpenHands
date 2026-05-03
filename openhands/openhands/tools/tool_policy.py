@@ -43,14 +43,14 @@ class ToolPolicyManager:
         self._profiles["minimal"] = ToolProfile(
             name="minimal",
             description="Minimal tools only",
-            policy=ToolPolicy(allow=["read", "session_status"])
+            policy=ToolPolicy(allow=["read_file", "list_dir"])
         )
 
         self._profiles["coding"] = ToolProfile(
             name="coding",
             description="Coding-focused tools",
             policy=ToolPolicy(
-                allow=["read", "write", "edit", "exec", "terminal", "memory_search", "memory_get"]
+                allow=["read_file", "write_file", "list_dir", "edit_file", "terminal_run", "memory_add", "memory_search", "memory_list", "web_search", "web_fetch"]
             )
         )
 
@@ -60,7 +60,7 @@ class ToolPolicyManager:
             policy=ToolPolicy()
         )
 
-        self._default_profile = "coding"
+        self._default_profile = "full"
 
     def add_profile(self, profile: ToolProfile):
         self._profiles[profile.name] = profile
