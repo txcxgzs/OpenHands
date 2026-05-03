@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenHands - AI 智能助手</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <title>OpenHands - AI Agent</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -13,33 +11,25 @@
             --bg-accent: #13151b;
             --bg-elevated: #191c24;
             --bg-hover: #1f2330;
-            --bg-muted: #1f2330;
             --card: #161920;
-            --card-foreground: #f0f0f2;
-            --popover: #191c24;
             --text: #d4d4d8;
             --text-strong: #f4f4f5;
-            --chat-text: #d4d4d8;
             --muted: #838387;
             --border: #1e2028;
             --border-strong: #2e3040;
             --accent: #ff5c5c;
             --accent-hover: #ff7070;
-            --accent-muted: #ff5c5c;
             --accent-subtle: rgba(255, 92, 92, 0.1);
-            --accent-foreground: #fafafa;
             --ok: #22c55e;
             --warn: #f59e0b;
             --danger: #ef4444;
             --info: #3b82f6;
-            --secondary: #161920;
-            --secondary-foreground: #f0f0f2;
             --radius: 10px;
             --radius-sm: 6px;
             --radius-md: 10px;
             --radius-lg: 14px;
-            --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+            --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: "JetBrains Mono", ui-monospace, monospace;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -63,7 +53,6 @@
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            flex-shrink: 0;
         }
         
         .sidebar-header {
@@ -119,11 +108,11 @@
             padding: 10px 12px;
             border-radius: var(--radius-sm);
             cursor: pointer;
-            transition: all 0.15s ease;
             color: var(--text);
             font-size: 14px;
             border-left: 3px solid transparent;
             margin: 2px 0;
+            transition: all 0.15s ease;
         }
         
         .nav-item:hover { background: var(--bg-hover); }
@@ -134,27 +123,13 @@
             color: var(--accent);
         }
         
-        .nav-icon {
-            font-size: 16px;
-            width: 20px;
-            text-align: center;
-        }
-        
-        .nav-badge {
-            margin-left: auto;
-            font-size: 11px;
-            padding: 2px 8px;
-            background: var(--bg-hover);
-            border-radius: 999px;
-            color: var(--muted);
-        }
+        .nav-icon { width: 20px; text-align: center; }
         
         .main {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            background: var(--bg);
         }
         
         .header {
@@ -164,14 +139,9 @@
             padding: 12px 24px;
             background: var(--bg-accent);
             border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
         }
         
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
         
         .page-title {
             font-size: 18px;
@@ -194,21 +164,11 @@
             color: var(--ok);
         }
         
-        .connection-status.disconnected {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-        }
-        
         .status-dot {
             width: 6px;
             height: 6px;
             border-radius: 50%;
             background: currentColor;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 8px;
         }
         
         .btn {
@@ -226,7 +186,7 @@
         
         .btn-primary {
             background: var(--accent);
-            color: var(--accent-foreground);
+            color: white;
         }
         
         .btn-primary:hover {
@@ -246,7 +206,6 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            padding: 0 6px 6px;
         }
         
         .chat-thread {
@@ -255,61 +214,62 @@
             padding: 0 18px;
         }
         
-        .welcome {
+        /* OpenClaw风格欢迎页面 */
+        .agent-chat__welcome {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            padding: 60px 24px;
             flex: 1;
-            min-height: 0;
+            padding: 60px 24px;
+            position: relative;
         }
         
-        .welcome-icon {
-            width: 72px;
-            height: 72px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
+        .agent-chat__welcome-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--accent-subtle) 0%, transparent 70%);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        
+        .agent-chat__avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 36px;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-            animation: pulse 2s ease-in-out infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .welcome h2 {
             font-size: 28px;
-            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #ff7070);
+            box-shadow: 0 4px 20px rgba(255, 92, 92, 0.4);
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .agent-chat__welcome h2 {
+            font-size: 24px;
+            font-weight: 600;
             color: var(--text-strong);
             margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
         }
         
-        .welcome-subtitle {
-            font-size: 15px;
-            color: var(--muted);
-            max-width: 500px;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-        
-        .welcome-badges {
+        .agent-chat__badges {
             display: flex;
             gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 28px;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
         }
         
-        .welcome-badge {
+        .agent-chat__badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -322,13 +282,20 @@
             padding: 6px 14px;
         }
         
-        .welcome-hint {
-            font-size: 13px;
-            color: var(--muted);
-            margin-bottom: 20px;
+        .agent-chat__badge img {
+            width: 14px;
+            height: 14px;
         }
         
-        .welcome-hint kbd {
+        .agent-chat__hint {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .agent-chat__hint kbd {
             display: inline-block;
             padding: 2px 8px;
             font-size: 11px;
@@ -338,15 +305,17 @@
             border-radius: var(--radius-sm);
         }
         
-        .suggestions {
+        .agent-chat__suggestions {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             justify-content: center;
-            max-width: 650px;
+            max-width: 600px;
+            position: relative;
+            z-index: 1;
         }
         
-        .suggestion-btn {
+        .agent-chat__suggestion {
             font-size: 13px;
             padding: 10px 18px;
             border-radius: 999px;
@@ -357,13 +326,14 @@
             transition: all 0.2s ease;
         }
         
-        .suggestion-btn:hover {
+        .agent-chat__suggestion:hover {
             background: var(--bg-hover);
             border-color: var(--accent);
             color: var(--accent);
             transform: translateY(-2px);
         }
         
+        /* 消息样式 */
         .message {
             display: flex;
             gap: 12px;
@@ -413,7 +383,7 @@
         .message-text {
             font-size: 14px;
             line-height: 1.7;
-            color: var(--chat-text);
+            color: var(--text);
         }
         
         .message-text pre {
@@ -431,12 +401,10 @@
             border-radius: 4px;
             font-family: var(--font-mono);
             font-size: 13px;
-            border: 1px solid var(--border);
         }
         
         .message-text pre code {
             background: transparent;
-            border: none;
             padding: 0;
         }
         
@@ -449,6 +417,7 @@
             50% { border-color: transparent; }
         }
         
+        /* 思考面板 */
         .thinking-panel {
             background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
             border: 1px solid rgba(59, 130, 246, 0.2);
@@ -463,7 +432,6 @@
             gap: 10px;
             padding: 12px 16px;
             background: rgba(59, 130, 246, 0.1);
-            border-bottom: 1px solid rgba(59, 130, 246, 0.15);
         }
         
         .thinking-icon {
@@ -489,28 +457,6 @@
             color: var(--info);
         }
         
-        .thinking-progress {
-            margin-left: auto;
-            display: flex;
-            gap: 4px;
-        }
-        
-        .thinking-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--info);
-            border-radius: 50%;
-            animation: bounce 1.4s infinite ease-in-out both;
-        }
-        
-        .thinking-dot:nth-child(1) { animation-delay: -0.32s; }
-        .thinking-dot:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-        
         .thinking-body {
             padding: 16px;
         }
@@ -519,21 +465,15 @@
             font-size: 13px;
             color: var(--muted);
             font-family: var(--font-mono);
-            padding: 8px 0;
-            min-height: 20px;
         }
         
+        /* 工具卡片 */
         .tool-card {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
             margin: 16px 0;
             overflow: hidden;
-            transition: all 0.2s ease;
-        }
-        
-        .tool-card:hover {
-            border-color: var(--border-strong);
         }
         
         .tool-header {
@@ -542,7 +482,6 @@
             gap: 12px;
             padding: 14px 16px;
             cursor: pointer;
-            transition: all 0.15s ease;
         }
         
         .tool-header:hover { background: var(--bg-hover); }
@@ -556,7 +495,6 @@
             align-items: center;
             justify-content: center;
             font-size: 14px;
-            box-shadow: 0 2px 8px rgba(255, 92, 92, 0.3);
         }
         
         .tool-info { flex: 1; }
@@ -571,7 +509,6 @@
         .tool-args {
             font-size: 12px;
             color: var(--muted);
-            margin-top: 2px;
         }
         
         .tool-status {
@@ -581,20 +518,9 @@
             border-radius: 999px;
         }
         
-        .tool-status.running {
-            background: rgba(59, 130, 246, 0.2);
-            color: var(--info);
-        }
-        
-        .tool-status.success {
-            background: rgba(34, 197, 94, 0.2);
-            color: var(--ok);
-        }
-        
-        .tool-status.error {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
-        }
+        .tool-status.running { background: rgba(59, 130, 246, 0.2); color: var(--info); }
+        .tool-status.success { background: rgba(34, 197, 94, 0.2); color: var(--ok); }
+        .tool-status.error { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
         
         .tool-body {
             padding: 0 16px 16px;
@@ -613,22 +539,19 @@
             max-height: 400px;
             overflow-y: auto;
             white-space: pre-wrap;
-            word-break: break-all;
         }
         
-        .tool-result.error { color: var(--danger); }
-        
+        /* 输入框 */
         .compose {
             flex-shrink: 0;
-            padding: 12px 4px 4px;
-            background: linear-gradient(to bottom, transparent, var(--bg) 20%);
+            padding: 12px;
+            background: var(--bg);
         }
         
         .compose-box {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            transition: all 0.15s ease;
         }
         
         .compose-box:focus-within {
@@ -636,10 +559,8 @@
             box-shadow: 0 0 0 3px rgba(255, 92, 92, 0.1);
         }
         
-        .compose-field { display: flex; align-items: stretch; }
-        
         .compose-input {
-            flex: 1;
+            width: 100%;
             padding: 14px 16px;
             background: transparent;
             border: none;
@@ -658,7 +579,7 @@
         .compose-actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
             padding: 8px 12px;
             border-top: 1px solid var(--border);
         }
@@ -674,14 +595,10 @@
             font-size: 14px;
             font-weight: 500;
             transition: all 0.15s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
         
         .send-btn:hover:not(:disabled) {
             background: var(--accent-hover);
-            box-shadow: 0 4px 12px rgba(255, 92, 92, 0.3);
         }
         
         .send-btn:disabled {
@@ -689,13 +606,13 @@
             cursor: not-allowed;
         }
         
+        /* 右侧面板 */
         .right-panel {
-            width: 320px;
+            width: 300px;
             background: var(--bg-accent);
             border-left: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            flex-shrink: 0;
         }
         
         .panel-tabs {
@@ -712,7 +629,6 @@
             color: var(--muted);
             cursor: pointer;
             border-bottom: 2px solid transparent;
-            transition: all 0.15s ease;
         }
         
         .panel-tab:hover { color: var(--text); background: var(--bg-hover); }
@@ -723,6 +639,9 @@
             overflow-y: auto;
             padding: 16px;
         }
+        
+        .panel-view { display: none; }
+        .panel-view.active { display: block; }
         
         .stat-card {
             background: var(--card);
@@ -737,90 +656,18 @@
             font-weight: 700;
             color: var(--muted);
             text-transform: uppercase;
-            letter-spacing: 0.06em;
             margin-bottom: 8px;
         }
         
         .stat-value {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 700;
             color: var(--text-strong);
         }
         
-        .stat-value small {
-            font-size: 14px;
-            font-weight: 400;
-            color: var(--muted);
-        }
-        
-        .stat-row {
-            display: flex;
-            gap: 12px;
-            margin-top: 12px;
-        }
-        
-        .stat-mini {
-            flex: 1;
-            background: var(--bg-hover);
-            border-radius: var(--radius-sm);
-            padding: 10px;
-            text-align: center;
-        }
-        
-        .stat-mini-value {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-strong);
-        }
-        
-        .stat-mini-label {
-            font-size: 10px;
-            color: var(--muted);
-            margin-top: 2px;
-        }
-        
-        .activity-item {
-            display: flex;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .activity-item:last-child { border-bottom: none; }
-        
-        .activity-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--bg-hover);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            flex-shrink: 0;
-        }
-        
-        .activity-content { flex: 1; min-width: 0; }
-        
-        .activity-title {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text);
-            margin-bottom: 2px;
-        }
-        
-        .activity-time {
-            font-size: 11px;
-            color: var(--muted);
-        }
-        
-        .panel-view { display: none; }
-        .panel-view.active { display: block; }
-        
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
     </style>
 </head>
 <body>
@@ -832,55 +679,34 @@
                     <span class="logo-text">OpenHands</span>
                 </div>
             </div>
-            
             <nav class="sidebar-nav">
                 <div class="nav-group">
                     <div class="nav-group-title">对话</div>
-                    <div class="nav-item active" data-panel="chat">
+                    <div class="nav-item active">
                         <span class="nav-icon">💬</span>
                         <span>聊天</span>
                     </div>
                 </div>
-                
-                <div class="nav-group">
-                    <div class="nav-group-title">控制</div>
-                    <div class="nav-item" onclick="showToast('功能开发中')">
-                        <span class="nav-icon">📊</span>
-                        <span>概览</span>
-                        <span class="nav-badge">Live</span>
-                    </div>
-                    <div class="nav-item" onclick="showToast('功能开发中')">
-                        <span class="nav-icon">📄</span>
-                        <span>会话</span>
-                        <span class="nav-badge">New</span>
-                    </div>
-                    <div class="nav-item" onclick="showToast('功能开发中')">
-                        <span class="nav-icon">📈</span>
-                        <span>用量</span>
-                    </div>
-                </div>
-                
                 <div class="nav-group">
                     <div class="nav-group-title">工具</div>
-                    <div class="nav-item" onclick="showToast('功能开发中')">
-                        <span class="nav-icon">🛠️</span>
-                        <span>技能库</span>
+                    <div class="nav-item">
+                        <span class="nav-icon">🔧</span>
+                        <span>终端</span>
                     </div>
-                    <div class="nav-item" onclick="showToast('功能开发中')">
+                    <div class="nav-item">
+                        <span class="nav-icon">📁</span>
+                        <span>文件</span>
+                    </div>
+                    <div class="nav-item">
                         <span class="nav-icon">🧠</span>
                         <span>记忆</span>
                     </div>
                 </div>
-                
                 <div class="nav-group">
                     <div class="nav-group-title">设置</div>
-                    <div class="nav-item" onclick="showToast('功能开发中')">
+                    <div class="nav-item">
                         <span class="nav-icon">⚙️</span>
                         <span>配置</span>
-                    </div>
-                    <div class="nav-item" onclick="showToast('功能开发中')">
-                        <span class="nav-icon">📜</span>
-                        <span>日志</span>
                     </div>
                 </div>
             </nav>
@@ -889,10 +715,10 @@
         <div class="main">
             <div class="header">
                 <div class="header-left">
-                    <h1 class="page-title" id="pageTitle">聊天</h1>
+                    <h1 class="page-title">聊天</h1>
                     <div class="connection-status connected" id="connectionStatus">
                         <span class="status-dot"></span>
-                        <span>正在连接...</span>
+                        <span>已连接</span>
                     </div>
                 </div>
                 <div class="header-actions">
@@ -903,40 +729,30 @@
             
             <div class="chat-container">
                 <div class="chat-thread" id="chatThread">
-                    <div class="welcome" id="welcomeScreen">
-                        <div class="welcome-icon">🤚</div>
-                        <h2>欢迎使用 OpenHands</h2>
-                        <p class="welcome-subtitle">我是您的 AI 智能助手，可以帮助您操作电脑、管理文件、执行命令、浏览网页等。</p>
-                        <div class="welcome-badges">
-                            <span class="welcome-badge">🤖 LongCat-2.0</span>
-                            <span class="welcome-badge">🔧 工具调用</span>
-                            <span class="welcome-badge">✨ 流式输出</span>
+                    <div class="agent-chat__welcome" id="welcomeScreen">
+                        <div class="agent-chat__welcome-glow"></div>
+                        <div class="agent-chat__avatar">🤚</div>
+                        <h2>OpenHands</h2>
+                        <div class="agent-chat__badges">
+                            <span class="agent-chat__badge">🟢 Ready to chat</span>
+                            <span class="agent-chat__badge">🤖 LongCat-2.0</span>
                         </div>
-                        <p class="welcome-hint">输入消息开始对话 · 按 Enter 发送，Shift+Enter 换行</p>
-                        <div class="suggestions" id="suggestions">
-                            <button class="suggestion-btn" onclick="sendSuggestion('你能做什么？')">你能做什么？</button>
-                            <button class="suggestion-btn" onclick="sendSuggestion('列出当前目录的文件')">列出文件</button>
-                            <button class="suggestion-btn" onclick="sendSuggestion('执行一个简单的Python计算')">Python 计算</button>
-                            <button class="suggestion-btn" onclick="sendSuggestion('创建一个简单的测试脚本')">创建脚本</button>
+                        <p class="agent-chat__hint">输入消息开始对话 · 按 <kbd>/</kbd> 使用命令</p>
+                        <div class="agent-chat__suggestions">
+                            <button class="agent-chat__suggestion" onclick="sendSuggestion('你能做什么？')">你能做什么？</button>
+                            <button class="agent-chat__suggestion" onclick="sendSuggestion('列出当前目录文件')">列出当前目录文件</button>
+                            <button class="agent-chat__suggestion" onclick="sendSuggestion('执行 pwd 命令')">执行 pwd 命令</button>
+                            <button class="agent-chat__suggestion" onclick="sendSuggestion('帮我写一个Python脚本')">帮我写一个Python脚本</button>
                         </div>
                     </div>
                 </div>
                 
                 <div class="compose">
                     <div class="compose-box">
-                        <div class="compose-field">
-                            <textarea 
-                                class="compose-input" 
-                                id="messageInput" 
-                                placeholder="输入消息..."
-                                rows="1"
-                            ></textarea>
-                        </div>
+                        <textarea class="compose-input" id="messageInput" placeholder="输入消息..." rows="1"></textarea>
                         <div class="compose-actions">
-                            <span style="font-size: 12px; color: var(--muted);">LongCat-2.0</span>
-                            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-                                发送 ➤
-                            </button>
+                            <span style="font-size: 12px; color: var(--muted);">LongCat-2.0 · 支持工具调用</span>
+                            <button class="send-btn" id="sendBtn" onclick="sendMessage()">发送 ➤</button>
                         </div>
                     </div>
                 </div>
@@ -945,11 +761,9 @@
         
         <div class="right-panel">
             <div class="panel-tabs">
-                <div class="panel-tab active" data-tab="stats" onclick="switchTab('stats')">统计</div>
-                <div class="panel-tab" data-tab="activity" onclick="switchTab('activity')">活动</div>
-                <div class="panel-tab" data-tab="info" onclick="switchTab('info')">信息</div>
+                <div class="panel-tab active" onclick="switchTab('stats')">统计</div>
+                <div class="panel-tab" onclick="switchTab('activity')">活动</div>
             </div>
-            
             <div class="panel-content">
                 <div class="panel-view active" id="statsPanel">
                     <div class="stat-card">
@@ -961,46 +775,12 @@
                         <div class="stat-value" id="toolCallCount">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">会话时长</div>
-                        <div class="stat-value" id="sessionDuration">00:00</div>
-                    </div>
-                    <div class="stat-row">
-                        <div class="stat-mini">
-                            <div class="stat-mini-value" id="messageCount">0</div>
-                            <div class="stat-mini-label">消息数</div>
-                        </div>
-                        <div class="stat-mini">
-                            <div class="stat-mini-value" id="tokenCount">-</div>
-                            <div class="stat-mini-label">Token</div>
-                        </div>
+                        <div class="stat-label">消息数</div>
+                        <div class="stat-value" id="messageCount">0</div>
                     </div>
                 </div>
-                
                 <div class="panel-view" id="activityPanel">
-                    <div id="activityList">
-                        <div class="activity-item">
-                            <div class="activity-icon">🎉</div>
-                            <div class="activity-content">
-                                <div class="activity-title">会话就绪</div>
-                                <div class="activity-time">现在</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="panel-view" id="infoPanel">
-                    <div class="stat-card">
-                        <div class="stat-label">当前模型</div>
-                        <div style="font-size: 14px; color: var(--text); margin-top: 4px;">LongCat-2.0-Preview</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">API 状态</div>
-                        <div style="font-size: 14px; color: var(--ok); margin-top: 4px;" id="apiStatus">✓ 检查中...</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">会话 ID</div>
-                        <div style="font-size: 11px; color: var(--muted); margin-top: 4px; font-family: var(--font-mono);" id="sessionId">-</div>
-                    </div>
+                    <div id="activityList"></div>
                 </div>
             </div>
         </div>
@@ -1011,25 +791,16 @@
         let messageCount = 0;
         let toolCallCount = 0;
         let iterationCount = 0;
-        let sessionStartTime = Date.now();
-        let activities = [];
         let isStreaming = false;
-        let currentStreamMessage = null;
         
         function initWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${protocol}//${window.location.host}/ws`;
-            
-            updateConnectionStatus('connecting');
-            addActivity('系统', '正在连接服务器...', '🔗');
-            
-            ws = new WebSocket(wsUrl);
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
             
             ws.onopen = () => {
-                updateConnectionStatus('connected');
-                addActivity('系统', '已连接', '✅');
+                document.getElementById('connectionStatus').innerHTML = '<span class="status-dot"></span><span>已连接</span>';
+                document.getElementById('connectionStatus').className = 'connection-status connected';
                 document.getElementById('sendBtn').disabled = false;
-                fetchSessionId();
             };
             
             ws.onmessage = (event) => {
@@ -1037,42 +808,15 @@
                 handleMessage(data);
             };
             
-            ws.onerror = (error) => {
-                console.error('WebSocket 错误:', error);
-                updateConnectionStatus('disconnected');
-                addActivity('系统', '连接错误', '❌');
+            ws.onerror = () => {
+                document.getElementById('connectionStatus').innerHTML = '<span class="status-dot"></span><span>连接错误</span>';
+                document.getElementById('connectionStatus').className = 'connection-status';
             };
             
             ws.onclose = () => {
-                updateConnectionStatus('disconnected');
-                addActivity('系统', '连接已断开', '⚠️');
-                document.getElementById('sendBtn').disabled = true;
-                setTimeout(initWebSocket, 5000);
+                document.getElementById('connectionStatus').innerHTML = '<span class="status-dot"></span><span>未连接</span>';
+                setTimeout(initWebSocket, 3000);
             };
-        }
-        
-        async function fetchSessionId() {
-            try {
-                const resp = await fetch('/api/status');
-                const data = await resp.json();
-                document.getElementById('sessionId').textContent = data.session_id ? data.session_id.substring(0, 20) + '...' : '-';
-                document.getElementById('apiStatus').textContent = '✓ 已连接';
-            } catch (e) {
-                console.error(e);
-            }
-        }
-        
-        function updateConnectionStatus(status) {
-            const statusEl = document.getElementById('connectionStatus');
-            if (status === 'connected') {
-                statusEl.className = 'connection-status connected';
-                statusEl.innerHTML = '<span class="status-dot"></span><span>已连接</span>';
-            } else if (status === 'connecting') {
-                statusEl.innerHTML = '<span class="status-dot"></span><span>连接中...</span>';
-            } else {
-                statusEl.className = 'connection-status disconnected';
-                statusEl.innerHTML = '<span class="status-dot"></span><span>未连接</span>';
-            }
         }
         
         function handleMessage(data) {
@@ -1086,9 +830,6 @@
                 case 'message':
                     finalizeStreamMessage(data.content);
                     break;
-                case 'status':
-                    showStatus(data.content);
-                    break;
                 case 'tool_call':
                     showToolCall(data.tool, data.arguments);
                     toolCallCount++;
@@ -1101,11 +842,6 @@
                 case 'error':
                     finalizeStreamMessage('❌ ' + data.content, true);
                     break;
-                case 'pong':
-                    if (data.stats) {
-                        iterationCount = data.stats.iteration || iterationCount;
-                    }
-                    break;
             }
         }
         
@@ -1114,122 +850,100 @@
             const welcome = document.getElementById('welcomeScreen');
             if (welcome) welcome.remove();
             
-            let thinkingPanel = thread.querySelector('.thinking-panel');
-            
-            if (!thinkingPanel) {
-                thinkingPanel = document.createElement('div');
-                thinkingPanel.className = 'thinking-panel';
-                thinkingPanel.innerHTML = `
+            let panel = thread.querySelector('.thinking-panel');
+            if (!panel) {
+                panel = document.createElement('div');
+                panel.className = 'thinking-panel';
+                panel.innerHTML = `
                     <div class="thinking-header">
                         <div class="thinking-icon">🧠</div>
                         <span class="thinking-label">AI 思考中</span>
-                        <div class="thinking-progress">
-                            <div class="thinking-dot"></div>
-                            <div class="thinking-dot"></div>
-                            <div class="thinking-dot"></div>
-                        </div>
                     </div>
                     <div class="thinking-body">
                         <div class="thinking-stream" id="thinkingStream"></div>
                     </div>
                 `;
-                thread.appendChild(thinkingPanel);
+                thread.appendChild(panel);
             }
             
-            const streamEl = document.getElementById('thinkingStream');
-            if (streamEl) {
-                streamEl.textContent = content;
-            }
-            
+            document.getElementById('thinkingStream').textContent = content;
             thread.scrollTop = thread.scrollHeight;
         }
         
         function updateStreamMessage(text) {
             const thread = document.getElementById('chatThread');
             
-            const thinkingPanel = thread.querySelector('.thinking-panel');
-            if (thinkingPanel) thinkingPanel.remove();
+            const panel = thread.querySelector('.thinking-panel');
+            if (panel) panel.remove();
             
-            let streamMsg = thread.querySelector('.message.streaming');
-            
-            if (!streamMsg) {
-                streamMsg = document.createElement('div');
-                streamMsg.className = 'message assistant streaming';
-                streamMsg.innerHTML = `
+            let msg = thread.querySelector('.message.streaming');
+            if (!msg) {
+                msg = document.createElement('div');
+                msg.className = 'message assistant streaming';
+                msg.innerHTML = `
                     <div class="message-avatar">🤖</div>
                     <div class="message-content">
                         <div class="message-header">
                             <span class="message-name">OpenHands</span>
-                            <span class="message-time">${new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span class="message-time">${new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'})}</span>
                         </div>
-                        <div class="message-text" id="streamText"></div>
+                        <div class="message-text"></div>
                     </div>
                 `;
-                thread.appendChild(streamMsg);
-                currentStreamMessage = streamMsg;
+                thread.appendChild(msg);
             }
             
-            const textEl = streamMsg.querySelector('.message-text');
-            textEl.innerHTML = formatContent(text);
-            
+            msg.querySelector('.message-text').innerHTML = formatContent(text);
             thread.scrollTop = thread.scrollHeight;
         }
         
         function finalizeStreamMessage(text, isError = false) {
             const thread = document.getElementById('chatThread');
-            const streamMsg = thread.querySelector('.message.streaming');
+            const msg = thread.querySelector('.message.streaming');
             
-            if (streamMsg) {
-                streamMsg.classList.remove('streaming');
-                const textEl = streamMsg.querySelector('.message-text');
-                textEl.innerHTML = formatContent(text);
-                textEl.style.borderRight = 'none';
+            if (msg) {
+                msg.classList.remove('streaming');
+                msg.querySelector('.message-text').innerHTML = formatContent(text);
+                msg.querySelector('.message-text').style.borderRight = 'none';
             }
             
-            const thinkingPanel = thread.querySelector('.thinking-panel');
-            if (thinkingPanel) thinkingPanel.remove();
+            const panel = thread.querySelector('.thinking-panel');
+            if (panel) panel.remove();
             
             messageCount++;
             updateStats();
-            
-            if (!isError) {
-                addActivity('OpenHands', text.substring(0, 50) + (text.length > 50 ? '...' : ''), '🤖');
-            }
-            
             isStreaming = false;
         }
         
-        function addMessage(role, content, isError = false) {
+        function addMessage(role, content) {
             const thread = document.getElementById('chatThread');
             const welcome = document.getElementById('welcomeScreen');
             if (welcome) welcome.remove();
             
-            const thinkingPanel = thread.querySelector('.thinking-panel');
-            if (thinkingPanel) thinkingPanel.remove();
+            const panel = thread.querySelector('.thinking-panel');
+            if (panel) panel.remove();
             
-            const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            const time = new Date().toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'});
             const avatar = role === 'user' ? '👤' : '🤖';
             const name = role === 'user' ? '您' : 'OpenHands';
             
-            const messageEl = document.createElement('div');
-            messageEl.className = `message ${role}`;
-            messageEl.innerHTML = `
+            const msg = document.createElement('div');
+            msg.className = `message ${role}`;
+            msg.innerHTML = `
                 <div class="message-avatar">${avatar}</div>
                 <div class="message-content">
                     <div class="message-header">
                         <span class="message-name">${name}</span>
                         <span class="message-time">${time}</span>
                     </div>
-                    <div class="message-text" style="${isError ? 'color: var(--danger);' : ''}">${formatContent(content)}</div>
+                    <div class="message-text">${formatContent(content)}</div>
                 </div>
             `;
             
-            thread.appendChild(messageEl);
+            thread.appendChild(msg);
             thread.scrollTop = thread.scrollHeight;
-            
             messageCount++;
             updateStats();
-            addActivity(name, content.substring(0, 40) + (content.length > 40 ? '...' : ''), avatar);
         }
         
         function formatContent(content) {
@@ -1241,35 +955,21 @@
                 .replace(/\n/g, '<br>');
         }
         
-        function showStatus(status) {
-            const thread = document.getElementById('chatThread');
-            const oldStatus = thread.querySelector('.status-message');
-            if (oldStatus) oldStatus.remove();
-            
-            const statusEl = document.createElement('div');
-            statusEl.className = 'status-message';
-            statusEl.style.cssText = 'text-align: center; padding: 10px; color: var(--muted); font-size: 13px;';
-            statusEl.textContent = status;
-            
-            thread.appendChild(statusEl);
-            thread.scrollTop = thread.scrollHeight;
-        }
-        
         function showToolCall(tool, args) {
             const thread = document.getElementById('chatThread');
             
-            const thinkingPanel = thread.querySelector('.thinking-panel');
-            if (thinkingPanel) thinkingPanel.remove();
+            const panel = thread.querySelector('.thinking-panel');
+            if (panel) panel.remove();
             
-            const toolEl = document.createElement('div');
-            toolEl.className = 'tool-card';
-            toolEl.id = `tool-${Date.now()}`;
-            toolEl.innerHTML = `
-                <div class="tool-header" onclick="toggleTool(this)">
+            const card = document.createElement('div');
+            card.className = 'tool-card';
+            card.id = `tool-${Date.now()}`;
+            card.innerHTML = `
+                <div class="tool-header" onclick="this.parentElement.classList.toggle('expanded')">
                     <div class="tool-icon">🔧</div>
                     <div class="tool-info">
                         <div class="tool-name">${tool}</div>
-                        <div class="tool-args">${args && Object.keys(args).length > 0 ? JSON.stringify(args).substring(0, 80) : '执行中...'}</div>
+                        <div class="tool-args">${args ? JSON.stringify(args).substring(0,60) : '执行中...'}</div>
                     </div>
                     <span class="tool-status running">执行中...</span>
                 </div>
@@ -1278,37 +978,29 @@
                 </div>
             `;
             
-            thread.appendChild(toolEl);
+            thread.appendChild(card);
             thread.scrollTop = thread.scrollHeight;
-            
-            addActivity('工具', `调用 ${tool}`, '🔧');
         }
         
         function showToolResult(tool, result, isError) {
             const thread = document.getElementById('chatThread');
-            const toolCards = thread.querySelectorAll('.tool-card');
+            const cards = thread.querySelectorAll('.tool-card');
             
-            if (toolCards.length > 0) {
-                const lastCard = toolCards[toolCards.length - 1];
-                const statusEl = lastCard.querySelector('.tool-status');
-                const resultEl = lastCard.querySelector('.tool-result');
+            if (cards.length > 0) {
+                const last = cards[cards.length - 1];
+                const status = last.querySelector('.tool-status');
+                const resultEl = last.querySelector('.tool-result');
                 
-                statusEl.className = `tool-status ${isError ? 'error' : 'success'}`;
-                statusEl.textContent = isError ? '失败' : '成功';
+                status.className = `tool-status ${isError ? 'error' : 'success'}`;
+                status.textContent = isError ? '失败' : '成功';
                 
                 if (resultEl) {
                     resultEl.className = `tool-result ${isError ? 'error' : ''}`;
                     resultEl.textContent = result || '无输出';
                 }
                 
-                lastCard.classList.add('expanded');
+                last.classList.add('expanded');
             }
-            
-            addActivity('工具', `${tool} ${isError ? '失败' : '成功'}`, isError ? '❌' : '✅');
-        }
-        
-        function toggleTool(header) {
-            header.parentElement.classList.toggle('expanded');
         }
         
         function sendMessage() {
@@ -1316,21 +1008,14 @@
             const content = input.value.trim();
             
             if (!content) return;
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
-                showToast('未连接到服务器，请稍候...');
-                return;
-            }
+            if (!ws || ws.readyState !== WebSocket.OPEN) return;
             
             addMessage('user', content);
             input.value = '';
             input.style.height = 'auto';
             
             isStreaming = true;
-            
-            ws.send(JSON.stringify({
-                type: 'message',
-                content: content
-            }));
+            ws.send(JSON.stringify({type: 'message', content}));
         }
         
         function sendSuggestion(text) {
@@ -1341,27 +1026,26 @@
         function clearChat() {
             const thread = document.getElementById('chatThread');
             thread.innerHTML = `
-                <div class="welcome" id="welcomeScreen">
-                    <div class="welcome-icon">🤚</div>
-                    <h2>欢迎使用 OpenHands</h2>
-                    <p class="welcome-subtitle">我是您的 AI 智能助手，可以帮助您操作电脑、管理文件、执行命令、浏览网页等。</p>
-                    <div class="welcome-badges">
-                        <span class="welcome-badge">🤖 LongCat-2.0</span>
-                        <span class="welcome-badge">🔧 工具调用</span>
-                        <span class="welcome-badge">✨ 流式输出</span>
+                <div class="agent-chat__welcome" id="welcomeScreen">
+                    <div class="agent-chat__welcome-glow"></div>
+                    <div class="agent-chat__avatar">🤚</div>
+                    <h2>OpenHands</h2>
+                    <div class="agent-chat__badges">
+                        <span class="agent-chat__badge">🟢 Ready to chat</span>
+                        <span class="agent-chat__badge">🤖 LongCat-2.0</span>
                     </div>
-                    <p class="welcome-hint">输入消息开始对话 · 按 Enter 发送，Shift+Enter 换行</p>
-                    <div class="suggestions">
-                        <button class="suggestion-btn" onclick="sendSuggestion('你能做什么？')">你能做什么？</button>
-                        <button class="suggestion-btn" onclick="sendSuggestion('列出当前目录的文件')">列出文件</button>
-                        <button class="suggestion-btn" onclick="sendSuggestion('执行一个简单的Python计算')">Python 计算</button>
-                        <button class="suggestion-btn" onclick="sendSuggestion('创建一个简单的测试脚本')">创建脚本</button>
+                    <p class="agent-chat__hint">输入消息开始对话 · 按 <kbd>/</kbd> 使用命令</p>
+                    <div class="agent-chat__suggestions">
+                        <button class="agent-chat__suggestion" onclick="sendSuggestion('你能做什么？')">你能做什么？</button>
+                        <button class="agent-chat__suggestion" onclick="sendSuggestion('列出当前目录文件')">列出当前目录文件</button>
+                        <button class="agent-chat__suggestion" onclick="sendSuggestion('执行 pwd 命令')">执行 pwd 命令</button>
+                        <button class="agent-chat__suggestion" onclick="sendSuggestion('帮我写一个Python脚本')">帮我写一个Python脚本</button>
                     </div>
                 </div>
             `;
             
             if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: 'clear' }));
+                ws.send(JSON.stringify({type: 'clear'}));
             }
             
             messageCount = 0;
@@ -1372,8 +1056,6 @@
         
         function newSession() {
             clearChat();
-            addActivity('系统', '新会话已创建', '✨');
-            fetchSessionId();
         }
         
         function updateStats() {
@@ -1382,63 +1064,11 @@
             document.getElementById('iterationCount').textContent = iterationCount;
         }
         
-        function updateSessionDuration() {
-            const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
-            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-            const seconds = (elapsed % 60).toString().padStart(2, '0');
-            document.getElementById('sessionDuration').textContent = `${minutes}:${seconds}`;
-            
-            if (isStreaming && ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ type: 'ping' }));
-            }
-        }
-        
-        function addActivity(title, desc, icon) {
-            const list = document.getElementById('activityList');
-            const time = new Date().toLocaleTimeString('zh-CN');
-            
-            const el = document.createElement('div');
-            el.className = 'activity-item';
-            el.innerHTML = `
-                <div class="activity-icon">${icon}</div>
-                <div class="activity-content">
-                    <div class="activity-title">${title}</div>
-                    <div class="activity-time">${time} · ${desc}</div>
-                </div>
-            `;
-            
-            list.insertBefore(el, list.firstChild);
-            while (list.children.length > 30) {
-                list.removeChild(list.lastChild);
-            }
-        }
-        
         function switchTab(tab) {
             document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.panel-view').forEach(v => v.classList.remove('active'));
-            
-            document.querySelector(`.panel-tab[data-tab="${tab}"]`).classList.add('active');
+            document.querySelector(`.panel-tab:nth-child(${tab === 'stats' ? 1 : 2})`).classList.add('active');
             document.getElementById(`${tab}Panel`).classList.add('active');
-        }
-        
-        function showToast(msg) {
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 24px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: var(--card);
-                color: var(--text);
-                padding: 12px 24px;
-                border-radius: var(--radius-md);
-                border: 1px solid var(--border);
-                z-index: 9999;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            `;
-            toast.textContent = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2500);
         }
         
         document.getElementById('messageInput').addEventListener('keydown', (e) => {
@@ -1454,7 +1084,6 @@
         });
         
         initWebSocket();
-        setInterval(updateSessionDuration, 1000);
     </script>
 </body>
 </html>
