@@ -1,56 +1,96 @@
+
 """
-模型适配器基类
-参考: Hermes Agent ProviderTransport
+Model Adapter Base Class
+References OpenClaw's provider interface
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, AsyncGenerator
+from dataclasses import dataclass, field
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class NormalizedResponse:
-    """标准化的响应"""
+class ToolCall:
+    """Tool call from model"""
+    id: str
+    name: str
+    arguments: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ToolResult:
+    """Result from tool execution"""
+    tool_call_id: str
     content: str
-    tool_calls: Optional[List[Dict[str, Any]]] = None
+    is_error: bool = False
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class Message:
+    """Unified message structure"""
+    role: str
+    content: Any
+    tool_calls: Optional[List[ToolCall]] = None
+    tool_call_id: Optional[str] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class NormalizedResponse:
+    """Normalized model response"""
+    content: Optional[str] = None
+    tool_calls: Optional[List[ToolCall]] = None
     reasoning: Optional[str] = None
+    raw_response: Any = None
     usage: Optional[Dict[str, int]] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 class ModelAdapter(ABC):
-    """模型适配器抽象基类"""
-    
-    @property
+    """Abstract base class for model adapters"""
+
+    def __init__(self, config):
+        self.config = config
+        self._initialized = False
+
     @abstractmethod
-    def provider(self) -> str:
-        """提供商标识"""
+    async def initialize(self):
+        """Initialize the adapter"""
         pass
-    
+
     @abstractmethod
-    async def initialize(self, config: Any):
-        """初始化适配器"""
-        pass
-    
-    @abstractmethod
-    async def call(
+    async def chat(
         self,
-        messages: List[Dict[str, Any]],
+        messages: List[Message],
         tools: Optional[List[Dict]] = None,
         system_prompt: Optional[str] = None,
         **kwargs,
     ) -> NormalizedResponse:
-        """调用模型"""
+        """Chat with the model"""
         pass
-    
+
     @abstractmethod
-    def convert_messages(self, messages: List[Dict[str, Any]]) -> Any:
-        """转换消息格式"""
+    async def chat_stream(
+        self,
+        messages: List[Message],
+        tools: Optional[List[Dict]] = None,
+        system_prompt: Optional[str] = None,
+        **kwargs,
+    ) -> AsyncGenerator[NormalizedResponse, None]:
+        """Stream chat with the model"""
         pass
-    
+
     @abstractmethod
-    def convert_tools(self, tools: List[Dict]) -> Any:
-        """转换工具格式"""
+    def chat_sync(
+        self,
+        messages: List[Message],
+        tools: Optional[List[Dict]] = None,
+        system_prompt: Optional[str] = None,
+        **kwargs,
+    ) -> NormalizedResponse:
+        """Synchronous chat with the model"""
         pass
