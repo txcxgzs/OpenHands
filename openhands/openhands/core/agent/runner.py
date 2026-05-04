@@ -18,6 +18,7 @@ from ..tools.registry import ToolRegistry, tool_registry
 from ..tools.policy import ToolPolicyManager
 from ..memory.store import MemoryStore
 from ..types import Message, MessageRole, SessionState, SessionStatus, ToolCall
+from .error_prevention import get_error_history, get_prevention_guidance, TrajectoryRecorder
 
 logger = logging.getLogger(__name__)
 
@@ -229,6 +230,10 @@ class EmbeddedAgent:
 
         self._initialized = True
         logger.info(f"OpenHands Agent initialized: {self.agent_id}")
+        
+        # 初始化错误历史记录
+        self._error_history = get_error_history()
+        self._prevention = get_prevention_guidance()
 
     async def _load_core_tools(self):
         from ...tools import file_tools, terminal_tools, memory_tools
@@ -300,21 +305,48 @@ class EmbeddedAgent:
                 yield event
         except Exception as e:
             logger.exception(f"Agent stream failed: {run_id}")
+            run_meta.success = False
+            run_meta.error_count += 1
             yield {"type": "error", "content": str(e)}
+            # 记录失败轨迹
+            messages = [{"role": m.role.value, "content": m.content} for m in session.messages]
+            TrajectoryRecorder.save_trajectory(
+                messages=messages,
+                model=self.config.model.model,
+                completed=False,
+                error=str(e)
+            )
         finally:
             session.status = SessionStatus.COMPLETED
             session.updated_at = datetime.now()
             if run_id in self._active_runs:
                 del self._active_runs[run_id]
+            
+            # 保存成功轨迹
+            if run_meta.success and len(session.messages) > 2:
+                messages = [{"role": m.role.value, "content": m.content} for m in session.messages]
+                TrajectoryRecorder.save_trajectory(
+                    messages=messages,
+                    model=self.config.model.model,
+                    completed=True
+                )
 
     def _get_system_prompt(self, is_first_message: bool) -> str:
         """根据是否是首次消息返回不同提示词"""
+        base_prompt = DEFAULT_SYSTEM_PROMPT
+        
+        # 添加错误历史指导
+        if hasattr(self, '_prevention'):
+            guidance = self._prevention.get_system_guidance()
+            if guidance:
+                base_prompt += guidance
+        
         if is_first_message:
             if check_bootstrap_status():
-                return DEFAULT_SYSTEM_PROMPT + "\n\n" + get_bootstrap_prompt()
+                return base_prompt + "\n\n" + get_bootstrap_prompt()
             else:
-                return DEFAULT_SYSTEM_PROMPT + "\n\n" + get_normal_first_greeting()
-        return DEFAULT_SYSTEM_PROMPT
+                return base_prompt + "\n\n" + get_normal_first_greeting()
+        return base_prompt
 
     async def _agent_loop_stream(self, session: SessionState, budget: IterationBudget, run_meta: EmbeddedAgentRunMeta, tool_profile: Optional[str], system_prompt_override: Optional[str], tool_results: List[Any]) -> AsyncGenerator[Dict[str, Any], None]:
         profile = tool_profile or session.current_tool_profile or "full"
@@ -361,13 +393,17 @@ class EmbeddedAgent:
                             result = await self._tool_registry.execute_tool_call(actual_tc)
                             tool_results.append(result)
                             
+                            # 记录错误历史
                             if result.is_error:
+                                self._error_history.record_tool_error(tc.name, result.content, tc.arguments)
+                                run_meta.error_count += 1
                                 consecutive_errors += 1
                                 yield {"type": "tool_result", "tool": tc.name, "result": result.content[:800] if len(result.content) > 800 else result.content, "is_error": True}
                                 if consecutive_errors >= max_consecutive_errors:
                                     yield {"type": "error", "content": "连续错误过多，停止执行"}
                                     return
                             else:
+                                self._error_history.record_tool_success(tc.name)
                                 yield {"type": "tool_result", "tool": tc.name, "result": result.content[:800] if len(result.content) > 800 else result.content, "is_error": False}
                             
                             msg = Message(role=MessageRole.TOOL, content=result.content, tool_call_id=tc.id)
@@ -394,13 +430,17 @@ class EmbeddedAgent:
                             result = await self._execute_single_tool(tc, budget, run_meta, profile)
                             tool_results.append(result)
                             
+                            # 记录错误历史
                             if result.is_error:
+                                self._error_history.record_tool_error(tc.name, result.content, tc.arguments)
+                                run_meta.error_count += 1
                                 consecutive_errors += 1
                                 yield {"type": "tool_result", "tool": tc.name, "result": result.content[:800] if len(result.content) > 800 else result.content, "is_error": True}
                                 if consecutive_errors >= max_consecutive_errors:
                                     yield {"type": "error", "content": "连续错误过多，停止执行"}
                                     return
                             else:
+                                self._error_history.record_tool_success(tc.name)
                                 yield {"type": "tool_result", "tool": tc.name, "result": result.content[:800] if len(result.content) > 800 else result.content, "is_error": False}
                             
                             msg = Message(role=MessageRole.TOOL, content=result.content, tool_call_id=tc.id)
