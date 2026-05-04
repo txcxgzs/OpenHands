@@ -25,6 +25,8 @@ from .context_compressor_full import ContextCompressor, CompressionConfig, creat
 from .tool_guardrails_full import ToolGuardrailController, GuardrailConfig
 from .interrupt_control_full import ExecutionManager, InterruptReason, get_execution_manager
 from .delegation_full import DelegationManager, DelegationConfig
+from .prompt_builder import PromptBuilder, PromptConfig, PromptMode, build_system_prompt, MinimalPromptBuilder, NonePromptBuilder
+from .heartbeat import HeartbeatManager, get_heartbeat_manager
 from ..session.session_database import SessionManager, get_session_db
 from ..memory.persistent_memory_full import PersistentMemory, get_persistent_memory
 from ..security import get_security_guard, sanitize_text, redact_sensitive, scan_for_threats
@@ -282,8 +284,19 @@ class EmbeddedAgent:
         # 轨迹记录器
         self._trajectory_recorder = TrajectoryRecorder()
         
+        # ====== OpenClaw风格组件 ======
+        # 提示词构建器
+        self._prompt_builder = PromptBuilder(
+            config=PromptConfig(workspace=Path(WORKSPACE_DIR))
+        )
+        
+        # 心跳管理器
+        self._heartbeat_manager = get_heartbeat_manager(
+            workspace=Path(WORKSPACE_DIR)
+        )
+        
         self._initialized = True
-        logger.info(f"OpenHands Agent initialized (Hermes-capable): {self.agent_id}")
+        logger.info(f"OpenHands Agent initialized (Full-featured): {self.agent_id}")
 
     async def _load_core_tools(self):
         from ...tools import file_tools, terminal_tools, memory_tools
@@ -403,16 +416,20 @@ class EmbeddedAgent:
                 )
 
     def _get_system_prompt(self, is_first_message: bool) -> str:
-        """根据是否是首次消息返回不同提示词（Hermes风格）"""
-        base_prompt = DEFAULT_SYSTEM_PROMPT
+        """根据是否是首次消息返回不同提示词（OpenClaw风格）"""
+        # 1. 尝试使用提示词构建器
+        if hasattr(self, '_prompt_builder') and self._prompt_builder:
+            base_prompt = self._prompt_builder.build()
+        else:
+            base_prompt = DEFAULT_SYSTEM_PROMPT
         
-        # 1. 添加持久化记忆（MEMORY.md, USER.md）
+        # 2. 添加持久化记忆（MEMORY.md, USER.md）
         if hasattr(self, '_persistent_memory') and self._persistent_memory:
             mem_segment = self._persistent_memory.get_system_prompt_segment()
             if mem_segment:
                 base_prompt += f"\n\n{mem_segment}"
         
-        # 2. 添加错误历史指导
+        # 3. 添加错误历史指导
         if hasattr(self, '_prevention'):
             guidance = self._prevention.get_system_guidance()
             if guidance:
