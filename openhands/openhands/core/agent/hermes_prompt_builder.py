@@ -379,7 +379,13 @@ class PromptBuilder:
             parts.append(KANBAN_GUIDANCE)
         
         # ===========================================
-        # 5. 工具强制执行层
+        # 5. Nous 订阅层
+        # ===========================================
+        if self._config.include_nous_subscription:
+            parts.append(NOUS_SUBSCRIPTION)
+        
+        # ===========================================
+        # 6. 工具强制执行层
         # ===========================================
         if self._should_apply_tool_enforcement():
             parts.append(TOOL_USE_ENFORCEMENT)
@@ -451,6 +457,15 @@ The following user profile is loaded from USER.md:
         if self._config.platform in PLATFORM_HINTS:
             parts.append(PLATFORM_HINTS[self._config.platform])
         
+        # ===========================================
+        # 15. 阿里巴巴模型身份覆盖
+        # ===========================================
+        if self._config.alibaba_model_short and self._config.model_name:
+            parts.append(ALIBABA_MODEL_IDENTITY.format(
+                model_short=self._config.alibaba_model_short,
+                model=self._config.model_name
+            ))
+        
         return "\n\n".join(parts)
     
     def _should_apply_tool_enforcement(self) -> bool:
@@ -477,7 +492,7 @@ The following user profile is loaded from USER.md:
             
             # 简单截断
             if len(content) > MAX_CONTEXT_FILE_CHARS:
-                content = self._truncate_context_file(content)
+                content = self._truncate_context_file(content, "SOUL.md")
             
             return content
             
@@ -503,7 +518,7 @@ The following user profile is loaded from USER.md:
             
             # 截断
             if len(content) > MAX_CONTEXT_FILE_CHARS:
-                content = self._truncate_context_file(content)
+                content = self._truncate_context_file(content, filename)
             
             return content
             
@@ -527,15 +542,15 @@ The following user profile is loaded from USER.md:
         
         return threats
     
-    def _truncate_context_file(self, content: str) -> str:
+    def _truncate_context_file(self, content: str, filename: str = "context") -> str:
         """按70/20比例截断上下文文件"""
         total_len = len(content)
         head_len = int(MAX_CONTEXT_FILE_CHARS * HEAD_TRUNCATE_RATIO)
         tail_len = int(MAX_CONTEXT_FILE_CHARS * TAIL_TRUNCATE_RATIO)
         
-        truncated = content[:head_len] + "\n[...truncated...]\n" + content[-tail_len:]
+        truncated = content[:head_len] + f"\n[...truncated {filename}: kept {head_len}+{tail_len} of {total_len} chars. Use file tools to read the full file.]\n" + content[-tail_len:]
         
-        logger.info(f"Truncated context file: kept {head_len}+{tail_len} of {total_len} chars")
+        logger.info(f"Truncated {filename}: kept {head_len}+{tail_len} of {total_len} chars")
         
         return truncated
     
@@ -577,6 +592,7 @@ Only proceed without loading a skill if genuinely none are relevant to the task.
     def _build_project_context(self) -> List[str]:
         """构建项目上下文"""
         context_parts = []
+        project_files = []
         
         for filename in CONTEXT_FILES:
             if filename in ("SOUL.md", "USER.md", "MEMORY.md"):
@@ -584,12 +600,14 @@ Only proceed without loading a skill if genuinely none are relevant to the task.
             
             content = self._read_context_file(filename)
             if content:
-                context_parts.append(f"""# Project Context
+                project_files.append(f"## {filename}\n{content}")
+        
+        if project_files:
+            context_parts.append("""# Project Context
 
 The following project context files have been loaded and should be followed:
 
-## {filename}
-{content}""")
+""" + "\n\n".join(project_files))
         
         return context_parts
     
@@ -669,6 +687,8 @@ def build_system_prompt(
     model_name: Optional[str] = None,
     provider_name: Optional[str] = None,
     custom_system_message: Optional[str] = None,
+    include_nous_subscription: bool = False,
+    alibaba_model_short: Optional[str] = None,
 ) -> str:
     """快速构建系统提示词"""
     config = PromptConfig(
@@ -680,6 +700,8 @@ def build_system_prompt(
         model_name=model_name,
         provider_name=provider_name,
         custom_system_message=custom_system_message,
+        include_nous_subscription=include_nous_subscription,
+        alibaba_model_short=alibaba_model_short,
     )
     
     if mode == PromptMode.NONE:
