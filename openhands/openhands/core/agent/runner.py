@@ -19,6 +19,8 @@ from ..tools.policy import ToolPolicyManager
 from ..memory.store import MemoryStore
 from ..types import Message, MessageRole, SessionState, SessionStatus, ToolCall
 from .error_prevention import get_error_history, get_prevention_guidance, TrajectoryRecorder
+from .tool_repair import repair_tool_call_arguments, coerce_tool_arguments, validate_tool_arguments
+from .context_compressor import ContextCompressor, should_compress
 
 logger = logging.getLogger(__name__)
 
@@ -234,6 +236,12 @@ class EmbeddedAgent:
         # 初始化错误历史记录
         self._error_history = get_error_history()
         self._prevention = get_prevention_guidance()
+        
+        # 初始化上下文压缩器
+        self._context_compressor = ContextCompressor(
+            context_limit=128000,
+            threshold_percent=0.75
+        )
 
     async def _load_core_tools(self):
         from ...tools import file_tools, terminal_tools, memory_tools
@@ -361,6 +369,18 @@ class EmbeddedAgent:
             budget.consume()
             run_meta.iteration_count += 1
 
+            # 检查是否需要上下文压缩
+            if self._context_compressor.should_compress(self._to_adapter_messages(session.messages)):
+                yield {"type": "thinking", "content": f"📝 上下文较长，正在压缩..."}
+                compressed_messages = self._context_compressor.compress(
+                    self._to_adapter_messages(session.messages),
+                    model=self.config.model.model
+                )
+                # 更新session中的消息
+                session.messages = [Message(role=MessageRole(role), content=content) 
+                                   for role, content in [(m['role'], m['content']) for m in compressed_messages]]
+                yield {"type": "context_compressed", "content": "上下文已压缩"}
+            
             yield {"type": "thinking", "content": f"🧠 思考中..."}
 
             adapter_messages = self._to_adapter_messages(session.messages)
@@ -492,7 +512,27 @@ class EmbeddedAgent:
         run_meta.tool_call_count += 1
         
         try:
-            tc = ToolCall(id=tool_call.id, name=tool_call.name, arguments=tool_call.arguments)
+            # 1. 修复工具调用参数（Hermes风格的JSON修复）
+            raw_args = tool_call.arguments
+            if isinstance(raw_args, str):
+                repaired_args = repair_tool_call_arguments(raw_args, tool_call.name)
+                import json
+                try:
+                    arguments = json.loads(repaired_args)
+                except json.JSONDecodeError:
+                    arguments = {}
+            elif isinstance(raw_args, dict):
+                arguments = raw_args
+            else:
+                arguments = {}
+            
+            # 2. 类型强制转换
+            tool_def = self._tool_registry.get_tool(tool_call.name)
+            if tool_def and hasattr(tool_def, 'parameters'):
+                arguments = coerce_tool_arguments(arguments, {'parameters': tool_def.parameters})
+            
+            # 3. 执行工具
+            tc = ToolCall(id=tool_call.id, name=tool_call.name, arguments=arguments)
             result = await self._tool_registry.execute_tool_call(tc)
             return result
         except Exception as e:
