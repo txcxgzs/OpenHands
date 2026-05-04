@@ -233,6 +233,7 @@ class EmbeddedAgent:
     async def _load_core_tools(self):
         from ...tools import file_tools, terminal_tools, memory_tools
         from ...tools import web_tools, browser_tools, voice_tools, media_tools, sandbox_tools
+        from ...tools import system_tools
         
         file_tools.register_tools(self._tool_registry)
         terminal_tools.register_tools(self._tool_registry)
@@ -242,6 +243,7 @@ class EmbeddedAgent:
         voice_tools.register_tools(self._tool_registry)
         media_tools.register_tools(self._tool_registry)
         sandbox_tools.register_tools(self._tool_registry)
+        system_tools.register_tools(self._tool_registry)
 
     async def create_session(self, tool_profile: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> str:
         session_id = str(uuid.uuid4())
@@ -321,6 +323,9 @@ class EmbeddedAgent:
         
         is_first = len(session.messages) <= 2
         system_prompt = system_prompt_override or self._get_system_prompt(is_first)
+        
+        consecutive_errors = 0
+        max_consecutive_errors = 3
 
         while budget.remaining > 0:
             budget.consume()
@@ -331,58 +336,118 @@ class EmbeddedAgent:
             adapter_messages = self._to_adapter_messages(session.messages)
             tool_defs = self._get_available_tools(profile)
 
-            if hasattr(self._adapter, 'chat_stream') and callable(self._adapter.chat_stream):
-                response_text = ""
-                pending_tool_calls = []
-                
-                async for chunk in self._adapter.chat_stream(messages=adapter_messages, tools=tool_defs, system_prompt=system_prompt):
-                    if chunk.content:
-                        response_text += chunk.content
-                        yield {"type": "delta", "content": chunk.content}
-                    if chunk.tool_calls and len(chunk.tool_calls) > 0:
-                        pending_tool_calls.extend(chunk.tool_calls)
-                
-                if response_text:
-                    assistant_msg = Message(role=MessageRole.ASSISTANT, content=response_text)
+            try:
+                if hasattr(self._adapter, 'chat_stream') and callable(self._adapter.chat_stream):
+                    response_text = ""
+                    pending_tool_calls = []
+                    
+                    async for chunk in self._adapter.chat_stream(messages=adapter_messages, tools=tool_defs, system_prompt=system_prompt):
+                        if chunk.content:
+                            response_text += chunk.content
+                            yield {"type": "delta", "content": chunk.content}
+                        if chunk.tool_calls and len(chunk.tool_calls) > 0:
+                            pending_tool_calls.extend(chunk.tool_calls)
+                    
+                    if response_text:
+                        assistant_msg = Message(role=MessageRole.ASSISTANT, content=response_text)
+                        session.messages.append(assistant_msg)
+                    
+                    if pending_tool_calls:
+                        consecutive_errors = 0
+                        for tc in pending_tool_calls:
+                            yield {"type": "tool_call", "tool": tc.name, "arguments": tc.arguments}
+                            run_meta.tool_call_count += 1
+                            
+                            actual_tc = ToolCall(id=tc.id, name=tc.name, arguments=tc.arguments)
+                            logger.info(f"执行工具: {tc.name}")
+                            result = await self._tool_registry.execute_tool_call(actual_tc)
+                            tool_results.append(result)
+                            
+                            if result.is_error:
+                                consecutive_errors += 1
+                                yield {"type": "tool_result", "tool": tc.name, "result": result.content[:800] if len(result.content) > 800 else result.content, "is_error": True}
+                                if consecutive_errors >= max_consecutive_errors:
+                                    yield {"type": "error", "content": "连续错误过多，停止执行"}
+                                    return
+                            else:
+                                yield {"type": "tool_result", "tool": tc.name, "result": result.content[:800] if len(result.content) > 800 else result.content, "is_error": False}
+                            
+                            msg = Message(role=MessageRole.TOOL, content=result.content, tool_call_id=tc.id)
+                            session.messages.append(msg)
+                    else:
+                        # 检查是否真的完成了任务
+                        if self._is_task_completed(response_text):
+                            yield {"type": "final", "content": response_text or "任务已完成"}
+                            return
+                        # 如果没有工具调用但有内容，可能是需要更多信息
+                        yield {"type": "final", "content": response_text or "处理完成"}
+                        return
+                else:
+                    response = await self._adapter.chat(messages=adapter_messages, tools=tool_defs, system_prompt=system_prompt)
+                    if response.content:
+                        yield {"type": "delta", "content": response.content}
+                    assistant_msg = self._from_adapter_response(response)
                     session.messages.append(assistant_msg)
-                
-                if pending_tool_calls:
-                    for tc in pending_tool_calls:
-                        yield {"type": "tool_call", "tool": tc.name, "arguments": tc.arguments}
-                        run_meta.tool_call_count += 1
-                        
-                        actual_tc = ToolCall(id=tc.id, name=tc.name, arguments=tc.arguments)
-                        logger.info(f"执行工具: {tc.name}")
-                        result = await self._tool_registry.execute_tool_call(actual_tc)
-                        tool_results.append(result)
-                        
-                        yield {"type": "tool_result", "tool": tc.name, "result": result.content[:800] if len(result.content) > 800 else result.content, "is_error": result.is_error}
-                        
-                        msg = Message(role=MessageRole.TOOL, content=result.content, tool_call_id=tc.id)
-                        session.messages.append(msg)
-                else:
-                    yield {"type": "final", "content": response_text or "任务已完成"}
-                    return
-            else:
-                response = await self._adapter.chat(messages=adapter_messages, tools=tool_defs, system_prompt=system_prompt)
-                if response.content:
-                    yield {"type": "delta", "content": response.content}
-                assistant_msg = self._from_adapter_response(response)
-                session.messages.append(assistant_msg)
 
-                if response.tool_calls:
-                    for tc in response.tool_calls:
-                        yield {"type": "tool_call", "tool": tc.name, "arguments": tc.arguments}
-                        result = await self._execute_single_tool(tc, budget, run_meta, profile)
-                        tool_results.append(result)
-                        yield {"type": "tool_result", "tool": tc.name, "result": result.content[:800] if len(result.content) > 800 else result.content, "is_error": result.is_error}
-                        msg = Message(role=MessageRole.TOOL, content=result.content, tool_call_id=tc.id)
-                        session.messages.append(msg)
-                else:
-                    yield {"type": "final", "content": response.content or "处理完成"}
+                    if response.tool_calls:
+                        consecutive_errors = 0
+                        for tc in response.tool_calls:
+                            yield {"type": "tool_call", "tool": tc.name, "arguments": tc.arguments}
+                            result = await self._execute_single_tool(tc, budget, run_meta, profile)
+                            tool_results.append(result)
+                            
+                            if result.is_error:
+                                consecutive_errors += 1
+                                yield {"type": "tool_result", "tool": tc.name, "result": result.content[:800] if len(result.content) > 800 else result.content, "is_error": True}
+                                if consecutive_errors >= max_consecutive_errors:
+                                    yield {"type": "error", "content": "连续错误过多，停止执行"}
+                                    return
+                            else:
+                                yield {"type": "tool_result", "tool": tc.name, "result": result.content[:800] if len(result.content) > 800 else result.content, "is_error": False}
+                            
+                            msg = Message(role=MessageRole.TOOL, content=result.content, tool_call_id=tc.id)
+                            session.messages.append(msg)
+                    else:
+                        if self._is_task_completed(response.content if hasattr(response, 'content') else str(response)):
+                            yield {"type": "final", "content": response.content or "任务已完成"}
+                            return
+                        yield {"type": "final", "content": response.content or "处理完成"}
+                        return
+                        
+            except Exception as e:
+                logger.exception("Agent loop error")
+                yield {"type": "error", "content": f"执行出错: {str(e)}"}
+                consecutive_errors += 1
+                if consecutive_errors >= max_consecutive_errors:
+                    yield {"type": "error", "content": "连续错误过多，停止执行"}
                     return
 
         yield {"type": "final", "content": "达到最大迭代次数"}
+    
+    def _is_task_completed(self, text: str) -> bool:
+        """检测任务是否完成"""
+        if not text:
+            return False
+        
+        text_lower = text.lower().strip()
+        
+        # 完成关键词
+        completed_keywords = [
+            "完成了", "任务完成", "done", "finished", "completed",
+            "已经搞定", "搞定了", "解决了", "all done",
+            "success", "successful", "成功"
+        ]
+        
+        for keyword in completed_keywords:
+            if keyword in text_lower:
+                return True
+        
+        # 检查是否只是问候语或简单响应
+        simple_responses = ["你好", "hello", "hi", "有什么", "帮您"]
+        if any(text_lower.startswith(k) for k in simple_responses) and len(text) < 50:
+            return False
+        
+        return False
 
     async def _execute_single_tool(self, tool_call: Any, budget: IterationBudget, run_meta: EmbeddedAgentRunMeta, profile: str) -> Any:
         logger.info(f"Executing tool: {tool_call.name}")

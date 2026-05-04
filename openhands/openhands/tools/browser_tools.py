@@ -42,6 +42,18 @@ def register_tools(registry):
         except Exception as e:
             return f"✗ 导航失败: {e}"
 
+    # 别名
+    @registry.register_tool(
+        name="open_browser",
+        description="导航到 URL",
+        toolset="browser",
+        parameters={
+            "url": {"type": "string", "description": "要导航的 URL"}
+        }
+    )
+    async def open_browser(url: str) -> str:
+        return await navigate(url)
+
     @registry.register_tool(
         name="browser_screenshot",
         description="截图",
@@ -75,6 +87,19 @@ def register_tools(registry):
         except Exception as e:
             return f"✗ 截图失败: {e}"
 
+    # 别名
+    @registry.register_tool(
+        name="take_screenshot",
+        description="截图",
+        toolset="browser",
+        parameters={
+            "url": {"type": "string", "description": "要截图的 URL"},
+            "full_page": {"type": "boolean", "description": "是否全屏截图"}
+        }
+    )
+    async def take_screenshot_alias(url: str, full_page: bool = False) -> str:
+        return await take_screenshot(url, full_page)
+
     @registry.register_tool(
         name="browser_click",
         description="点击元素",
@@ -102,6 +127,19 @@ def register_tools(registry):
 
         except Exception as e:
             return f"✗ 点击失败: {e}"
+
+    # 别名
+    @registry.register_tool(
+        name="click_element",
+        description="点击元素",
+        toolset="browser",
+        parameters={
+            "url": {"type": "string", "description": "URL"},
+            "selector": {"type": "string", "description": "CSS 选择器"}
+        }
+    )
+    async def click_element(url: str, selector: str) -> str:
+        return await click(url, selector)
 
     @registry.register_tool(
         name="browser_type",
