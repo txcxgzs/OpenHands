@@ -25,7 +25,7 @@ from .context_compressor_full import ContextCompressor, CompressionConfig, creat
 from .tool_guardrails_full import ToolGuardrailController, GuardrailConfig
 from .interrupt_control_full import ExecutionManager, InterruptReason, get_execution_manager
 from .delegation_full import DelegationManager, DelegationConfig
-from .prompt_builder import PromptBuilder, PromptConfig, PromptMode, build_system_prompt, MinimalPromptBuilder, NonePromptBuilder
+from .hermes_prompt_builder import PromptBuilder, PromptConfig, PromptMode, ModelFamily, build_system_prompt, MinimalPromptBuilder
 from .heartbeat import HeartbeatManager, get_heartbeat_manager
 from ..session.session_database import SessionManager, get_session_db
 from ..memory.persistent_memory_full import PersistentMemory, get_persistent_memory
@@ -284,10 +284,25 @@ class EmbeddedAgent:
         # 轨迹记录器
         self._trajectory_recorder = TrajectoryRecorder()
         
-        # ====== OpenClaw风格组件 ======
+        # ====== Hermes风格组件 ======
         # 提示词构建器
+        model_family = ModelFamily.OTHER
+        if self.config.model.provider:
+            provider = self.config.model.provider.lower()
+            if "openai" in provider or "gpt" in provider:
+                model_family = ModelFamily.OPENAI
+            elif "google" in provider or "gemini" in provider or "gemma" in provider:
+                model_family = ModelFamily.GOOGLE
+            elif "anthropic" in provider or "claude" in provider:
+                model_family = ModelFamily.ANTHROPIC
+        
         self._prompt_builder = PromptBuilder(
-            config=PromptConfig(workspace=Path(WORKSPACE_DIR))
+            config=PromptConfig(
+                workspace=Path(WORKSPACE_DIR),
+                model_family=model_family,
+                model_name=self.config.model.model,
+                provider_name=self.config.model.provider
+            )
         )
         
         # 心跳管理器
@@ -416,20 +431,14 @@ class EmbeddedAgent:
                 )
 
     def _get_system_prompt(self, is_first_message: bool) -> str:
-        """根据是否是首次消息返回不同提示词（OpenClaw风格）"""
-        # 1. 尝试使用提示词构建器
+        """根据是否是首次消息返回不同提示词（Hermes风格）"""
+        # 1. 使用Hermes提示词构建器
         if hasattr(self, '_prompt_builder') and self._prompt_builder:
             base_prompt = self._prompt_builder.build()
         else:
             base_prompt = DEFAULT_SYSTEM_PROMPT
         
-        # 2. 添加持久化记忆（MEMORY.md, USER.md）
-        if hasattr(self, '_persistent_memory') and self._persistent_memory:
-            mem_segment = self._persistent_memory.get_system_prompt_segment()
-            if mem_segment:
-                base_prompt += f"\n\n{mem_segment}"
-        
-        # 3. 添加错误历史指导
+        # 2. 添加错误历史指导
         if hasattr(self, '_prevention'):
             guidance = self._prevention.get_system_guidance()
             if guidance:
