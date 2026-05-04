@@ -21,6 +21,9 @@ from ..types import Message, MessageRole, SessionState, SessionStatus, ToolCall
 from .error_prevention import get_error_history, get_prevention_guidance, TrajectoryRecorder
 from .tool_repair import repair_tool_call_arguments, coerce_tool_arguments, validate_tool_arguments
 from .context_compressor import ContextCompressor, should_compress
+from .tool_guardrails import ToolGuardrailController, ToolGuardrailConfig
+from .interrupt_control import InterruptController, ProgressTracker, get_interrupt_controller
+from .delegation import DelegationManager, DelegationConfig
 
 logger = logging.getLogger(__name__)
 
