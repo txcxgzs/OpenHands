@@ -46,19 +46,6 @@ def register_tools(registry):
         except Exception as e:
             return f"Error: {e}"
 
-    # 别名：speak 与系统提示词一致
-    @registry.register_tool(
-        name="speak",
-        description="Text to speech - speak text aloud",
-        toolset="voice",
-        parameters={
-            "text": {"type": "string", "description": "Text to speak"},
-            "voice": {"type": "string", "description": "Voice name (optional)"},
-        },
-    )
-    async def speak(text: str, voice: str = "default") -> str:
-        return await tts_speak(text, voice)
-
     @registry.register_tool(
         name="tts_save",
         description="Save text as speech audio file",
@@ -105,18 +92,6 @@ def register_tools(registry):
         except Exception as e:
             return f"Error: {e}"
 
-    # 别名
-    @registry.register_tool(
-        name="transcribe",
-        description="Speech to text - transcribe audio file",
-        toolset="voice",
-        parameters={
-            "audio_path": {"type": "string", "description": "Path to audio file"},
-        },
-    )
-    async def transcribe(audio_path: str) -> str:
-        return await asr_transcribe(audio_path)
-
     @registry.register_tool(
         name="asr_listen",
         description="Listen to microphone and transcribe",
@@ -140,17 +115,5 @@ def register_tools(registry):
             return "Error: SpeechRecognition not installed"
         except Exception as e:
             return f"Error: {e}"
-
-    # 别名
-    @registry.register_tool(
-        name="listen",
-        description="Listen to microphone and transcribe",
-        toolset="voice",
-        parameters={
-            "duration": {"type": "number", "description": "Duration in seconds"},
-        },
-    )
-    async def listen(duration: float = 5.0) -> str:
-        return await asr_listen(duration)
 
     logger.debug("Voice tools registered")

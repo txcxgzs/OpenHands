@@ -29,30 +29,6 @@ def register_tools(registry):
         except Exception as e:
             return f"Error: {e}"
 
-    # 别名：python_exec 与系统提示词一致
-    @registry.register_tool(
-        name="python_exec",
-        description="Execute Python code in sandbox",
-        toolset="sandbox",
-        parameters={
-            "code": {"type": "string", "description": "Python code to execute"},
-        },
-    )
-    async def python_exec(code: str) -> str:
-        return await sandbox_exec(code, "python")
-
-    # 别名：bash_exec 与系统提示词一致
-    @registry.register_tool(
-        name="bash_exec",
-        description="Execute bash commands in sandbox",
-        toolset="sandbox",
-        parameters={
-            "code": {"type": "string", "description": "Bash code to execute"},
-        },
-    )
-    async def bash_exec(code: str) -> str:
-        return await sandbox_exec(code, "bash")
-
     @registry.register_tool(
         name="sandbox_check",
         description="Check sandbox status",

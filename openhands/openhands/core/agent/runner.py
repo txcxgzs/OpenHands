@@ -233,7 +233,6 @@ class EmbeddedAgent:
     async def _load_core_tools(self):
         from ...tools import file_tools, terminal_tools, memory_tools
         from ...tools import web_tools, browser_tools, voice_tools, media_tools, sandbox_tools
-        from ...tools import system_tools
         
         file_tools.register_tools(self._tool_registry)
         terminal_tools.register_tools(self._tool_registry)
@@ -243,7 +242,6 @@ class EmbeddedAgent:
         voice_tools.register_tools(self._tool_registry)
         media_tools.register_tools(self._tool_registry)
         sandbox_tools.register_tools(self._tool_registry)
-        system_tools.register_tools(self._tool_registry)
 
     async def create_session(self, tool_profile: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> str:
         session_id = str(uuid.uuid4())

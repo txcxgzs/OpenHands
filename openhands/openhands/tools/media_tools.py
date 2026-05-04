@@ -42,19 +42,6 @@ def register_tools(registry):
         except Exception as e:
             return f"Error: {e}"
 
-    # 别名：image_generate 与系统提示词一致
-    @registry.register_tool(
-        name="image_generate",
-        description="Generate image from text prompt",
-        toolset="media",
-        parameters={
-            "prompt": {"type": "string", "description": "Image description"},
-            "size": {"type": "string", "description": "Size: 1024x1024, 1792x1024, etc."},
-        },
-    )
-    async def image_generate(prompt: str, size: str = "1024x1024") -> str:
-        return await generate_image(prompt, size)
-
     @registry.register_tool(
         name="generate_image_local",
         description="Generate image using local model",
@@ -111,18 +98,6 @@ def register_tools(registry):
         except Exception as e:
             return f"Error: {e}"
 
-    # 别名：speech_to_text 与系统提示词一致
-    @registry.register_tool(
-        name="speech_to_text",
-        description="Transcribe audio file to text",
-        toolset="media",
-        parameters={
-            "audio_path": {"type": "string", "description": "Path to audio file"},
-        },
-    )
-    async def speech_to_text(audio_path: str) -> str:
-        return await transcribe_audio(audio_path)
-
     @registry.register_tool(
         name="generate_speech",
         description="Text to speech with OpenAI",
@@ -154,18 +129,5 @@ def register_tools(registry):
             return f"Speech saved: {output_path}"
         except Exception as e:
             return f"Error: {e}"
-
-    # 别名：text_to_speech 与系统提示词一致
-    @registry.register_tool(
-        name="text_to_speech",
-        description="Text to speech with OpenAI",
-        toolset="media",
-        parameters={
-            "text": {"type": "string", "description": "Text to speak"},
-            "voice": {"type": "string", "description": "Voice: alloy, echo, fable, onyx, nova, shimmer"},
-        },
-    )
-    async def text_to_speech(text: str, voice: str = "alloy") -> str:
-        return await generate_speech(text, voice)
 
     logger.debug("Media tools registered")
