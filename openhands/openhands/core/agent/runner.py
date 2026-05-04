@@ -18,12 +18,16 @@ from ..tools.registry import ToolRegistry, tool_registry
 from ..tools.policy import ToolPolicyManager
 from ..memory.store import MemoryStore
 from ..types import Message, MessageRole, SessionState, SessionStatus, ToolCall
+# 核心组件
 from .error_prevention import get_error_history, get_prevention_guidance, TrajectoryRecorder
 from .tool_repair import repair_tool_call_arguments, coerce_tool_arguments, validate_tool_arguments
-from .context_compressor import ContextCompressor, should_compress
-from .tool_guardrails import ToolGuardrailController, ToolGuardrailConfig
-from .interrupt_control import InterruptController, ProgressTracker, get_interrupt_controller
-from .delegation import DelegationManager, DelegationConfig
+from .context_compressor_full import ContextCompressor, CompressionConfig, create_compressor
+from .tool_guardrails_full import ToolGuardrailController, GuardrailConfig
+from .interrupt_control_full import ExecutionManager, InterruptReason, get_execution_manager
+from .delegation_full import DelegationManager, DelegationConfig
+from ..session.session_database import SessionManager, get_session_db
+from ..memory.persistent_memory_full import PersistentMemory, get_persistent_memory
+from ..security import get_security_guard, sanitize_text, redact_sensitive, scan_for_threats
 
 logger = logging.getLogger(__name__)
 
@@ -211,6 +215,18 @@ class EmbeddedAgent:
         self._sessions: Dict[str, SessionState] = {}
         self._active_runs: Dict[str, EmbeddedAgentRunMeta] = {}
         self._initialized = False
+        
+        # Hermes风格核心组件（懒加载）
+        self._error_history = None
+        self._prevention = None
+        self._context_compressor = None
+        self._guardrails = None
+        self._execution_manager = None
+        self._delegation_manager = None
+        self._session_manager = None
+        self._persistent_memory = None
+        self._security_guard = None
+        self._trajectory_recorder = None
 
     async def initialize(self):
         if self._initialized:
@@ -227,24 +243,47 @@ class EmbeddedAgent:
         await self._adapter.initialize()
 
         # 初始化 memory store
-        from ...core.memory.store import MemoryStore
         self._memory = MemoryStore(path="./data/memory")
 
         self._tool_registry = tool_registry()
         await self._load_core_tools()
 
-        self._initialized = True
-        logger.info(f"OpenHands Agent initialized: {self.agent_id}")
-        
-        # 初始化错误历史记录
+        # ====== 初始化Hermes风格核心组件 ======
         self._error_history = get_error_history()
         self._prevention = get_prevention_guidance()
         
-        # 初始化上下文压缩器
-        self._context_compressor = ContextCompressor(
-            context_limit=128000,
-            threshold_percent=0.75
+        # 上下文压缩器
+        self._context_compressor = create_compressor(
+            config=CompressionConfig()
         )
+        
+        # 工具护栏
+        self._guardrails = ToolGuardrailController(
+            config=GuardrailConfig()
+        )
+        
+        # 执行管理（中断+进度）
+        self._execution_manager = get_execution_manager()
+        
+        # 子代理委托
+        self._delegation_manager = DelegationManager(
+            agent_ref=self
+        )
+        
+        # 会话管理（SQLite持久化）
+        self._session_manager = SessionManager()
+        
+        # 持久化记忆（MEMORY.md, USER.md）
+        self._persistent_memory = get_persistent_memory()
+        
+        # 安全防护
+        self._security_guard = get_security_guard()
+        
+        # 轨迹记录器
+        self._trajectory_recorder = TrajectoryRecorder()
+        
+        self._initialized = True
+        logger.info(f"OpenHands Agent initialized (Hermes-capable): {self.agent_id}")
 
     async def _load_core_tools(self):
         from ...tools import file_tools, terminal_tools, memory_tools
@@ -270,6 +309,14 @@ class EmbeddedAgent:
             metadata=metadata or {},
         )
         self._sessions[session_id] = state
+        
+        # 持久化会话（Hermes风格）
+        if self._session_manager:
+            self._session_manager.create(
+                session_id=session_id,
+                title=f"Session {session_id[:8]}"
+            )
+        
         logger.info(f"Created session: {session_id}")
         return session_id
 
@@ -280,8 +327,21 @@ class EmbeddedAgent:
         session = self.get_session(session_id)
         if not session:
             raise ValueError(f"Session not found: {session_id}")
+        
+        # 安全清理输入
+        if self._security_guard:
+            content = self._security_guard.redact_sensitive_text(content)
+        
         msg = Message(role=MessageRole.USER, content=content)
         session.messages.append(msg)
+        
+        # 持久化消息
+        if self._session_manager:
+            self._session_manager.save_message(
+                session_id=session_id,
+                role="user",
+                content=content
+            )
 
     def _to_adapter_messages(self, messages: List[Message]) -> List[Dict[str, str]]:
         result = []
@@ -343,10 +403,16 @@ class EmbeddedAgent:
                 )
 
     def _get_system_prompt(self, is_first_message: bool) -> str:
-        """根据是否是首次消息返回不同提示词"""
+        """根据是否是首次消息返回不同提示词（Hermes风格）"""
         base_prompt = DEFAULT_SYSTEM_PROMPT
         
-        # 添加错误历史指导
+        # 1. 添加持久化记忆（MEMORY.md, USER.md）
+        if hasattr(self, '_persistent_memory') and self._persistent_memory:
+            mem_segment = self._persistent_memory.get_system_prompt_segment()
+            if mem_segment:
+                base_prompt += f"\n\n{mem_segment}"
+        
+        # 2. 添加错误历史指导
         if hasattr(self, '_prevention'):
             guidance = self._prevention.get_system_guidance()
             if guidance:
@@ -404,6 +470,14 @@ class EmbeddedAgent:
                     if response_text:
                         assistant_msg = Message(role=MessageRole.ASSISTANT, content=response_text)
                         session.messages.append(assistant_msg)
+                        
+                        # 持久化助手消息
+                        if self._session_manager:
+                            self._session_manager.save_message(
+                                session_id=session.session_id,
+                                role="assistant",
+                                content=response_text
+                            )
                     
                     if pending_tool_calls:
                         consecutive_errors = 0
@@ -411,9 +485,8 @@ class EmbeddedAgent:
                             yield {"type": "tool_call", "tool": tc.name, "arguments": tc.arguments}
                             run_meta.tool_call_count += 1
                             
-                            actual_tc = ToolCall(id=tc.id, name=tc.name, arguments=tc.arguments)
-                            logger.info(f"执行工具: {tc.name}")
-                            result = await self._tool_registry.execute_tool_call(actual_tc)
+                            # 使用增强的 _execute_single_tool（Hermes风格）
+                            result = await self._execute_single_tool(tc, budget, run_meta, profile)
                             tool_results.append(result)
                             
                             # 记录错误历史
@@ -429,8 +502,16 @@ class EmbeddedAgent:
                                 self._error_history.record_tool_success(tc.name)
                                 yield {"type": "tool_result", "tool": tc.name, "result": result.content[:800] if len(result.content) > 800 else result.content, "is_error": False}
                             
+                            # 持久化工具结果
                             msg = Message(role=MessageRole.TOOL, content=result.content, tool_call_id=tc.id)
                             session.messages.append(msg)
+                            if self._session_manager:
+                                self._session_manager.save_message(
+                                    session_id=session.session_id,
+                                    role="tool",
+                                    content=result.content,
+                                    tool_call_id=tc.id
+                                )
                     else:
                         # 检查是否真的完成了任务
                         if self._is_task_completed(response_text):
@@ -515,7 +596,20 @@ class EmbeddedAgent:
         run_meta.tool_call_count += 1
         
         try:
-            # 1. 修复工具调用参数（Hermes风格的JSON修复）
+            # ====== 步骤 1: 安全检查 ======
+            if self._security_guard:
+                security_check = self._security_guard.validate_tool_args(
+                    tool_call.name, tool_call.arguments
+                )
+                if not security_check.is_safe:
+                    from ..types import ToolResult
+                    return ToolResult(
+                        tool_call_id=tool_call.id,
+                        content=f"Error: Tool blocked for security reasons - threats: {security_check.threats}",
+                        is_error=True
+                    )
+            
+            # ====== 步骤 2: 工具调用修复（Hermes风格） ======
             raw_args = tool_call.arguments
             if isinstance(raw_args, str):
                 repaired_args = repair_tool_call_arguments(raw_args, tool_call.name)
@@ -529,14 +623,69 @@ class EmbeddedAgent:
             else:
                 arguments = {}
             
-            # 2. 类型强制转换
+            # 步骤 2a: 类型强制转换
             tool_def = self._tool_registry.get_tool(tool_call.name)
             if tool_def and hasattr(tool_def, 'parameters'):
                 arguments = coerce_tool_arguments(arguments, {'parameters': tool_def.parameters})
             
-            # 3. 执行工具
+            # ====== 步骤 3: 工具护栏检查 ======
+            if self._guardrails:
+                self._guardrails.record_tool_call(
+                    tool_call.name,
+                    False,
+                    None,
+                    arguments
+                )
+                guard_decision = self._guardrails.check()
+                if guard_decision.level.value != "none":
+                    if guard_decision.level.value == "hard_stop":
+                        from ..types import ToolResult
+                        return ToolResult(
+                            tool_call_id=tool_call.id,
+                            content=f"Tool halted by guardrails: {guard_decision.message}",
+                            is_error=True
+                        )
+            
+            # ====== 步骤 4: 中断检查 ======
+            if self._execution_manager and self._execution_manager.check_interrupt():
+                from ..types import ToolResult
+                return ToolResult(
+                    tool_call_id=tool_call.id,
+                    content=f"Execution interrupted: {self._execution_manager.interrupt.get_interrupt_message()}",
+                    is_error=True
+                )
+            
+            # ====== 步骤 5: 进度更新 ======
+            if self._execution_manager:
+                self._execution_manager.update_activity(
+                    f"Calling tool: {tool_call.name}",
+                    tool_call.name
+                )
+            
+            # ====== 步骤 6: 执行工具 ======
             tc = ToolCall(id=tool_call.id, name=tool_call.name, arguments=arguments)
             result = await self._tool_registry.execute_tool_call(tc)
+            
+            # ====== 步骤 7: 记录工具结果 ======
+            if self._guardrails:
+                self._guardrails.record_tool_call(
+                    tool_call.name,
+                    result.is_error,
+                    result.content if result.is_error else None,
+                    arguments
+                )
+            
+            # ====== 步骤 8: 安全清理敏感信息 ======
+            if not result.is_error and self._security_guard:
+                cleaned_content = self._security_guard.redact_sensitive_text(result.content)
+                if cleaned_content != result.content:
+                    from ..types import ToolResult
+                    result = ToolResult(
+                        tool_call_id=tool_call.id,
+                        content=cleaned_content,
+                        is_error=False
+                    )
+            
             return result
         except Exception as e:
             logger.error(f"Tool execution failed: {e}")
