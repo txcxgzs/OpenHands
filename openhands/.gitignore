@@ -1,0 +1,64 @@
+# 环境变量和密钥
+.env
+.env.*
+*.key
+*.pem
+config.yaml
+config.*.yaml
+!config.example.yaml
+
+# 测试文件中的密钥
+test_simple.py
+test_agent.py
+test_api.py
+verify.py
+
+# OpenClaw和Hermes目录 - 不应推送到GitHub
+openclaw/
+hermes/
+hermes-agent/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+venv/
+ENV/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 数据文件
+data/
+*.db
+*.sqlite
+
+# 日志
+*.log
+
+# 操作系统
+.DS_Store
+Thumbs.db
